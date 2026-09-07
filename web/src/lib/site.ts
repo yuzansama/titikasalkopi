@@ -51,6 +51,32 @@ export function canonicalUrl(path: string): string {
   return `${site.url}${clean.endsWith("/") ? clean : `${clean}/`}`;
 }
 
+/**
+ * Asal situs — skema dan host saja, TANPA basePath.
+ *
+ * `metadataBase` di `layout.tsx` wajib memakai nilai ini, bukan `site.url`:
+ * Next merakit URL aset metadata berbasis berkas (`opengraph-image`,
+ * `twitter-image`) dengan MENGGABUNGKAN pathname `metadataBase` dan path aset
+ * yang sudah memuat basePath. Bila metadataBase ikut membawa basePath, hasilnya
+ * berprefiks ganda — https://host/titikasalkopi/titikasalkopi/opengraph-image.png
+ * — dan pratinjau tautan memuat gambar yang 404.
+ */
+export const siteOrigin = origin;
+
+/**
+ * URL absolut untuk aset yang path-nya SUDAH memuat basePath.
+ *
+ * Impor statis `next/image` menghasilkan `src` yang sudah diawali `assetPrefix`
+ * (mis. "/titikasalkopi/_next/static/media/abmisibil.<hash>.jpg"). Menyambungnya
+ * ke `site.url` — yang juga sudah memuat basePath — akan menggandakan prefiks
+ * dan menghasilkan URL gambar yang 404 di pratinjau tautan dan di JSON-LD.
+ * Karena itu aset dijadikan absolut terhadap ORIGIN saja, bukan `site.url`.
+ */
+export function assetUrl(path: string): string {
+  if (/^https?:\/\//.test(path)) return path;
+  return `${siteOrigin}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 export const whatsapp = {
   /** Format lokal untuk ditampilkan ke pengunjung. */
   display: "087777939567",

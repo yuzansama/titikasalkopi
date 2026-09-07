@@ -19,6 +19,11 @@
  * - Panduan lengkap untuk owner ada di docs/05-backend.md Bagian "Panduan owner".
  */
 
+import abmisibilArtwork from "@/images/produk/abmisibil.jpg";
+import boldPhoto from "@/images/produk/bold.jpg";
+import brightPhoto from "@/images/produk/bright.jpg";
+import pondokBaruArtwork from "@/images/produk/pondok-baru.jpg";
+import sabinArtwork from "@/images/produk/sabin.jpg";
 import type {
   HouseblendLineSlug,
   PriceIDR,
@@ -181,7 +186,10 @@ export const houseblendLines: HouseblendLine[] = [
     description:
       "Houseblend BOLD memadukan Arabica Natural dan Fine Robusta Natural. Tersedia dalam enam rasio Arabica:Robusta sehingga kedai dapat memilih titik keseimbangan body dan manis yang paling cocok dengan mesin dan menunya. Seluruh rasio dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
     tastingNotes: [...HOUSEBLEND_BOLD_NOTES],
-    image: null,
+    image: {
+      src: boldPhoto,
+      alt: "Biji kopi sangrai gelap yang mengilap menumpuk rapat, dengan sekop logam menyendok dari sisi kanan atas.",
+    },
     status: "available",
     searchTerms: [
       "houseblend kopi per kg",
@@ -199,7 +207,10 @@ export const houseblendLines: HouseblendLine[] = [
     description:
       "Houseblend BRIGHT adalah blend full Arabica yang menggabungkan proses natural dan washed. Tersedia dalam dua varian, Signature dan Reguler. Pada lini ini Signature dan Reguler adalah nama varian blend, bukan tier harga single origin. Dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
     tastingNotes: [...HOUSEBLEND_BRIGHT_NOTES],
-    image: null,
+    image: {
+      src: brightPhoto,
+      alt: "Biji kopi arabica sangrai terang di dalam mangkuk kayu, dengan sendok kayu bersandar di tepi mangkuk.",
+    },
     status: "available",
     searchTerms: [
       "houseblend full arabica",
@@ -216,6 +227,9 @@ export const houseblendLines: HouseblendLine[] = [
     description:
       "Houseblend Full Robusta adalah blend robusta penuh untuk kedai yang mengutamakan body tebal dan biaya per cangkir yang terjaga. Dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
     tastingNotes: null,
+    // Tidak ada artwork yang jujur mewakili lini ini: lembar HOUSEBLEND hanya
+    // memotret BOLD dan BRIGHT. Memakai foto BOLD di sini berarti menampilkan
+    // produk lain (FR-07), jadi lini ini tetap memakai placeholder (R-13).
     image: null,
     status: "available",
     searchTerms: [
@@ -323,7 +337,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: 1900,
     varietals: ["Arabica Bourbon", "Typica"],
     tastingNotes: null,
-    image: null,
+    image: {
+      src: abmisibilArtwork,
+      alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: kanguru pohon bertengger di dahan berlumut di atas lembah hutan berkabut, dengan para-para penjemuran ceri kopi merah di kejauhan.",
+    },
     status: "available",
     searchTerms: [
       "kopi Papua",
@@ -345,7 +362,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: 1900,
     varietals: ["Arabica Typica"],
     tastingNotes: null,
-    image: null,
+    image: {
+      src: sabinArtwork,
+      alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: burung cendrawasih bertengger di dahan pohon menghadap lembah sungai berhutan, dengan para-para penjemuran ceri kopi di halaman.",
+    },
     status: "available",
     searchTerms: [
       "kopi Papua",
@@ -417,14 +437,14 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: 1400,
     varietals: ["Arabica Bourbon", "Ateng Super"],
     tastingNotes: null,
-    image: null,
+    image: {
+      src: pondokBaruArtwork,
+      alt: "Ilustrasi lanskap dataran tinggi Bener Meriah, Aceh: harimau berjalan di antara kebun kopi berbuah merah dengan punggungan gunung berkabut di kejauhan.",
+    },
     status: "available",
     searchTerms: [
-      // Alias "Gayo" ditahan sampai owner mengonfirmasi (BR-20/OQ-12).
-      // Bener Meriah memang berada di dataran tinggi Gayo, tetapi BRD
-      // menuntut konfirmasi pemilik sebelum alias origin ditayangkan.
-      // Aktifkan kembali "kopi Gayo" dan "arabica Gayo" setelah OQ-12 ditutup;
-      // KPI G-06 menargetkan kata kunci ini.
+      "kopi Gayo",
+      "arabica Gayo",
       "kopi Aceh",
       "kopi Bener Meriah",
     ],

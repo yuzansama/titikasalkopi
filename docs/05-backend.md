@@ -457,6 +457,21 @@ Konstanta brand — nama, domain, nomor WhatsApp, tautan Instagram dan Shopee �
 - Ukuran berkas ±1,4 KB masing-masing.
 - Path dibaca lewat `placeholderImagePath(slug)`.
 
+> **Pembaruan 7 September 2026.** Bagian di bawah ini sudah tidak berlaku. Owner
+> menyetujui pemakaian artwork marketing yang ada, sehingga lima produk kini
+> punya gambar asli: Abmisibil, Sabin, dan Pondok Baru dipotong dari kartu
+> masing-masing, BOLD dan BRIGHT dari lembar houseblend. Berkasnya `.jpg` di
+> `web/src/images/produk/`, dirujuk lewat impor statis, bukan `.webp` di
+> `web/public/produk/`. Lima produk sisanya tetap placeholder dengan alasan
+> yang tercatat: Full Robusta karena tidak ada artwork yang jujur mewakilinya,
+> serta Oelbiteno, Pyramid, Palimping, dan Kerinci karena potongan bebas teks
+> dari poster katalog hanya berukuran 94x118 sampai 126x157 piksel — empat
+> sampai tujuh kali di bawah bingkai 800x1000, sehingga hasil perbesarannya
+> lebih buruk daripada placeholder SVG yang tajam.
+>
+> `src/app/opengraph-image.png` juga sudah ada: 1200x630 bergaya tipografi dari
+> palet brand, tanpa fotografi karangan. FR-46 terpenuhi.
+
 `Product.image` **tetap `null`** untuk seluruh produk. Itu keadaan yang sah dan lolos validator (R-13: foto tidak menahan rilis). FE boleh memakai `<ProductPlaceholder />` SVG inline miliknya, atau merujuk berkas di folder ini — keduanya menempati ruang yang sama persis. Cara mengganti dengan foto asli ada di `web/public/produk/README.md`.
 
 ---
@@ -477,7 +492,7 @@ Konstanta brand — nama, domain, nomor WhatsApp, tautan Instagram dan Shopee �
 
 **Celah yang perlu diketahui sebelum rilis:**
 
-1. **`src/app/opengraph-image.png` belum ada.** Peta kepemilikan menempatkannya pada BE, tetapi ia aset desain 1200×630 bergaya brand — bukan sesuatu yang boleh dikarang secara terprogram tanpa mengarang identitas visual. Perlu dibuat desainer atau owner, lalu ditaruh di `src/app/opengraph-image.png`. Sampai itu ada, halaman tanpa foto produk tidak punya gambar pratinjau saat dibagikan (FR-46 belum penuh). Ini yang paling mendesak dari daftar ini.
+1. ~~**`src/app/opengraph-image.png` belum ada.**~~ **SELESAI 7 September 2026** — dibuat bergaya tipografi dari palet brand. Teks asli: Peta kepemilikan menempatkannya pada BE, tetapi ia aset desain 1200×630 bergaya brand — bukan sesuatu yang boleh dikarang secara terprogram tanpa mengarang identitas visual. Perlu dibuat desainer atau owner, lalu ditaruh di `src/app/opengraph-image.png`. Sampai itu ada, halaman tanpa foto produk tidak punya gambar pratinjau saat dibagikan (FR-46 belum penuh). Ini yang paling mendesak dari daftar ini.
 2. **`searchTerms` belum disetujui owner** (CA-04). Isinya konservatif dan seluruhnya geografis (mis. "kopi Gayo", "kopi Papua", "kopi Kerinci") — tidak satu pun mengklaim atribut origin yang tidak ada di brand brief. Tetap perlu satu kali tinjauan owner sebelum rilis.
 3. **`province` Palimping diisi "Jawa Barat".** Brand brief hanya menulis "Desa Palimping, Garut". Provinsi diisi karena `buildProductMetadata()` merakit judul dari `province` dan Garut memang berada di Jawa Barat — fakta geografis, bukan atribut kopi. Bila owner ingin format lain, ubah medannya, bukan builder-nya.
 4. **`src/app/page.tsx` masih dikecualikan dari lint rule ADR-02** (lihat Bagian 8). Pengecualian itu wajib dihapus setelah FE memindahkan beranda ke `@/data/catalog`.
@@ -499,4 +514,4 @@ Konstanta brand — nama, domain, nomor WhatsApp, tautan Instagram dan Shopee �
 - [x] `npx tsc --noEmit`, `npx eslint .`, dan `npm run build` lulus.
 - [ ] **Milik FE**: 16 `page.tsx` beserta baris delegasi metadata, `layout.tsx` (tambahkan `verification.google`), `not-found.tsx`, komponen, keranjang, generator pesan WhatsApp, `reply-hours.ts`.
 - [ ] **Milik FE**: perbaiki kontras tombol WhatsApp `bg-gold` pada beranda (3,88:1, gagal WCAG AA).
-- [ ] **Milik owner/desainer**: `src/app/opengraph-image.png` dan foto produk.
+- [x] **Milik owner/desainer**: `src/app/opengraph-image.png` selesai. Foto produk: lima memakai artwork marketing, lima menunggu foto asli.

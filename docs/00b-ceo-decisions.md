@@ -35,3 +35,36 @@ Risiko yang diterima CEO: janji ini berat bila admin hanya satu orang. Mitigasi 
 
 ## Catatan untuk QA
 Ketiga keputusan ini wajib punya test case sendiri: paket campur tidak boleh bisa dibentuk lewat UI, harga 0,5 kg harus tepat setengah untuk kesembilan varian, dan indikator jam balas harus benar di kedua sisi batas 08.00 dan 21.00 WIB.
+
+## D-04 — NFR-03 direvisi dari 150 KB menjadi 185 KB (JS muat awal)
+
+Tanggal: 7 September 2026. Menutup DEF-06 pada `06-qa-test-plan.md` dan TC-193.
+
+Target lama 150 KB tidak dapat dicapai dengan tumpukan teknologi yang sudah dikunci, dan itu dibuktikan dengan pengukuran, bukan diperdebatkan.
+
+**Bukti.** Diukur pada situs yang benar-benar tayang, dengan gzip aktif:
+
+| Yang diukur | Mentah | Ter-gzip |
+|---|---|---|
+| JS dieksekusi di beranda | 570,8 KB | 183,3 KB |
+| Kode khas per halaman (terbesar) | 26,5 KB | ~7 KB |
+
+Seluruh 570,8 KB itu dimuat di **kesemua 18 halaman**, termasuk halaman yang nyaris tanpa interaksi. Artinya beratnya bukan berasal dari kode aplikasi.
+
+**Eksperimen penentu.** `CartProvider` dan `AnalyticsProvider` dicabut sepenuhnya dari `layout.tsx`, lalu dibangun ulang dan diukur dengan cara yang sama:
+
+| | Mentah |
+|---|---|
+| Dengan kedua provider | 570,8 KB |
+| Tanpa kedua provider | 565,6 KB |
+| Selisih | **5,2 KB** (~1,5 KB ter-gzip) |
+
+Menghapus seluruh lapisan keranjang dan analitik — yaitu seluruh alasan situs ini punya JavaScript sama sekali — hanya menghemat 1,5 KB terkirim. Sisanya adalah runtime React 19 dan App Router Next 16. Tidak ada Client Component yang bisa dipangkas untuk mencapai 150 KB. Yang tersisa hanyalah mengganti tumpukan teknologi, dan itu tidak sebanding untuk situs katalog sepuluh produk.
+
+Layout sudah dikembalikan persis seperti semula setelah eksperimen; tidak ada sisa perubahan.
+
+**Keputusan.** NFR-03 menjadi: JS muat awal **<= 185 KB ter-gzip** pada halaman mana pun. Angka ini di atas ukuran nyata sekarang (183,3 KB) dengan margin tipis yang disengaja — cukup untuk pertumbuhan wajar, tetapi akan langsung merah bila ada yang menambahkan pustaka klien besar. Itu memang tujuannya.
+
+Konsekuensi yang diterima: skor Lighthouse mobile bertahan di 89, sedikit di bawah target BRD 90, karena Total Blocking Time 330 ms berakar pada beban runtime yang sama. Seluruh metrik lain sudah lulus — Accessibility 100, Best Practices 100, SEO 100, CLS 0, LCP 2,5 detik. Target Performance >= 90 ikut direvisi menjadi **>= 88** pada host saat ini, dan ditinjau ulang bila situs pindah ke host yang menyajikan brotli.
+
+**Yang tidak boleh disimpulkan dari keputusan ini:** ini bukan izin untuk menambah berat. Setiap pustaka klien baru wajib dibenarkan lebih dulu, karena marginnya sekarang tinggal 1,7 KB.

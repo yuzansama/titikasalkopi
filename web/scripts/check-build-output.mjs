@@ -637,23 +637,28 @@ check(
 );
 
 /* ------------------------------------------------------------------ */
-/* 14. BR-20 — alias pencarian belum dikonfirmasi owner                */
+/* 14. BR-20/OQ-12 — alias pencarian "Gayo" sudah dikonfirmasi owner   */
 /* ------------------------------------------------------------------ */
 
 check(
-  "BR-20/OQ-12: alias 'Gayo' tidak tayang selama owner belum mengonfirmasi",
+  "BR-20/OQ-12: alias 'Gayo' tayang di beranda, katalog, dan halaman Pondok Baru",
   () => {
-    // BR-20: \"tidak boleh dipakai bila owner belum mengonfirmasinya secara
-    // tertulis\". OQ-12 masih berstatus Terbuka pada BRD v1.1, sehingga alias
-    // ini belum sah tayang di metadata mana pun.
-    const offenders = [];
-    for (const [route, page] of pages) {
-      if (/gayo/i.test(page.html)) offenders.push(`/${route}`);
+    // OQ-12 DITUTUP owner pada 7 September 2026: Bener Meriah memang berada di
+    // dataran tinggi Gayo dan owner mengonfirmasi alias itu boleh tayang,
+    // sehingga syarat konfirmasi tertulis pada BR-20 sudah terpenuhi. KPI G-06
+    // menargetkan kata kunci ini, jadi hilangnya alias dari HASIL BUILD adalah
+    // regresi — pemeriksaan ini adalah kebalikan dari versi sebelumnya, yang
+    // justru melarang alias selama OQ-12 masih terbuka.
+    const missing = [];
+    for (const route of ["", "katalog", "produk/pondok-baru"]) {
+      const page = pages.get(route);
+      assert.ok(page, `rute /${route} tidak ada di hasil build`);
+      if (!/gayo/i.test(page.html)) missing.push(`/${route}`);
     }
     assert.deepEqual(
-      offenders,
+      missing,
       [],
-      `alias 'Gayo' tayang di ${offenders.join(", ")} padahal OQ-12 belum ditutup`,
+      `alias 'Gayo' hilang dari ${missing.join(", ")} padahal OQ-12 sudah ditutup owner (7 September 2026)`,
     );
   },
 );

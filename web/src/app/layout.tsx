@@ -10,7 +10,7 @@ import { CartProvider } from "@/features/cart/cart-provider";
 import { catalogValidKeys } from "@/features/cart/cart-selectors";
 import { ReplyHoursStatus } from "@/features/contact/reply-hours-status";
 import { FOCUS_RING } from "@/components/ui/styles";
-import { site } from "@/lib/site";
+import { site, siteOrigin } from "@/lib/site";
 import "./globals.css";
 
 /*
@@ -49,7 +49,8 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  // Asal saja, tanpa basePath — lihat catatan `siteOrigin` di src/lib/site.ts.
+  metadataBase: new URL(siteOrigin),
   title: {
     default: `${site.name} — ${site.tagline}`,
     template: `%s | ${site.name}`,

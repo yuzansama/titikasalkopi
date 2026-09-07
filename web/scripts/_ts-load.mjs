@@ -9,15 +9,23 @@
  * hasilnya diimpor sebagai ESM.
  *
  * Batasannya disengaja dan dijaga oleh kode yang diuji: modul yang boleh
- * dimuat hanya boleh memakai impor RELATIF untuk nilai. Impor beralias `@/...`
- * di modul-modul itu selalu `import type`, sehingga terhapus saat kompilasi
- * dan tidak pernah perlu di-resolve. Aturan ini juga yang menjaga modul murni
- * tetap bebas React dan bebas katalog.
+ * dimuat hanya boleh memakai impor RELATIF untuk nilai TypeScript. Impor
+ * beralias `@/...` yang membawa nilai hanya diizinkan untuk BERKAS GAMBAR —
+ * impor statis `next/image` di `src/data/products.ts` (ADR-06). Impor alias
+ * lainnya di modul-modul itu selalu `import type`, sehingga terhapus saat
+ * kompilasi dan tidak pernah perlu di-resolve. Aturan ini juga yang menjaga
+ * modul murni tetap bebas React dan bebas katalog.
+ *
+ * Gambar tidak bisa diimpor Node apa adanya, jadi setiap berkas gambar diganti
+ * stub `.mjs` yang meniru `StaticImageData`: `src` mengikuti pola berkas yang
+ * benar-benar ditulis Next (`<basePath>/_next/static/media/...`), sedangkan
+ * `width` dan `height` DIBACA dari header berkas aslinya supaya stub tidak
+ * pernah membohongi pemeriksaan tentang ukuran gambar.
  */
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
 
@@ -31,18 +39,80 @@ const COMPILER_OPTIONS = {
   verbatimModuleSyntax: false,
 };
 
-function resolveRelative(fromFile, specifier) {
-  const base = resolve(dirname(fromFile), specifier);
-  const candidates = [`${base}.ts`, `${base}.tsx`, join(base, "index.ts")];
+const IMAGE_EXTENSIONS = /\.(jpe?g|png|gif|svg|webp|avif)$/i;
+
+/** Path absolut sebuah specifier impor, atau null bila tidak ditemukan. */
+function resolveSpecifier(fromFile, specifier) {
+  const base = specifier.startsWith("@/")
+    ? resolve(WEB_ROOT, "src", specifier.slice(2))
+    : resolve(dirname(fromFile), specifier);
+  const candidates = [base, `${base}.ts`, `${base}.tsx`, join(base, "index.ts")];
   return candidates.find((candidate) => existsSync(candidate)) ?? null;
 }
 
-/** Menambahkan sufiks `.mjs` pada setiap specifier relatif di keluaran JS. */
-function rewriteSpecifiers(code) {
-  return code.replace(
-    /(\bfrom\s*["'])(\.\.?\/[^"']+)(["'])/g,
-    (_match, before, spec, after) => `${before}${spec}.mjs${after}`,
-  );
+/**
+ * Menyamakan specifier di keluaran JS dengan tata letak berkas `.mjs` di
+ * OUT_ROOT: alias `@/...` diubah menjadi relatif lebih dulu, lalu semuanya
+ * diberi sufiks `.mjs`. Keluaran mencerminkan pohon sumber, sehingga path
+ * relatif antar modul tetap sama persis.
+ */
+function rewriteSpecifiers(code, fromFile) {
+  // Urutan penting: specifier relatif diproses lebih dulu, baru alias. Hasil
+  // penulisan ulang alias sudah berbentuk relatif dan sudah bersufiks `.mjs`,
+  // sehingga menjalankan pass relatif setelahnya akan menempelkan `.mjs` kedua.
+  return code
+    .replace(
+      /(\bfrom\s*["'])(\.\.?\/[^"']+)(["'])/g,
+      (_match, before, spec, after) => `${before}${spec}.mjs${after}`,
+    )
+    .replace(/(\bfrom\s*["'])(@\/[^"']+)(["'])/g, (match, before, spec, after) => {
+      const target = resolveSpecifier(fromFile, spec);
+      if (!target) return match;
+      let rel = relative(dirname(fromFile), target).split(sep).join("/");
+      if (!rel.startsWith(".")) rel = `./${rel}`;
+      return `${before}${rel.replace(/\.tsx?$/, "")}.mjs${after}`;
+    });
+}
+
+/** Lebar dan tinggi asli sebuah PNG atau JPEG, dibaca dari headernya. */
+function imageSize(file) {
+  const buf = readFileSync(file);
+  if (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47) {
+    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+  }
+  if (buf.length > 4 && buf.readUInt16BE(0) === 0xffd8) {
+    let offset = 2;
+    while (offset + 9 < buf.length) {
+      if (buf[offset] !== 0xff) {
+        offset += 1;
+        continue;
+      }
+      const marker = buf[offset + 1];
+      // SOF0..SOF15, kecuali DHT (c4), JPG (c8), dan DAC (cc).
+      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+        return {
+          height: buf.readUInt16BE(offset + 5),
+          width: buf.readUInt16BE(offset + 7),
+        };
+      }
+      offset += 2 + buf.readUInt16BE(offset + 2);
+    }
+  }
+  return { width: 0, height: 0 };
+}
+
+/** Stub `StaticImageData` untuk satu berkas gambar yang diimpor statis. */
+function writeImageStub(file, outPath) {
+  const { width, height } = imageSize(file);
+  const basePath = process.env.BASE_PATH ?? process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const data = {
+    src: `${basePath}/_next/static/media/${file.split(sep).pop()}`,
+    width,
+    height,
+    blurWidth: 0,
+    blurHeight: 0,
+  };
+  writeFileSync(outPath, `export default ${JSON.stringify(data)};\n`);
 }
 
 /**
@@ -71,12 +141,21 @@ export async function loadTs(entryRelPath) {
 
     const outPath = join(OUT_ROOT, `${relative(WEB_ROOT, file).replace(/\.tsx?$/, "")}.mjs`);
     mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, rewriteSpecifiers(emitted));
+    writeFileSync(outPath, rewriteSpecifiers(emitted, file));
 
     for (const imported of ts.preProcessFile(source, true, true).importedFiles) {
-      if (!imported.fileName.startsWith(".")) continue; // alias @/ selalu type-only
-      const target = resolveRelative(file, imported.fileName);
-      if (target) queue.push(target);
+      const spec = imported.fileName;
+      // Alias yang bukan gambar selalu type-only, jadi tidak perlu di-resolve.
+      if (!spec.startsWith(".") && !IMAGE_EXTENSIONS.test(spec)) continue;
+      const target = resolveSpecifier(file, spec);
+      if (!target) continue;
+      if (IMAGE_EXTENSIONS.test(target)) {
+        const stubPath = join(OUT_ROOT, `${relative(WEB_ROOT, target)}.mjs`);
+        mkdirSync(dirname(stubPath), { recursive: true });
+        writeImageStub(target, stubPath);
+        continue;
+      }
+      queue.push(target);
     }
   }
 

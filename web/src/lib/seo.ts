@@ -26,7 +26,7 @@
 
 import type { Metadata } from "next";
 import type { Product } from "@/data/types";
-import { canonicalUrl, instagram, shopee, site, whatsapp } from "./site";
+import { assetUrl, canonicalUrl, instagram, shopee, site, whatsapp } from "./site";
 
 /* ------------------------------------------------------------------ */
 /* Dasar                                                               */
@@ -44,6 +44,23 @@ const ALL_DAYS = [
   "Saturday",
   "Sunday",
 ] as const;
+
+/**
+ * Gambar Open Graph bawaan situs (FR-46) — berkas `src/app/opengraph-image.png`,
+ * 1200x630, tipografis dengan palet brand.
+ *
+ * Next hanya menyisipkan berkas konvensi ini secara otomatis pada segmen tempat
+ * ia berada. Setiap halaman di bawah menulis blok `openGraph` sendiri, dan blok
+ * itu MENGGANTI hasil warisan — sehingga tanpa penyebutan eksplisit di sini
+ * hanya beranda yang punya gambar pratinjau. URL ditulis absolut supaya
+ * pratinjau tautan tidak bergantung pada resolusi relatif klien mana pun.
+ */
+export const DEFAULT_OG_IMAGE = {
+  url: `${site.url}/opengraph-image.png`,
+  width: 1200,
+  height: 630,
+  alt: `Kartu bergaya brand ${site.name}: nama merek dan tagline "${site.tagline}" di atas latar krem.`,
+} as const;
 
 export type PageMetadataInput = {
   /** Tanpa sufiks brand; template `%s | Titik Asal Kopi` di layout menambahkannya. */
@@ -65,6 +82,7 @@ export type PageMetadataInput = {
  */
 export function buildPageMetadata(input: PageMetadataInput): Metadata {
   const { title, description, path, keywords, noIndex, image } = input;
+  const ogImage = image ?? DEFAULT_OG_IMAGE;
   return {
     title,
     description,
@@ -78,13 +96,13 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
       title,
       description,
       url: canonicalUrl(path),
-      ...(image ? { images: [image] } : {}),
+      images: [ogImage],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(image ? { images: [image.url] } : {}),
+      images: [ogImage.url],
     },
   };
 }
@@ -103,7 +121,7 @@ export function homeMetadata(): Metadata {
       "houseblend kopi per kg",
       "kopi Papua",
       "kopi Kupang",
-      // "kopi Gayo" ditahan sampai owner mengonfirmasi alias origin (BR-20/OQ-12).
+      "kopi Gayo",
       "biji kopi roasted",
     ],
     alternates: { canonical: canonicalUrl("/") },
@@ -114,11 +132,13 @@ export function homeMetadata(): Metadata {
       title: `${site.name} — ${site.tagline}`,
       description: site.description,
       url: canonicalUrl("/"),
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: `${site.name} — ${site.tagline}`,
       description: site.description,
+      images: [DEFAULT_OG_IMAGE.url],
     },
   };
 }
@@ -136,7 +156,7 @@ export function katalogMetadata(): Metadata {
       "houseblend kopi per kg",
       "kopi Papua",
       "kopi Kupang",
-      // "kopi Gayo" ditahan sampai owner mengonfirmasi alias origin (BR-20/OQ-12).
+      "kopi Gayo",
     ],
   });
 }
@@ -242,12 +262,13 @@ export function buildProductMetadata(product: Product): Metadata {
     keywords: product.searchTerms,
     image: product.image
       ? {
-          url: product.image.src.src,
+          // `src.src` sudah memuat basePath; assetUrl hanya menambahkan origin.
+          url: assetUrl(product.image.src.src),
           width: product.image.src.width,
           height: product.image.src.height,
           alt: product.image.alt,
         }
-      : undefined, // jatuh ke opengraph-image milik root (Bagian 10.5)
+      : undefined, // buildPageMetadata jatuh ke DEFAULT_OG_IMAGE (Bagian 10.5)
   });
 }
 
@@ -278,7 +299,7 @@ export function productJsonLd(product: Product): string {
       product.category === "single-origin"
         ? "Single Origin Coffee"
         : "Coffee Blend",
-    image: product.image ? `${site.url}${product.image.src.src}` : undefined,
+    image: product.image ? assetUrl(product.image.src.src) : undefined,
     offers: product.variants.map((variant) => ({
       "@type": "Offer",
       name: variant.label,

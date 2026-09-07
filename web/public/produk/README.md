@@ -16,26 +16,37 @@ Path-nya dibaca lewat `placeholderImagePath(slug)` di `src/data/catalog.ts`.
 
 ## Mengganti dengan foto asli
 
-1. Kompres foto ke **WebP kualitas 75–80, sisi terpanjang 1200 px, ≤ 150 KB**
-   (NFR-03, Bagian 9.3 dokumen arsitektur).
-2. Simpan sebagai `web/public/produk/<slug>.webp`.
-3. Di `web/src/data/products.ts`, impor foto secara statis lalu isi medan
-   `image` produk terkait:
+Lima produk sudah memakai gambar asli dan tidak lagi membaca folder ini:
+`abmisibil`, `sabin`, `pondok-baru`, `bold`, dan `bright`. Berkasnya ada di
+`web/src/images/produk/` — bukan di `public/` — supaya ikut hashing dan
+caching aset Next lewat impor statis (ADR-06).
+
+1. Kompres gambar ke rasio **4:5** dan **≤ 120 KB** (NFR-03 membatasi 150 KB
+   per gambar; 120 KB memberi ruang aman). Jangan memperbesar melebihi ukuran
+   asli — hasilnya lembek dan tetap memakan bita.
+2. Simpan sebagai `web/src/images/produk/<slug>.jpg`.
+3. Di `web/src/data/products.ts`, impor secara statis lalu isi medan `image`:
 
    ```ts
-   import pondokBaruPhoto from "../../public/produk/pondok-baru.webp";
+   import pondokBaruArtwork from "@/images/produk/pondok-baru.jpg";
    // ...
    image: {
-     src: pondokBaruPhoto,
-     alt: "Kemasan 200 gr kopi Pondok Baru dari Bener Meriah, Aceh",
+     src: pondokBaruArtwork,
+     alt: "Ilustrasi lanskap dataran tinggi Bener Meriah, Aceh: harimau berjalan di antara kebun kopi berbuah merah.",
    },
    ```
 
    Impor statis dipakai supaya Next tahu lebar dan tinggi asli saat build dan
-   menuliskannya ke HTML tanpa intervensi FE (ADR-06).
-4. `alt` wajib deskriptif dalam Bahasa Indonesia dan **tidak boleh sekadar
-   mengulang nama produk** — validator V-14 menggagalkan build bila diulang.
+   menuliskannya ke HTML tanpa intervensi FE (ADR-06). `scripts/_ts-load.mjs`
+   mengenali impor gambar ini dan menggantinya dengan stub saat pemeriksaan.
+4. `alt` wajib deskriptif dalam Bahasa Indonesia, menggambarkan APA YANG BENAR
+   TERLIHAT, dan **tidak boleh sekadar mengulang nama produk** — validator V-14
+   menggagalkan build bila diulang. Gambar origin di repositori ini adalah
+   ILUSTRASI lanskap, bukan foto kemasan; alt-nya harus mengatakan begitu.
 5. Placeholder `.svg` yang sudah digantikan boleh dihapus.
 
 `image: null` adalah keadaan yang sah dan lolos validator; UI memakai
-`<ProductPlaceholder />` atau berkas placeholder di folder ini.
+`<ProductPlaceholder />` atau berkas placeholder di folder ini. Lima produk
+masih memakainya: `oelbiteno`, `pyramid`, `palimping`, `kerinci` (thumbnail
+poster katalog terlalu kecil untuk potongan 4:5 tanpa teks) dan `full-robusta`
+(tidak ada gambar yang jujur mewakilinya).
