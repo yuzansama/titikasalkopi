@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+/*
+  Titik Asal Kopi — design tokens.
+  Sumber kebenaran setiap nilai hex: docs/00-brand-brief.md.
+  JANGAN menambah warna yang tidak ada di brief.
+
+  Kenapa dua lapis?
+  `@theme` tidak boleh merujuk namanya sendiri (`--color-base: var(--color-base)`
+  menghasilkan deklarasi melingkar), dan Tailwind hanya meng-emit token tema yang
+  benar-benar terpakai. Jadi hex ditulis sekali di lapis `--brand-*` pada :root —
+  selalu ada, apa pun yang dipakai komponen — lalu dipetakan ke namespace warna
+  Tailwind lewat `@theme inline`.
+
+  Cara pakai:
+  - utility Tailwind: `bg-base`, `text-primary`, `bg-rust/10`, `ring-olive`, ...
+  - CSS biasa / style inline: `var(--color-primary)` atau `var(--brand-primary)`
+*/
+:root {
+  /* Netral */
+  --brand-base: #f9f4ee;
+  --brand-surface: #fdf8f2;
+
+  /* Hijau — primary / authority */
+  --brand-primary: #0e251f;
+  --brand-primary-deep: #063026;
+  --brand-olive: #474a2d;
+
+  /* Cokelat & rust — produk dan kehangatan */
+  --brand-rust: #a34215;
+  --brand-clay: #954e24;
+  --brand-coffee: #7f4321;
+
+  /* Aksen saja, jangan untuk bidang besar */
+  --brand-gold: #ac6d04;
+
+  /* Cokelat gelap untuk teks */
+  --brand-espresso: #2c1100;
+
+  /*
+    Alias semantik, sekaligus menjamin token ini selalu ada di :root.
+
+    `--color-cream` adalah ALIAS dari `--brand-base`, bukan warna baru — nilai
+    hex-nya sama persis (#F9F4EE) dan tetap satu-satunya sumbernya di atas
+    (NFR-11: nol penambahan warna di luar palet brand brief).
+
+    Kenapa aliasnya perlu: pada Tailwind v4 utility `text-base` bertabrakan
+    dengan ukuran font bawaan `--text-base` (1rem), sehingga `text-base` TIDAK
+    dapat diandalkan sebagai warna teks cream. Setiap teks cream di atas fill
+    hijau/cokelat memakai `text-cream`. Untuk latar tidak ada tabrakan, jadi
+    `bg-base` tetap dipakai apa adanya.
+  */
+  --color-cream: var(--brand-base);
+  --color-base: var(--brand-base);
+  --color-surface: var(--brand-surface);
+  --color-primary: var(--brand-primary);
+  --color-primary-deep: var(--brand-primary-deep);
+  --color-olive: var(--brand-olive);
+  --color-rust: var(--brand-rust);
+  --color-clay: var(--brand-clay);
+  --color-coffee: var(--brand-coffee);
+  --color-gold: var(--brand-gold);
+  --color-espresso: var(--brand-espresso);
+}
+
+@theme inline {
+  --color-cream: var(--brand-base);
+  --color-base: var(--brand-base);
+  --color-surface: var(--brand-surface);
+  --color-primary: var(--brand-primary);
+  --color-primary-deep: var(--brand-primary-deep);
+  --color-olive: var(--brand-olive);
+  --color-rust: var(--brand-rust);
+  --color-clay: var(--brand-clay);
+  --color-coffee: var(--brand-coffee);
+  --color-gold: var(--brand-gold);
+  --color-espresso: var(--brand-espresso);
+
+  /* Tipografi — variabelnya di-set oleh next/font di src/app/layout.tsx */
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-barlow-condensed), var(--font-jakarta), sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+/*
+  Aturan pakai dari brief:
+  - cream (`base`) selalu jadi background halaman
+  - hijau (`primary`) = teks & elemen utama di atas cream
+  - teks di atas fill cokelat/hijau = cream, bukan hijau
+*/
+body {
+  background: var(--color-base);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+}
+
+/*
+  Aksesibilitas global (NFR-07, Bagian 11.4 arsitektur).
+
+  Indikator fokus: `outline: none` tanpa pengganti dilarang tanpa pengecualian.
+  Nilai bawaan di bawah memakai rust — rust di cream = 5,74:1, jauh melewati
+  ambang 3:1 untuk indikator fokus. Elemen yang berlatar hijau atau cokelat
+  gelap MENIMPA-nya dengan `focus-visible:outline-base` lewat FOCUS_RING_INVERSE
+  di src/components/ui/styles.ts, karena rust di hijau primary hanya 2,57:1 dan
+  pasangan itu dilarang sepenuhnya.
+*/
+:focus-visible {
+  outline: 2px solid var(--color-rust);
+  outline-offset: 2px;
+}
+
+/* Anchor `scroll-margin` supaya lompatan "Lewati ke konten" tidak tertutup header. */
+[id] {
+  scroll-margin-top: 5rem;
+}
+
+/*
+  Hormati preferensi sistem "kurangi gerak". Situs ini nyaris tanpa animasi;
+  aturan ini menjaga agar penambahan apa pun kelak tidak melanggar WCAG 2.3.3.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

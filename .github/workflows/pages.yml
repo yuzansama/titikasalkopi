@@ -1,0 +1,71 @@
+# Build the static export and publish it to GitHub Pages.
+#
+# Every route is statically generated, so the site needs no server. This gives
+# a browsable preview at https://yuzansama.github.io/titikasalkopi/ while the
+# real domain (titikasalkopi.id) is still pointed elsewhere.
+#
+# One-time manual step: Settings > Pages > Source: "GitHub Actions".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once, but let a newer push finish rather than
+# cancelling it — a half-published site is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      # Data validation, type checking and the cart/WhatsApp/reply-hours
+      # assertions all gate the deploy. A broken catalog must not reach Pages.
+      - run: npx tsc --noEmit
+      - run: npx eslint .
+      - run: node scripts/check-all.mjs
+
+      - name: Build static export
+        env:
+          STATIC_EXPORT: "1"
+          BASE_PATH: /titikasalkopi
+        run: npx next build
+
+      # Pages is served by a plain file server; without this, paths beginning
+      # with an underscore (_next) are skipped by Jekyll.
+      - run: touch out/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
