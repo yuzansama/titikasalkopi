@@ -1,6 +1,10 @@
 # Draf Catatan Rasa — Tujuh Single Origin
 
-**Status: DRAF. BELUM TAYANG DI SITUS.** Menunggu koreksi pemilik.
+**Status: SEBAGIAN TAYANG.** Owner menyetujui penayangan tiga origin berkeyakinan sedang pada 7 September 2026: **Sabin**, **Abmisibil**, dan **Pondok Baru**. Ketiganya sudah tayang di katalog dan halaman produk.
+
+Empat origin berkeyakinan rendah — **Pyramid**, **Oelbiteno**, **Kerinci**, **Palimping** — sengaja **dibiarkan kosong** dan tidak tayang. Usulannya tetap tercatat di bawah sebagai bahan koreksi, bukan sebagai sesuatu yang siap dipasang.
+
+Yang tayang pun belum berasal dari cupping lot yang sebenarnya. Koreksi owner tetap ditunggu dan akan mengganti isinya.
 
 Tanggal: 7 September 2026. Disiapkan atas permintaan owner, untuk dikoreksi.
 

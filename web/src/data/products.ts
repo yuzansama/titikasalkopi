@@ -336,7 +336,11 @@ export const singleOriginBeans: SingleOriginBean[] = [
     process: "Natural Anaerob",
     altitudeMasl: 1900,
     varietals: ["Arabica Bourbon", "Typica"],
-    tastingNotes: null,
+    // Draf keyakinan SEDANG, disetujui owner 7 September 2026 (docs/07-draft-tasting-notes.md).
+    // Natural anaerob mendorong profil buah dan fermentasi; arah rasa
+    // paling dapat diperkirakan di katalog ini justru karena prosesnya.
+    // Belum berasal dari cupping lot ini — koreksi owner mengganti baris ini.
+    tastingNotes: ["Beri hitam", "Anggur merah", "Cokelat hitam"],
     image: {
       src: abmisibilArtwork,
       alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: kanguru pohon bertengger di dahan berlumut di atas lembah hutan berkabut, dengan para-para penjemuran ceri kopi merah di kejauhan.",
@@ -361,7 +365,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     processedBy: "Elias Kaladana",
     altitudeMasl: 1900,
     varietals: ["Arabica Typica"],
-    tastingNotes: null,
+    // Draf keyakinan SEDANG, disetujui owner 7 September 2026 (docs/07-draft-tasting-notes.md).
+    // Typica washed di 1.900 MASL: bersih dan terang.
+    // Belum berasal dari cupping lot ini — koreksi owner mengganti baris ini.
+    tastingNotes: ["Gula aren", "Jeruk manis", "Floral"],
     image: {
       src: sabinArtwork,
       alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: burung cendrawasih bertengger di dahan pohon menghadap lembah sungai berhutan, dengan para-para penjemuran ceri kopi di halaman.",
@@ -436,7 +443,11 @@ export const singleOriginBeans: SingleOriginBean[] = [
     processedBy: "BBMC",
     altitudeMasl: 1400,
     varietals: ["Arabica Bourbon", "Ateng Super"],
-    tastingNotes: null,
+    // Draf keyakinan SEDANG, disetujui owner 7 September 2026 (docs/07-draft-tasting-notes.md).
+    // Natural pada Ateng Super di dataran Gayo: manis buah kering,
+    // tubuh tebal.
+    // Belum berasal dari cupping lot ini — koreksi owner mengganti baris ini.
+    tastingNotes: ["Buah kering", "Cokelat", "Rempah manis"],
     image: {
       src: pondokBaruArtwork,
       alt: "Ilustrasi lanskap dataran tinggi Bener Meriah, Aceh: harimau berjalan di antara kebun kopi berbuah merah dengan punggungan gunung berkabut di kejauhan.",
