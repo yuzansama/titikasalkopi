@@ -40,17 +40,25 @@ jobs:
 
       - run: npm ci
 
+      # next-env.d.ts and .next/types are generated, not committed, so a clean
+      # runner has no route types and tsc fails before it ever sees real code.
+      - run: npx next typegen
+
       # Data validation, type checking and the cart/WhatsApp/reply-hours
       # assertions all gate the deploy. A broken catalog must not reach Pages.
       - run: npx tsc --noEmit
       - run: npx eslint .
-      - run: node scripts/check-all.mjs
 
       - name: Build static export
         env:
           STATIC_EXPORT: "1"
           BASE_PATH: /titikasalkopi
         run: npx next build
+
+      # Runs after the build on purpose: a third of these assertions read the
+      # generated HTML (noindex, JSON-LD, prices, basePath on assets), so they
+      # have nothing to inspect until the export exists.
+      - run: node scripts/check-all.mjs
 
       # Pages is served by a plain file server; without this, paths beginning
       # with an underscore (_next) are skipped by Jekyll.
