@@ -3,10 +3,12 @@ import { Container } from "@/components/ui/container";
 import { CARD, FOCUS_RING } from "@/components/ui/styles";
 import {
   bundleSaving,
+  bundleVariant,
   categoryLabel,
   defaultVariant,
   houseblendComposition,
   productHref,
+  relatedProducts,
 } from "@/data/catalog";
 import type { Product } from "@/data/types";
 import { formatIDR, formatNumber } from "@/lib/format";
@@ -15,6 +17,7 @@ import { AskAboutProductButton } from "@/features/whatsapp/ask-about-product-but
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { PurchasePanel } from "./purchase-panel";
 import { ProductMedia } from "./product-media";
+import { RelatedProducts } from "./related-products";
 import type { VariantOption } from "./variant-option";
 
 /**
@@ -68,7 +71,16 @@ export function ProductDetail({ product }: { product: Product }) {
   const variants = toVariantOptions(product);
   const facts = originFacts(product);
   const saving = bundleSaving(product);
+  const bundle = bundleVariant(product);
   const cheapest = defaultVariant(product);
+  /* BR-10 di titik keputusan: penghematan menempel pada opsi 3 pack itu
+     sendiri, bukan hanya pada paragraf di atas. Angkanya tetap dari
+     `bundleSaving()` — tidak ada uang yang dihitung ulang di FE. */
+  const variantNotes =
+    bundle && saving !== null
+      ? { [bundle.id]: `Hemat ${formatIDR(saving)}` }
+      : undefined;
+  const related = relatedProducts(product);
   const isHouseblend = product.category === "houseblend";
   const composition = isHouseblend && product.line
     ? houseblendComposition(product.line)
@@ -206,6 +218,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 productName={product.name}
                 variants={variants}
                 useRatioTable={isHouseblend && variants.length > 2}
+                variantNotes={variantNotes}
               />
             </div>
 
@@ -225,6 +238,17 @@ export function ProductDetail({ product }: { product: Product }) {
           </section>
         </div>
       </div>
+
+      <RelatedProducts
+        id="produk-lain"
+        title={isHouseblend ? "Lini houseblend lainnya" : "Origin lainnya"}
+        lead={
+          isHouseblend
+            ? "Dua lini sisanya, sama-sama dijual per kilogram dengan pemesanan mulai 0,5 kg."
+            : "Origin lain dalam kemasan 200 gr, tersedia satuan maupun paket 3 pack."
+        }
+        products={related}
+      />
     </Container>
   );
 }

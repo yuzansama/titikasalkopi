@@ -11,6 +11,12 @@ menunggu sesi foto (R-13: foto tidak boleh menahan rilis).
   (NFR-02, CLS ≤ 0,05).
 - Palet: hanya warna resmi dari `docs/00-brand-brief.md`.
 - Nama berkas = slug produk, mis. `pondok-baru.svg`, `bold.svg`.
+- Isi yang tampak: tanda kata "TITIK ASAL KOPI", ikon biji, label tier
+  (mis. `SINGLE ORIGIN · SIGNATURE`), dan nama produk. **Tidak ada** baris
+  keterangan "foto produk menyusul" — kartu ini berdiri sebagai kartu brand
+  yang disengaja. Di grid katalog ia berdampingan dengan foto asli, dan
+  keterangan seperti itu membuat toko terbaca belum siap tepat di halaman
+  tempat pembeli memutuskan. Jangan menambahkannya kembali.
 
 Path-nya dibaca lewat `placeholderImagePath(slug)` di `src/data/catalog.ts`.
 

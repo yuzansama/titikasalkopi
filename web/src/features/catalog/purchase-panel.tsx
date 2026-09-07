@@ -19,7 +19,7 @@
 
 import { useMemo, useState } from "react";
 import { QtyStepper } from "@/components/ui/qty-stepper";
-import { formatIDR, formatPricePerKg, unitLabel } from "@/lib/format";
+import { formatIDR, formatQuantity } from "@/lib/format";
 import { trackSelectVariant } from "@/lib/analytics";
 import { AddToCartButton } from "./add-to-cart-button";
 import { KgConfigurator } from "./kg-configurator";
@@ -36,12 +36,15 @@ export function PurchasePanel({
   productName,
   variants,
   useRatioTable,
+  variantNotes,
 }: {
   slug: string;
   productName: string;
   variants: readonly VariantOption[];
   /** true untuk lini BOLD: enam rasio lebih terbaca sebagai tabel (FR-28, FR-29). */
   useRatioTable: boolean;
+  /** Keterangan per varian dari Server Component, mis. penghematan 3 pack. */
+  variantNotes?: Readonly<Record<string, string>>;
 }) {
   const [variantId, setVariantId] = useState(variants[0]?.id ?? "");
   const selected = useMemo(
@@ -78,6 +81,7 @@ export function PurchasePanel({
             selectedId={selected.id}
             onSelect={handleSelect}
             legend="Pilih varian"
+            notes={variantNotes}
           />
         )
       ) : null}
@@ -112,15 +116,23 @@ export function PurchasePanel({
         />
       )}
 
-      <div
-        className="rounded-md bg-base px-4 py-3"
-        aria-live="polite"
-      >
+      {/* SATU pernyataan harga.
+          Sebelumnya blok ini mengulang harga satuan yang sudah tertulis pada
+          tombol varian, lalu menuliskan total di bawahnya — harga yang sama
+          tampil tiga kali dalam satu layar. Yang tersisa sekarang: APA yang
+          dibeli (jumlah + satuan, tanpa angka rupiah) dan BERAPA totalnya.
+          Label varian hanya diulang untuk houseblend, karena di sana label itu
+          menyebut rasio/lini — informasi yang tidak terkandung dalam jumlah.
+          Harga satuan muncul di sini HANYA saat jumlahnya lebih dari satu, yaitu
+          saat total tidak lagi sama dengan harga satuan: di situ ia menjelaskan
+          perkalian, bukan mengulanginya. Houseblend tidak memakainya karena
+          harga satuannya (per 0,5 kg) bukan satuan harga resmi — harga per kg
+          sudah tertulis pada tombol varian/tabel rasio (BR-01). */}
+      <div className="rounded-md bg-base px-4 py-3" aria-live="polite">
         <p className="text-sm text-olive">
-          {selected.label} &middot;{" "}
-          {selected.pricePerKg
-            ? formatPricePerKg(selected.pricePerKg)
-            : `${formatIDR(selected.unitPrice)} ${unitLabel(selected.unit)}`}
+          Total {formatQuantity(qty, selected.unit)}
+          {isHalfKg ? ` · ${selected.label}` : ""}
+          {!isHalfKg && qty > 1 ? ` × ${formatIDR(selected.unitPrice)}` : ""}
         </p>
         <p className="mt-1 font-display text-2xl font-semibold text-coffee">
           {formatIDR(lineTotal)}

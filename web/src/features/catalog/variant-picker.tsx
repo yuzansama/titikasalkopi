@@ -21,11 +21,18 @@ export function VariantPicker({
   selectedId,
   onSelect,
   legend,
+  notes,
 }: {
   variants: readonly VariantOption[];
   selectedId: string;
   onSelect: (variantId: string) => void;
   legend: string;
+  /**
+   * Keterangan pendek per varian, mis. penghematan paket 3 pack. Dirakit di
+   * Server Component (BR-10 dihitung `bundleSaving()`); komponen ini hanya
+   * menampilkan, tidak pernah menghitung uang.
+   */
+  notes?: Readonly<Record<string, string>>;
 }) {
   const name = useId();
 
@@ -57,13 +64,33 @@ export function VariantPicker({
                 className="sr-only"
               />
               <span className="text-[0.95rem] font-medium">{variant.label}</span>
-              <span
-                className={`text-sm ${checked ? "text-cream" : "text-olive"}`}
-              >
-                {variant.pricePerKg
-                  ? formatPricePerKg(variant.pricePerKg)
-                  : `${formatIDR(variant.unitPrice)} ${unitLabel(variant.unit)}`}
-              </span>
+              {/* Varian TERPILIH tidak mengulang harga satuannya: harganya sudah
+                  dinyatakan sekali sebagai total di bawah, dan pengulangan di
+                  titik keputusan terbaca sebagai ragu, bukan jelas. Varian yang
+                  belum dipilih tetap menampilkan harga — di situlah pembeli
+                  membandingkan.
+                  KECUALI houseblend: `pricePerKg` BUKAN angka yang sama dengan
+                  total (total mengikuti jumlah kilogram), dan harga per kg
+                  adalah satuan harga resmi katalog (BR-01). Menyembunyikannya
+                  akan menghapus fakta, bukan menghapus pengulangan. */}
+              {checked && !variant.pricePerKg ? null : (
+                <span
+                  className={`text-sm ${checked ? "text-cream" : "text-olive"}`}
+                >
+                  {variant.pricePerKg
+                    ? formatPricePerKg(variant.pricePerKg)
+                    : `${formatIDR(variant.unitPrice)} ${unitLabel(variant.unit)}`}
+                </span>
+              )}
+              {notes?.[variant.id] ? (
+                <span
+                  className={`mt-0.5 text-sm font-semibold ${
+                    checked ? "text-cream" : "text-coffee"
+                  }`}
+                >
+                  {notes[variant.id]}
+                </span>
+              ) : null}
             </label>
           );
         })}

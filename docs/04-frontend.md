@@ -97,8 +97,9 @@ Kolom "Sisi" menyatakan apakah berkas membawa direktif `"use client"`.
 | `product-card.tsx` | server | Kartu katalog (FR-02, FR-03, FR-12) |
 | `product-grid.tsx` | server | Grid 2/3/4 kolom; `priority` maksimal dua kartu pertama |
 | `product-detail.tsx` | server | Halaman detail lengkap: remah roti, fakta origin, penghematan bundling, panel pembelian |
+| `related-products.tsx` | server | Penutup halaman detail: origin/lini lain lewat `relatedProducts()`, memakai ulang `ProductGrid` (nol JS tambahan) |
 | `purchase-panel.tsx` | **client** | Induk state varian + jumlah (lihat penyimpangan ADR-10 di Bagian 6) |
-| `variant-picker.tsx` | **client** | Radio chip; harga reaktif (FR-11) |
+| `variant-picker.tsx` | **client** | Radio chip; harga reaktif (FR-11); varian terpilih tidak mengulang harga satuan pack, `notes` membawa penghematan 3 pack (BR-10) |
 | `ratio-table.tsx` | **client** | Tabel rasio yang barisnya dapat dipilih (FR-28, FR-29) |
 | `kg-configurator.tsx` | **client** | Stepper 0,5 kg + `parseKgToHalfUnits()` (FR-21, D-02) |
 | `add-to-cart-button.tsx` | **client** | Dispatch `ADD_ITEM` + event `add_to_cart` (FR-16) |

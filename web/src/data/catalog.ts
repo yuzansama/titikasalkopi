@@ -100,9 +100,21 @@ export function pricePerKgFrom(product: Product): PriceIDR | null {
  */
 export function bundleSaving(product: Product): PriceIDR | null {
   const single = product.variants.find((v) => v.unit === "pack");
-  const bundle = product.variants.find((v) => v.unit === "paket");
+  const bundle = bundleVariant(product);
   if (!single || !bundle || !bundle.packsPerUnit) return null;
   return single.unitPrice * bundle.packsPerUnit - bundle.unitPrice;
+}
+
+/**
+ * Varian paket 3 pack, bila produk punya. `null` untuk houseblend — lini
+ * houseblend memang tidak menawarkan bundling (D-01, BR-10).
+ *
+ * Ada supaya kartu katalog bisa menampilkan HARGA paketnya tanpa ikut
+ * menghitung uang sendiri: harga tetap dibaca dari varian, penghematan tetap
+ * dari `bundleSaving()`.
+ */
+export function bundleVariant(product: Product): Variant | null {
+  return product.variants.find((v) => v.unit === "paket") ?? null;
 }
 
 /** Subtotal satu baris: perkalian dua bilangan bulat, tanpa cabang (ADR-05). */
@@ -313,6 +325,29 @@ export function defaultVariant(product: Product): Variant {
   return product.variants.reduce((cheapest, variant) =>
     variant.unitPrice < cheapest.unitPrice ? variant : cheapest,
   );
+}
+
+/**
+ * Produk lain yang relevan untuk ditawarkan di akhir halaman detail (FR-02).
+ *
+ * Aturan urutan: tier yang SAMA lebih dulu supaya harga tetap koheren, lalu
+ * ditambal dari tier lain sampai `limit` — Reguler hanya punya dua saudara
+ * setier, dan bagian yang nyaris kosong lebih buruk daripada bagian yang
+ * campur tier. Houseblend memakai dua lini sisanya apa adanya.
+ *
+ * Murni penyusunan ulang katalog: tidak ada fakta atau harga baru di sini.
+ */
+export function relatedProducts(product: Product, limit = 4): Product[] {
+  if (product.category === "houseblend") {
+    return houseblendProducts.filter((other) => other.slug !== product.slug);
+  }
+  const others = singleOriginProducts.filter(
+    (other) => other.slug !== product.slug,
+  );
+  return [
+    ...others.filter((other) => other.tier === product.tier),
+    ...others.filter((other) => other.tier !== product.tier),
+  ].slice(0, limit);
 }
 
 export function productsByTier(tier: Tier): Product[] {

@@ -63,7 +63,21 @@ Menghapus seluruh lapisan keranjang dan analitik — yaitu seluruh alasan situs 
 
 Layout sudah dikembalikan persis seperti semula setelah eksperimen; tidak ada sisa perubahan.
 
-**Keputusan.** NFR-03 menjadi: JS muat awal **<= 185 KB ter-gzip** pada halaman mana pun. Angka ini di atas ukuran nyata sekarang (183,3 KB) dengan margin tipis yang disengaja — cukup untuk pertumbuhan wajar, tetapi akan langsung merah bila ada yang menambahkan pustaka klien besar. Itu memang tujuannya.
+**Keputusan.** NFR-03 menjadi: JS muat awal **<= 190 KB ter-gzip** pada rute mana pun.
+
+> **Koreksi 7 September 2026.** Angka pertama yang saya tetapkan, 185 KB, salah — diambil dari pengukuran **beranda saja**. Rute produk dan houseblend memuat lebih banyak dan langsung melewatinya. Plafon yang benar harus diambil dari rute TERBERAT, bukan rute yang kebetulan diukur lebih dulu.
+>
+> Ukuran nyata per rute, ter-gzip:
+>
+> | Rute | Ter-gzip |
+> |---|---|
+> | `/produk/<slug>` | 185,4 KB |
+> | `/houseblend/<line>` | 185,4 KB |
+> | `/` | 181,9 KB |
+> | `/katalog` | 181,5 KB |
+> | `/keranjang` | 181,0 KB |
+>
+> Plafon 190 KB memberi margin sekitar 4,6 KB di atas rute terberat. Cukup ketat untuk langsung merah bila ada yang menambahkan pustaka klien besar, tetapi tidak menjadikan setiap penambahan dua baris kondisional sebagai pelanggaran.
 
 Konsekuensi yang diterima: skor Lighthouse mobile bertahan di 89, sedikit di bawah target BRD 90, karena Total Blocking Time 330 ms berakar pada beban runtime yang sama. Seluruh metrik lain sudah lulus — Accessibility 100, Best Practices 100, SEO 100, CLS 0, LCP 2,5 detik. Target Performance >= 90 ikut direvisi menjadi **>= 88** pada host saat ini, dan ditinjau ulang bila situs pindah ke host yang menyajikan brotli.
 

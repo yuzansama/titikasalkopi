@@ -688,4 +688,43 @@ check("BRD Bagian 12: halaman katalog menampilkan kesepuluh nama produk", () => 
   }
 });
 
+/* ------------------------------------------------------------------ */
+/* 15. Kartu placeholder tidak boleh meminta maaf                      */
+/* ------------------------------------------------------------------ */
+
+check(
+  "Kartu placeholder tidak memuat teks 'foto produk menyusul' (review CEO)",
+  () => {
+    // Lima produk masih memakai placeholder karena tidak ada artwork yang
+    // jujur mewakilinya. Itu keadaan yang sah. Yang TIDAK sah adalah kartunya
+    // mengumumkan ketiadaan itu kepada pembeli: di grid katalog, teks seperti
+    // "foto produk menyusul" terbaca sebagai "toko ini belum siap" tepat di
+    // halaman tempat orang memutuskan mengirim uang.
+    //
+    // Penjaga ini ada karena perbaikannya berupa penghapusan teks di sepuluh
+    // berkas SVG — jenis perubahan yang paling gampang kembali tanpa sengaja
+    // saat placeholder dibuat ulang.
+    const offenders = [];
+
+    const svgDir = join(buildDir, "produk");
+    if (existsSync(svgDir)) {
+      for (const name of readdirSync(svgDir)) {
+        if (!name.endsWith(".svg")) continue;
+        const svg = readFileSync(join(svgDir, name), "utf8");
+        if (/menyusul|placeholder/i.test(svg)) offenders.push(`produk/${name}`);
+      }
+    }
+
+    for (const [route, page] of pages) {
+      if (/menyusul/i.test(page.html)) offenders.push(`/${route}`);
+    }
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `kartu placeholder kembali meminta maaf pada: ${offenders.join(", ")}`,
+    );
+  },
+);
+
 summary("HTML hasil build");

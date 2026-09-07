@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CARD, FOCUS_RING } from "@/components/ui/styles";
 import {
+  bundleSaving,
+  bundleVariant,
   categoryLabel,
   priceFrom,
   pricePerKgFrom,
@@ -31,6 +33,9 @@ export function ProductCard({
   const cheapest = product.variants.reduce((min, variant) =>
     variant.unitPrice < min.unitPrice ? variant : min,
   );
+  // Bundling 3 pack hanya ada pada single origin (D-01); houseblend -> null.
+  const bundle = bundleVariant(product);
+  const saving = bundleSaving(product);
 
   return (
     <article className={`group relative flex flex-col overflow-hidden ${CARD}`}>
@@ -82,6 +87,25 @@ export function ProductCard({
             <span className="text-sm text-olive"> {unitLabel(cheapest.unit)}</span>
           ) : null}
         </p>
+
+        {/* BR-10/D-01 — paket 3 pack disebut di titik pembeli membandingkan,
+            bukan hanya di halaman detail. Baris sekunder, bukan stiker: harga
+            paket sebagai teks biasa, penghematan sebagai pil bergaris gold
+            (gold sah sebagai garis, bukan sebagai teks — Bagian 11.4).
+            Angka penghematan SELALU dari bundleSaving(). */}
+        {bundle && saving !== null ? (
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-olive">
+            <span>
+              3 pack{" "}
+              <span className="font-semibold text-coffee">
+                {formatIDR(bundle.unitPrice)}
+              </span>
+            </span>
+            <span className="rounded-full border border-gold px-2 py-0.5 text-xs font-semibold text-coffee">
+              Hemat {formatIDR(saving)}
+            </span>
+          </p>
+        ) : null}
       </div>
     </article>
   );
