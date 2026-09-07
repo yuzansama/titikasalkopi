@@ -26,7 +26,7 @@
 
 import type { Metadata } from "next";
 import type { Product } from "@/data/types";
-import { instagram, shopee, site, whatsapp } from "./site";
+import { canonicalUrl, instagram, shopee, site, whatsapp } from "./site";
 
 /* ------------------------------------------------------------------ */
 /* Dasar                                                               */
@@ -69,7 +69,7 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
     title,
     description,
     ...(keywords && keywords.length > 0 ? { keywords } : {}),
-    alternates: { canonical: path },
+    alternates: { canonical: canonicalUrl(path) },
     ...(noIndex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: "website",
@@ -77,7 +77,7 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
       siteName: site.name,
       title,
       description,
-      url: path,
+      url: canonicalUrl(path),
       ...(image ? { images: [image] } : {}),
     },
     twitter: {
@@ -106,14 +106,14 @@ export function homeMetadata(): Metadata {
       // "kopi Gayo" ditahan sampai owner mengonfirmasi alias origin (BR-20/OQ-12).
       "biji kopi roasted",
     ],
-    alternates: { canonical: "/" },
+    alternates: { canonical: canonicalUrl("/") },
     openGraph: {
       type: "website",
       locale: "id_ID",
       siteName: site.name,
       title: `${site.name} — ${site.tagline}`,
       description: site.description,
-      url: "/",
+      url: canonicalUrl("/"),
     },
     twitter: {
       card: "summary_large_image",
@@ -267,7 +267,7 @@ function safeJson(value: unknown): string {
 
 /** `Product` + `Offer` untuk `/produk/[slug]` dan `/houseblend/[line]` (FR-49). */
 export function productJsonLd(product: Product): string {
-  const url = `${site.url}${pathOf(product)}`;
+  const url = canonicalUrl(pathOf(product));
   return safeJson({
     "@context": "https://schema.org",
     "@type": "Product",
@@ -348,7 +348,7 @@ export function breadcrumbJsonLd(trail: BreadcrumbTrail): string {
       "@type": "ListItem",
       position: index + 1,
       name: crumb.name,
-      item: `${site.url}${crumb.path}`,
+      item: canonicalUrl(crumb.path),
     })),
   });
 }

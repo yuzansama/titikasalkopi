@@ -53,6 +53,13 @@ jobs:
         env:
           STATIC_EXPORT: "1"
           BASE_PATH: /titikasalkopi
+          # Pages is the production host now, not a preview. Without this the
+          # published robots.txt says `Disallow: /` and blocks every crawler.
+          SITE_ENV: production
+          # Canonical URLs must point at the address that actually serves the
+          # site. Change this to https://titikasalkopi.id once the domain is
+          # registered and pointed here, and clear BASE_PATH at the same time.
+          NEXT_PUBLIC_SITE_ORIGIN: https://yuzansama.github.io
         run: npx next build
 
       # Runs after the build on purpose: a third of these assertions read the

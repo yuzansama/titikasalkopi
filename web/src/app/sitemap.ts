@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { houseblendLines, singleOriginProducts } from "@/data/catalog";
-import { site } from "@/lib/site";
+import { canonicalUrl } from "@/lib/site";
 
 /**
  * Wajib untuk target ekspor statis (GitHub Pages): tanpa ini Next 16
@@ -27,19 +27,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticPaths.map((path) => ({
-      url: `${site.url}${path}`,
+      url: canonicalUrl(path),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: path === "" ? 1 : 0.8,
     })),
     ...singleOriginProducts.map((product) => ({
-      url: `${site.url}/produk/${product.slug}`,
+      url: canonicalUrl(`/produk/${product.slug}`),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.9,
     })),
     ...houseblendLines.map((line) => ({
-      url: `${site.url}/houseblend/${line.slug}`,
+      url: canonicalUrl(`/houseblend/${line.slug}`),
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.9,

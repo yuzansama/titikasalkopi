@@ -39,4 +39,4 @@ if (failed > 0) {
   console.log(`${failed} dari ${SCRIPTS.length} berkas pemeriksaan GAGAL.`);
   process.exit(1);
 }
-console.log(`Ketiga berkas pemeriksaan lulus (${SCRIPTS.length}/${SCRIPTS.length}).`);
+console.log(`Seluruh berkas pemeriksaan lulus (${SCRIPTS.length}/${SCRIPTS.length}).`);

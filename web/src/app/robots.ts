@@ -12,11 +12,16 @@ export const dynamic = "force-static";
 /**
  * `robots.txt` yang sadar lingkungan (FR-45, Bagian 10.3).
  *
- * Preview deployment TIDAK BOLEH terindeks. Tanpa penjaga ini, URL *.vercel.app
- * bisa muncul di Google dan bersaing dengan domain asli (duplicate content).
+ * Pratinjau TIDAK BOLEH terindeks, supaya URL pratinjau tidak bersaing dengan
+ * situs asli sebagai konten duplikat.
+ *
+ * Penandanya `SITE_ENV`, bukan `VERCEL_ENV`. Host produksi sekarang GitHub
+ * Pages, dan di sana `VERCEL_ENV` tidak pernah ada — akibatnya situs yang
+ * sudah tayang menyajikan `Disallow: /` dan memblokir seluruh crawler.
+ * Alur penerapan menyetel `SITE_ENV=production` secara eksplisit.
  */
 export default function robots(): MetadataRoute.Robots {
-  const isProduction = process.env.VERCEL_ENV === "production";
+  const isProduction = process.env.SITE_ENV === "production";
 
   if (!isProduction) {
     return { rules: [{ userAgent: "*", disallow: "/" }] };

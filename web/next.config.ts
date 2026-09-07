@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
-const isProduction = process.env.VERCEL_ENV === "production";
+// Penanda tunggal untuk seluruh situs. Lihat catatan di src/app/robots.ts:
+// bergantung pada VERCEL_ENV membuat penjaga diam-diam mati saat host pindah.
+const isProduction = process.env.SITE_ENV === "production";
 
 /**
  * CSP statis tanpa nonce (ADR-13, Bagian 12.4). 'unsafe-inline' pada script-src
@@ -65,8 +67,13 @@ const securityHeaders = [
  * akan merusak build produksi.
  *
  * Batasan yang diterima sadar: `headers()` tidak berlaku pada ekspor statis —
- * GitHub Pages tidak dapat menyetel header. CSP dan kawan-kawan hanya aktif di
- * Vercel. Pages diperlakukan sebagai pratinjau, bukan produksi.
+ * GitHub Pages tidak dapat menyetel header, sehingga CSP, X-Frame-Options, dan
+ * Permissions-Policy TIDAK aktif di host produksi saat ini. Yang tetap didapat
+ * dari Pages adalah HTTPS paksa dan HSTS milik domain github.io.
+ *
+ * Risiko itu kecil selama situs hanya menyajikan konten statis dari repositori
+ * dan tidak menerima input yang dipersistensikan. Begitu salah satu berubah,
+ * situs harus pindah ke host yang bisa menyetel header.
  */
 const isStaticExport = process.env.STATIC_EXPORT === "1";
 const basePath = process.env.BASE_PATH ?? "";
@@ -74,7 +81,13 @@ const basePath = process.env.BASE_PATH ?? "";
 const nextConfig: NextConfig = {
   // Disediakan ke kode aplikasi karena basePath tidak terbaca dari sana, dan
   // next/image tidak menambahkannya sendiri pada gambar `unoptimized`.
-  env: { NEXT_PUBLIC_BASE_PATH: basePath },
+  // Origin ikut diteruskan supaya canonical menunjuk ke alamat yang
+  // sungguh melayani situs (lihat src/lib/site.ts).
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+    NEXT_PUBLIC_SITE_ORIGIN:
+      process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://yuzansama.github.io",
+  },
   images: {
     // AVIF dipakai bila peramban mendukung; WebP sebagai cadangan (Bagian 9.3).
     formats: ["image/avif", "image/webp"],

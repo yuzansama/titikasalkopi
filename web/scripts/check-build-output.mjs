@@ -31,6 +31,20 @@ import { check, loadTs, summary } from "./_ts-load.mjs";
 /* Menemukan folder build                                              */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Asal situs yang diharapkan.
+ *
+ * Sebelumnya dikunci ke "https://titikasalkopi.id". Begitu host pindah ke
+ * GitHub Pages, empat pemeriksaan jatuh padahal keluarannya justru benar —
+ * tesnya yang basi, bukan situsnya. Sekarang nilainya diambil dari env yang
+ * sama dengan yang dipakai build, sehingga pindah host cukup mengubah satu
+ * tempat dan tes ikut benar dengan sendirinya.
+ */
+const SITE_ORIGIN =
+  process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://yuzansama.github.io";
+const SITE_BASE_PATH = process.env.BASE_PATH ?? process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const SITE_URL = `${SITE_ORIGIN}${SITE_BASE_PATH}`;
+
 const CANDIDATES = process.argv[2]
   ? [process.argv[2]]
   : [join(".next", "server", "app"), "out"];
@@ -180,12 +194,12 @@ check("FR-44: judul halaman produk menyebut daerah asal", () => {
 /* 3. FR-45 — kanonis dan noindex                                      */
 /* ------------------------------------------------------------------ */
 
-check("FR-45: setiap rute punya URL kanonis absolut ke titikasalkopi.id", () => {
+check(`FR-45: setiap rute punya URL kanonis absolut ke ${SITE_URL}`, () => {
   for (const route of [...PUBLIC_ROUTES, CART_ROUTE]) {
     const canonical = canonicalOf(pages.get(route).html);
     assert.ok(canonical, `kanonis hilang pada /${route}`);
     assert.ok(
-      canonical.startsWith("https://titikasalkopi.id"),
+      canonical.startsWith(SITE_URL),
       `kanonis /${route} tidak absolut: ${canonical}`,
     );
   }
@@ -196,7 +210,7 @@ check("FR-45: kanonis menunjuk rutenya sendiri, bukan rute lain", () => {
     const canonical = canonicalOf(pages.get(route).html).replace(/\/$/, "");
     assert.equal(
       canonical,
-      `https://titikasalkopi.id${route ? `/${route}` : ""}`,
+      `${SITE_URL}${route ? `/${route}` : ""}`,
       `kanonis salah pada /${route}`,
     );
   }
@@ -521,7 +535,7 @@ check("FR-45: sitemap memuat PERSIS 15 URL yang diharapkan", () => {
     m[1].replace(/\/$/, ""),
   );
   const expected = PUBLIC_ROUTES.map(
-    (route) => `https://titikasalkopi.id${route ? `/${route}` : ""}`,
+    (route) => `${SITE_URL}${route ? `/${route}` : ""}`,
   );
   assert.deepEqual([...locs].sort(), [...expected].sort());
 });
@@ -535,10 +549,13 @@ check("FR-45: robots.txt dibangun", () => {
 });
 
 check(
-  "FR-45: robots.txt build non-produksi memblokir indeks (penjaga pratinjau)",
+  "FR-45: robots.txt cocok dengan lingkungan build (penjaga pratinjau)",
   () => {
     const robots = readRobots();
-    const isProduction = process.env.VERCEL_ENV === "production";
+    // SITE_ENV, bukan VERCEL_ENV: host produksi adalah GitHub Pages, tempat
+    // VERCEL_ENV tidak pernah ada. Penjaga yang bergantung padanya akan diam-
+    // diam menyajikan `Disallow: /` di situs yang sudah tayang.
+    const isProduction = process.env.SITE_ENV === "production";
     if (isProduction) {
       assert.ok(/Allow: \//.test(robots), "produksi harus mengizinkan indeks");
       assert.ok(
