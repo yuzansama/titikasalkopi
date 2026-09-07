@@ -7,6 +7,7 @@ import {
 import { buttonClass, CARD } from "@/components/ui/styles";
 import { OrderSteps } from "@/features/contact/order-steps";
 import { ReplyHoursStatus } from "@/features/contact/reply-hours-status";
+import { ShippingEstimates } from "@/features/contact/shipping-estimates";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { kontakMetadata } from "@/lib/seo";
 import { instagram, site, waLink, whatsapp } from "@/lib/site";
@@ -106,6 +107,9 @@ export default function KontakPage() {
 
         <div>
           <OrderSteps />
+          {/* Ongkir adalah pertanyaan pertama yang datang lewat chat. Angkanya
+              diletakkan tepat setelah alur pesan, sebelum orang mengetik. */}
+          <ShippingEstimates className="mt-10" />
         </div>
       </div>
     </Container>

@@ -727,4 +727,96 @@ check(
   },
 );
 
+/* ------------------------------------------------------------------ */
+/* 16. Ongkir — perkiraan owner tayang, dan kekosongan Jawa tetap kosong */
+/* ------------------------------------------------------------------ */
+
+const siteFacts = await loadTs("src/lib/site.ts");
+const { formatIDR } = await loadTs("src/lib/format.ts");
+
+check(
+  "Ongkir: perkiraan tayang di /keranjang dan /kontak, dan TIDAK ADA rute yang " +
+    "menyebut angka untuk Jawa di luar Jabodetabek",
+  () => {
+    const { shippingEstimates, shippingQuoteOnRequest } = siteFacts;
+
+    // Bagian pertama — angka yang memang diberi owner harus benar-benar sampai
+    // ke pembeli, di dua tempat ia paling dibutuhkan: kolom checkout keranjang
+    // (titik ragu-ragu) dan halaman kontak (sebelum ia bertanya).
+    for (const route of ["keranjang", "kontak"]) {
+      const html = pages.get(route).html;
+      for (const estimate of shippingEstimates) {
+        assert.ok(
+          html.includes(estimate.region),
+          `wilayah "${estimate.region}" tidak tayang di /${route}`,
+        );
+        assert.ok(
+          html.includes(formatIDR(estimate.fromIDR)),
+          `perkiraan ${formatIDR(estimate.fromIDR)} tidak tayang di /${route}`,
+        );
+      }
+      assert.ok(
+        html.includes("mulai dari"),
+        `/${route} menyebut angka ongkir tanpa "mulai dari" — perkiraan tidak ` +
+          `boleh terbaca sebagai harga tetap`,
+      );
+      assert.ok(
+        html.includes(shippingQuoteOnRequest.region),
+        `/${route} menyembunyikan wilayah tanpa perkiraan; pembeli di sana akan ` +
+          `mengira salah satu angka lain berlaku untuknya`,
+      );
+    }
+
+    // Bagian kedua — INI yang paling penting. Owner memberi DUA angka saja.
+    // Melengkapinya dengan interpolasi atau tebakan membuat pembeli berpatokan
+    // pada angka yang nanti tidak ditagihkan; itu lebih merugikan daripada
+    // diam. Dua lapis penjagaan, karena "membantu melengkapi" bisa masuk lewat
+    // data maupun lewat teks komponen.
+
+    // Lapis 1 — sumber data. Angka ketiga apa pun langsung menjatuhkan ini.
+    assert.deepEqual(
+      shippingEstimates.map((estimate) => [estimate.region, estimate.fromIDR]),
+      [
+        ["Jabodetabek", 15000],
+        ["Luar Jawa", 35000],
+      ],
+      "shippingEstimates menyimpang dari dua angka yang diberi owner",
+    );
+    assert.ok(
+      !/\d/.test(shippingQuoteOnRequest.note),
+      `wilayah "${shippingQuoteOnRequest.region}" sudah diberi angka di ` +
+        `shippingQuoteOnRequest.note; angka itu tidak datang dari owner`,
+    );
+
+    // Lapis 2 — HTML yang benar-benar tayang, termasuk muatan RSC yang dikirim
+    // bersama halaman keranjang. Aturannya berbasis URUTAN, bukan jarak,
+    // sehingga tidak ikut jatuh saat tata letak berubah: setelah wilayah itu
+    // disebut, kata yang menyusul harus keterangan "dikonfirmasi lewat
+    // WhatsApp" — bukan angka rupiah.
+    const offenders = [];
+    for (const [route, page] of pages) {
+      let from = 0;
+      for (;;) {
+        const at = page.html.indexOf(shippingQuoteOnRequest.region, from);
+        if (at === -1) break;
+        from = at + shippingQuoteOnRequest.region.length;
+        const rest = page.html.slice(from);
+        const noteAt = rest.indexOf(shippingQuoteOnRequest.note);
+        const priceAt = rest.search(/Rp\d/);
+        if (noteAt === -1 || (priceAt !== -1 && priceAt < noteAt)) {
+          offenders.push(`/${route}`);
+          break;
+        }
+      }
+    }
+    assert.deepEqual(
+      offenders,
+      [],
+      `angka ongkir dikarang untuk Jawa di luar Jabodetabek pada: ` +
+        `${offenders.join(", ")}. Owner tidak pernah memberi angka itu — ` +
+        `wilayah tersebut dikonfirmasi lewat WhatsApp sampai ia memberikannya.`,
+    );
+  },
+);
+
 summary("HTML hasil build");

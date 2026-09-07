@@ -104,3 +104,49 @@ export const shopee = {
 } as const;
 
 export const socials = { whatsapp, instagram, shopee } as const;
+
+/* ------------------------------------------------------------------ */
+/* Ongkos kirim (owner, 7 September 2026)                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * PERKIRAAN ongkos kirim, bukan harga tetap.
+ *
+ * Biaya sebenarnya mengikuti berat kiriman dan kurir, sehingga setiap angka
+ * WAJIB ditampilkan sebagai "mulai dari" dan tidak pernah sebagai tagihan
+ * final. Aturan BR-18 tetap berlaku tanpa perubahan: total akhir dikonfirmasi
+ * lewat WhatsApp.
+ *
+ * Rupiah disimpan sebagai BILANGAN BULAT dan diformat lewat `formatIDR()`
+ * (BR-02). Jangan pernah menuliskan "Rp15.000" sebagai teks di komponen —
+ * itu membuat sumber kebenaran kedua yang akan menyimpang diam-diam.
+ */
+export const shippingEstimates = [
+  { id: "jabodetabek", region: "Jabodetabek", fromIDR: 15_000 },
+  { id: "luar-jawa", region: "Luar Jawa", fromIDR: 35_000 },
+] as const;
+
+/**
+ * Wilayah yang SENGAJA tidak punya angka.
+ *
+ * Owner hanya memberi dua angka di atas, dan Jawa di luar Jabodetabek —
+ * bagian besar pembeli — tidak termasuk. Jangan mengisi kekosongan ini dengan
+ * interpolasi, rata-rata, atau tebakan "supaya lengkap": pembeli akan
+ * berpatokan pada angka karangan itu lalu ditagih jumlah yang berbeda, dan
+ * itu lebih merugikan daripada diam. Wilayah ini dikonfirmasi lewat chat
+ * sampai owner memberi angkanya sendiri.
+ *
+ * Penjaga di `scripts/check-build-output.mjs` menggagalkan pemeriksaan bila
+ * ada angka rupiah muncul berdampingan dengan wilayah ini di halaman mana pun.
+ */
+export const shippingQuoteOnRequest = {
+  id: "jawa-luar-jabodetabek",
+  region: "Jawa di luar Jabodetabek",
+  note: "dikonfirmasi lewat WhatsApp",
+} as const;
+
+/** Kalimat yang wajib menyertai setiap tampilan perkiraan ongkir (BR-18). */
+export const shippingDisclaimer =
+  "Perkiraan mengikuti berat kiriman dan kurir. Total akhir dikonfirmasi lewat WhatsApp.";
+
+export type ShippingEstimate = (typeof shippingEstimates)[number];

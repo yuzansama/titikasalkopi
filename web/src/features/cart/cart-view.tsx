@@ -34,11 +34,15 @@ import type { CartCatalogIndex, ResolvedCartLine } from "./cart-types";
 export function CartView({
   index,
   orderSteps,
+  shippingNote,
 }: {
   index: CartCatalogIndex;
   /** `<OrderSteps />` dikirim sebagai children dari Server Component supaya
       isinya tidak ikut ke bundel klien (Bagian 9.4). */
   orderSteps: ReactNode;
+  /** `<ShippingEstimateNote />`, dikirim dengan alasan yang sama: angkanya
+      konstanta build-time, jadi tidak ada alasan ia menjadi JavaScript. */
+  shippingNote: ReactNode;
 }) {
   const { items, note, hydrated } = useCart();
   const dispatch = useCartDispatch();
@@ -139,9 +143,10 @@ export function CartView({
             </dd>
           </div>
         </dl>
-        <p className="mt-3 text-sm text-olive">
-          Belum termasuk ongkos kirim. Total akhir dikonfirmasi lewat WhatsApp.
-        </p>
+        {/* Titik ragu-ragu terbesar: pembeli berhenti di sini karena tidak
+            tahu totalnya. Kalimat lama hanya memperingatkan bahwa ongkir
+            belum termasuk; sekarang ia membawa perkiraannya sekalian. */}
+        <div className="mt-3">{shippingNote}</div>
 
         <div className="mt-5">
           <WhatsAppOrderButton

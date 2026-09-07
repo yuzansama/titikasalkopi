@@ -2,6 +2,7 @@ import { Container } from "@/components/ui/container";
 import { cartCatalogIndex } from "@/data/catalog";
 import { CartView } from "@/features/cart/cart-view";
 import { OrderSteps } from "@/features/contact/order-steps";
+import { ShippingEstimateNote } from "@/features/contact/shipping-estimates";
 import { keranjangMetadata } from "@/lib/seo";
 
 /* ADR-01 */
@@ -30,7 +31,11 @@ export default function KeranjangPage() {
         harga katalog terbaru dan belum termasuk ongkos kirim.
       </p>
 
-      <CartView index={cartCatalogIndex} orderSteps={<OrderSteps />} />
+      <CartView
+        index={cartCatalogIndex}
+        orderSteps={<OrderSteps />}
+        shippingNote={<ShippingEstimateNote />}
+      />
     </Container>
   );
 }
