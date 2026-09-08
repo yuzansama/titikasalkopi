@@ -53,7 +53,7 @@ jobs:
       # Rotating it: use Deploy > Manage deployments > Edit > New version in
       # Apps Script, which keeps this URL. A brand new deployment mints a new
       # URL and needs this line changed.
-      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbymNrcr2Z5gDxc1KlvSC3nnekAza26sxvqXlXZuzzqKGX9cZ96badN5F1qxcAz__15pDw/exec
+      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbzGbe4W2zxmPp9fErxcbG9MN2ZSau4qAjmyNNrmSke56_FJvakzr_HAyECwoVWdMQ74RQ/exec
     steps:
       - uses: actions/checkout@v4
 
