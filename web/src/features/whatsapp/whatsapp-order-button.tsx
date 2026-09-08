@@ -12,7 +12,13 @@
  * 3. Tombol terkunci 2 detik setelah diklik. Alasannya bukan keamanan
  *    melainkan kualitas data: ketukan ganda di layar sentuh menghasilkan DUA
  *    kode order dan DUA event `click_whatsapp_order` untuk satu pesanan, yang
- *    langsung merusak KPI G-01 dan G-03 (Bagian 12.3).
+ *    langsung merusak KPI G-01 dan G-03 (Bagian 12.3). Sejak pencatatan
+ *    otomatis ada (KD-06), kunci ini juga yang menahan DUA baris masuk ke buku
+ *    order untuk satu pesanan.
+ * 4. Pencatatan ke buku order dikirim sekali jalan, tanpa `await`, dan
+ *    kegagalannya diabaikan. Pesanan lebih penting daripada pembukuannya:
+ *    kalau endpoint mati, WhatsApp tetap harus terbuka persis seperti sebelum
+ *    fitur ini ada.
  */
 
 import { usePathname } from "next/navigation";
@@ -21,6 +27,7 @@ import { WhatsAppIcon } from "@/components/icons/icons";
 import { buttonClass } from "@/components/ui/styles";
 import { trackWhatsAppOrder } from "@/lib/analytics";
 import { site } from "@/lib/site";
+import { buildOrderRecord, recordOrder, summarizeForRecord } from "@/lib/tracking";
 import { buildOrderMessage } from "@/lib/whatsapp/message";
 import { createOrderCode } from "@/lib/whatsapp/order-code";
 import { sanitizeNote } from "@/lib/whatsapp/sanitize";
@@ -32,6 +39,7 @@ export function WhatsAppOrderButton({
   itemCount,
   note,
   noteLimit,
+  last4 = "",
   disabled = false,
 }: {
   lines: readonly ResolvedCartLine[];
@@ -39,6 +47,8 @@ export function WhatsAppOrderButton({
   itemCount: number;
   note: string;
   noteLimit: number;
+  /** 4 digit terakhir nomor WhatsApp pembeli; boleh kosong (KD-06). */
+  last4?: string;
   disabled?: boolean;
 }) {
   const pathname = usePathname();
@@ -72,6 +82,15 @@ export function WhatsAppOrderButton({
       cartItems: itemCount,
       sourcePage: pathname,
     });
+
+    // Sebelum `window.open`, dengan alasan yang sama seperti event GA4: begitu
+    // WhatsApp mengambil fokus, halaman bisa dibekukan peramban.
+    const record = buildOrderRecord(
+      orderCode,
+      last4,
+      summarizeForRecord(lines, subtotal),
+    );
+    if (record) recordOrder(record);
 
     window.open(message.url, "_blank", "noopener,noreferrer");
   };

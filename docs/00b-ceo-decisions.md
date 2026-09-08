@@ -107,3 +107,29 @@ Keputusan turunannya:
 `next.config.ts` sudah menulis pemicunya sejak awal: begitu situs menampilkan konten dari luar repositori, ia harus pindah ke host yang bisa menyetel header. Halaman lacak memenuhi syarat itu, sementara host produksi sekarang GitHub Pages yang tidak dapat menyetel header sama sekali — sehingga CSP, `X-Frame-Options`, dan `Permissions-Policy` tidak aktif di produksi.
 
 Pilihannya ada dua: pindah produksi ke Vercel, di mana seluruh header itu sudah ditulis dan langsung aktif tanpa perubahan kode; atau bertahan di Pages dan menerima risikonya secara sadar. Rinciannya di `08-lacak-pesanan.md` Bagian 7. Keputusan ini belum diambil dan tidak boleh digantung.
+
+
+## D-06 — Pencatatan pesanan ke buku order dilakukan otomatis
+
+Tanggal: 8 September 2026. Dirujuk sebagai **KD-06** dari `02-BRD.md`, mengikuti pemetaan yang sama seperti D-05.
+
+Pesanan pertama yang benar-benar melewati sistem langsung memperlihatkan biayanya: pembeli memesan, lalu melacak, lalu mendapat "tidak ditemukan" — karena barisnya memang belum diketik. Itu bekerja persis seperti rancangannya, dan justru itu masalahnya. Sistem yang benar tetapi menuntut satu langkah manual pada setiap pesanan akan gagal pada hari yang sibuk, bukan pada hari yang tenang.
+
+**Keputusan.** Baris buku order ditulis otomatis oleh website saat pembeli menekan "Pesan via WhatsApp", berisi kode order, ringkasan pesanan beserta subtotal, tanggal, dan status awal `menunggu-konfirmasi`.
+
+**Pembeli mengisi 4 digit terakhir nomornya sendiri**, lewat kolom **opsional** di keranjang. Diisi berarti pelacakan hidup tanpa owner menyentuh apa pun. Dikosongkan berarti barisnya tetap lengkap dan owner mengetik empat digit dari chat. Kolom itu tidak diwajibkan karena kolom wajib satu ketukan sebelum tombol pesan adalah tempat paling mahal untuk kehilangan pembeli; pesanan yang hilang lebih merugikan daripada pelacakan yang tertunda.
+
+**Baris yang tidak pernah menjadi pesanan diterima.** Baris ditulis saat tombol ditekan, bukan saat pesan terkirim, jadi buku order berisi niat juga. Kolom `sumber` menandainya (`web` versus kosong) sehingga owner bisa memilah dan menghapus. Selisih antara baris `web` dan chat yang benar-benar tiba adalah ukuran kebocoran di langkah terakhir — angka yang selama ini tidak ada karena analitik belum menyala.
+
+### Empat pagar pada endpoint tulis, semuanya wajib tetap ada
+
+Endpoint ini terbuka untuk siapa pun, dan itu tidak bisa dihindari karena peramban pembeli yang memanggilnya.
+
+1. **Kuota 50 baris otomatis per hari.** Volume nyata puluhan per bulan; kuota ini longgar untuk pemakaian jujur dan membatasi kerugian bila disalahgunakan.
+2. **Netralisasi rumus.** Sel yang diawali `=`, `+`, `-`, atau `@` dieksekusi Google Sheets saat owner membuka bukunya sendiri. Ringkasan berasal dari peramban pembeli, jadi ia teks yang dikendalikan orang lain. Penetralannya ada di sisi Apps Script, bukan hanya di situs, karena sisi situs bisa dilewati.
+3. **Kode yang sudah ada tidak pernah ditimpa.** Pengiriman ganda menjadi tidak berbahaya, dan baris yang sudah disunting owner tidak bisa dikembalikan ke status awal oleh siapa pun dari luar.
+4. **Gagal tertutup tanpa kolom `sumber`.** Tanpa kolom itu kuota harian tidak punya apa pun untuk dihitung dan pagarnya mati tanpa suara, jadi pencatatan berhenti sama sekali.
+
+### Aturan yang tidak boleh dilanggar
+
+Pencatatan **tidak boleh menunda atau menggagalkan pembukaan WhatsApp**. Ia dikirim sekali jalan lewat `sendBeacon`, tanpa ditunggu, dan kegagalannya diabaikan. Bila endpoint mati, pembeli tetap memesan dan owner tetap menerima chatnya persis seperti sebelum fitur ini ada. Pesanan lebih penting daripada pembukuannya.

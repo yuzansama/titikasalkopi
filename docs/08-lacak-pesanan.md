@@ -10,7 +10,9 @@ Dokumen ini punya dua pembaca. Bagian 1 sampai 4 untuk **owner** — tidak perlu
 
 Buku order Anda pindah dari catatan manual ke satu Google Sheet. Sebuah skrip kecil milik Google membaca sheet itu dan menjawab satu pertanyaan saja: "pesanan dengan kode ini dan empat digit ini, statusnya apa?" Halaman `/lacak` di website bertanya ke skrip itu lalu menampilkan jawabannya. Tidak ada server baru, tidak ada biaya bulanan, dan sheet Anda tetap privat.
 
-Yang **tidak** berubah: pesanan tetap masuk lewat WhatsApp, dan Anda tetap yang menentukan statusnya. Halaman lacak hanya menayangkan apa yang Anda tulis di sheet. Ia tidak tahu apa-apa sendiri.
+Sejak KD-06, barisnya **tidak lagi Anda ketik**. Begitu pembeli menekan "Pesan via WhatsApp", website langsung menuliskan barisnya sendiri ke sheet — kode order, isi pesanan, subtotal, tanggal, dan status awal. Yang tersisa untuk Anda hanyalah memperbarui status dan mengisi resi.
+
+Yang **tidak** berubah: pesanan tetap masuk lewat WhatsApp, dan Anda tetap yang menentukan statusnya. Halaman lacak hanya menayangkan apa yang ada di sheet. Ia tidak menilai apa pun sendiri.
 
 ---
 
@@ -20,9 +22,9 @@ Buat satu Google Sheet baru. Beri nama tab pertamanya **`pesanan`** (huruf kecil
 
 Baris pertama adalah judul kolom. Tulis persis seperti ini, huruf kecil semua:
 
-| kode | tanggal_pesan | last4 | status | tanggal_status | kurir | resi | ringkasan | catatan_internal |
-|---|---|---|---|---|---|---|---|---|
-| TAK-260908-K7Q2 | 2026-09-08 | 9567 | dikirim | 2026-09-09 | JNE | JX1234567890 | Abmisibil 200 gr x2 | sudah transfer |
+| kode | tanggal_pesan | last4 | status | tanggal_status | kurir | resi | ringkasan | sumber | catatan_internal |
+|---|---|---|---|---|---|---|---|---|---|
+| TAK-260908-K7Q2 | 2026-09-08 | 9567 | dikirim | 2026-09-09 | JNE | JX1234567890 | Abmisibil 200 gr x2 = Rp410.000 | web | sudah transfer |
 
 Arti tiap kolom:
 
@@ -30,19 +32,26 @@ Arti tiap kolom:
 |---|---|---|
 | `kode` | Kode order dari pesan WhatsApp pembeli, bentuk `TAK-YYMMDD-XXXX` | Ya |
 | `tanggal_pesan` | Tanggal pesanan masuk, `YYYY-MM-DD` | Tidak |
-| `last4` | **4 digit terakhir nomor WhatsApp pembeli**. Ambil dari chat | Ya |
+| `last4` | **4 digit terakhir nomor WhatsApp pembeli**. Diisi pembeli sendiri di keranjang; kosong bila ia melewatinya, lalu Anda ambil dari chat | Ya |
 | `status` | Salah satu slug pada tabel Bagian 3 | Ya |
 | `tanggal_status` | Tanggal Anda terakhir mengubah status, `YYYY-MM-DD` | Sangat dianjurkan |
 | `kurir` | JNE, J&T, SiCepat, dan seterusnya | Tidak |
 | `resi` | Nomor resi setelah paket berangkat | Tidak |
 | `ringkasan` | Isi pesanan singkat, supaya pembeli yakin ini pesanannya | Tidak |
+| `sumber` | `web` untuk baris yang ditulis website sendiri, kosong untuk yang Anda ketik | **Ya** |
 | `catatan_internal` | Catatan Anda sendiri | Tidak |
+
+Kolom `sumber` **wajib ada** walaupun Anda tidak pernah mengisinya sendiri. Tanpa kolom itu, website menolak mencatat apa pun — dan itu disengaja: kuota harian yang membatasi penyalahgunaan menghitung dari kolom ini, jadi kalau kolomnya hilang, pagarnya ikut mati tanpa suara. Lebih baik pencatatan berhenti daripada terbuka tanpa batas.
 
 **`catatan_internal` tidak pernah dikirim ke website.** Begitu juga kolom lain yang Anda tambahkan sendiri. Skrip hanya mengirim kolom yang disebut namanya di dalamnya — kolom baru aman secara bawaan. Kalau Anda ingin menyimpan nama, nomor telepon, atau alamat pembeli di sheet ini, silakan; keduanya tidak akan pernah keluar.
 
 ### Kenapa perlu `last4`
 
 Kode order hanya 4 karakter acak. Tanpa penyaring kedua, orang bisa menebak kode secara massal dan membaca status pesanan orang lain. Meminta empat digit terakhir nomor WhatsApp menutup itu tanpa membuat pembeli mendaftar akun: mereka jelas tahu nomornya sendiri.
+
+**Siapa yang mengisinya.** Di keranjang ada kolom opsional untuk empat digit itu. Kalau pembeli mengisinya, kolom `last4` terisi sendiri dan ia langsung bisa melacak. Kalau dikosongkan, barisnya tetap masuk lengkap — hanya kolom `last4` yang kosong, dan Anda mengetiknya dari nomor pengirim chat. Empat ketukan, bukan mengetik ulang seluruh pesanan.
+
+Kolomnya sengaja **tidak** diwajibkan. Kolom wajib satu ketukan sebelum tombol pesan adalah tempat paling mahal untuk kehilangan pembeli, dan pesanan yang hilang jauh lebih merugikan daripada pelacakan yang tertunda.
 
 ---
 
@@ -82,18 +91,33 @@ URL dari langkah 6 dipasang sebagai variabel lingkungan `NEXT_PUBLIC_TRACKING_EN
 
 Setiap kali Anda mengubah isi skrip, tekan **Deploy > Manage deployments > Edit > Version: New version**. Tanpa itu, perubahan tidak tayang.
 
+> **Wajib dilakukan sekarang bila Anda sudah memasang versi sebelumnya.**
+> Skripnya berubah cukup besar sejak KD-06: ia sekarang punya `doPost` yang menulis baris otomatis, dan satu bug diperbaiki — versi pertama menolak menulis ke sheet yang baru punya baris judul tanpa data, sehingga **pesanan pertama Anda akan gagal tercatat**. Bug itu ditemukan oleh `web/scripts/check-order-tracker-gs.mjs`, bukan oleh pembeli.
+>
+> Langkahnya: tambahkan kolom **`sumber`** ke baris judul, tempel ulang seluruh isi `ops/order-tracker.gs`, jalankan `selfCheck`, lalu **Deploy > Manage deployments > Edit > Version: New version**. URL-nya tidak berubah, jadi tidak ada yang perlu disentuh di sisi website.
+
 ---
 
 ## 5. Kerja harian
 
-Untuk tiap pesanan yang masuk lewat WhatsApp:
+Barisnya sudah ada sebelum Anda membuka WhatsApp. Yang tersisa:
 
-1. Salin `Kode order:` dari pesan pembeli ke kolom `kode`.
-2. Salin empat digit terakhir nomor pengirim ke kolom `last4`.
-3. Isi `status` dan `tanggal_status`.
+1. Cocokkan kode order di chat dengan baris ber-`sumber` = `web` di sheet.
+2. Kalau `last4` kosong, isi dari empat digit terakhir nomor pengirim.
+3. Ubah `status` dan `tanggal_status` seiring pesanan berjalan.
 4. Setelah paket berangkat, isi `kurir` dan `resi`, ubah `status` menjadi `dikirim`, perbarui `tanggal_status`.
 
-**Satu hal yang perlu diwaspadai.** Kode order dibuat ulang setiap kali tombol "Pesan via WhatsApp" ditekan. Kalau pembeli menekannya dua kali, ia punya dua kode untuk satu pesanan. Yang Anda catat adalah kode pada pesan yang **benar-benar terkirim** ke Anda. Kode lain tidak pernah sampai ke mana pun dan bisa diabaikan.
+Anda tidak perlu lagi mengetik kode, isi pesanan, subtotal, atau tanggal. Semuanya sudah tertulis sendiri.
+
+### Baris yang tidak pernah menjadi pesanan
+
+Baris ditulis saat pembeli **menekan tombol**, bukan saat pesannya terkirim. Sebagian orang menekan tombol lalu berubah pikiran di aplikasi WhatsApp, dan barisnya tetap ada.
+
+Itu diterima secara sadar, dengan dua alasan. Pertama, membedakan keduanya menuntut satu langkah konfirmasi manual — persis pekerjaan yang ingin dihilangkan. Kedua, selisihnya justru berguna: jumlah baris `sumber` = `web` dikurangi jumlah chat yang benar-benar tiba adalah ukuran kebocoran di langkah terakhir, angka yang selama ini tidak Anda punya karena analitik belum menyala.
+
+Cara menanganinya: **jangan hapus buru-buru.** Beri waktu sehari. Kalau chatnya tidak pernah datang, ubah `status` menjadi `batal` atau hapus barisnya. Baris ber-`sumber` kosong adalah yang Anda ketik sendiri dan tidak pernah tersentuh otomatisasi.
+
+**Ketukan ganda.** Tombol pesan terkunci dua detik setelah diklik, jadi ketukan ganda di layar sentuh tidak menghasilkan dua baris. Kalau pembeli benar-benar menekan dua kali dengan jeda lebih lama, ia punya dua kode dan dua baris; yang berlaku adalah kode pada pesan yang **benar-benar terkirim** ke Anda. Kode yang sudah ada di sheet tidak pernah ditimpa, jadi baris yang sudah Anda sunting aman.
 
 **Kalau Anda lupa memperbarui.** Setelah lebih dari lima hari tanpa perubahan, dan pesanan belum selesai atau batal, halaman menambahkan peringatan bahwa status mungkin sudah tidak mutakhir dan mengarahkan pembeli bertanya lewat WhatsApp. Ini disengaja: halaman lacak yang menampilkan "Sedang disiapkan" selama dua minggu berbohong tanpa niat, dan lebih merusak kepercayaan daripada tidak punya halaman lacak sama sekali.
 
@@ -105,6 +129,8 @@ Untuk tiap pesanan yang masuk lewat WhatsApp:
 - **Sheet adalah satu-satunya sumber kebenaran.** Tidak ada pencadangan otomatis di luar riwayat versi Google Sheet.
 - **Tidak ada notifikasi.** Pembeli harus membuka halaman untuk melihat perubahan.
 - **Batas kuota Apps Script** cukup untuk skala ini, tetapi bukan tak terhingga. Bila volume naik ke ratusan order per hari, ini saatnya pindah ke basis data sungguhan — dan pindahnya murah, karena situs hanya mengenal satu URL endpoint.
+- **Endpoint pencatatan terbuka.** Siapa pun yang menemukan URL-nya bisa menambah baris. Yang membatasi kerusakannya: kuota 50 baris otomatis per hari, kode yang sudah ada tidak pernah ditimpa, dan teks dari luar dinetralkan sebelum masuk sel. Kalau suatu hari Anda melihat lonjakan baris `sumber` = `web` yang tidak berpasangan dengan chat mana pun, saring kolom itu dan hapus sekaligus — lalu beri tahu, karena berarti kuotanya perlu diturunkan.
+- **Formula injection sudah ditutup.** Ringkasan yang masuk sheet berasal dari peramban pembeli, jadi ia teks yang dikendalikan orang lain. Sel yang diawali `=`, `+`, `-`, atau `@` akan dieksekusi Google Sheets sebagai rumus saat **Anda** membuka bukunya. Karakter itu dibuang di sisi Apps Script, bukan hanya di situs, karena sisi situs bisa dilewati.
 
 ---
 

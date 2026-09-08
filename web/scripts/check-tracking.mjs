@@ -279,4 +279,126 @@ check("FR-51: kosakata status situs dan contoh di dokumen owner tidak berbeda", 
   );
 });
 
+/* ------------------------------------------------------------------ */
+/* Pencatatan otomatis saat checkout (KD-06)                           */
+/* ------------------------------------------------------------------ */
+
+check("KD-06: ringkasan memuat item, jumlah, dan subtotal dalam satu baris", () => {
+  const lines = [
+    { productName: "Abmisibil", variantLabel: "200 gr", qty: 2, unit: "pack" },
+    { productName: "BOLD 70:30", variantLabel: "per kg", qty: 2, unit: "half-kg" },
+  ];
+  const summary = T.summarizeForRecord(lines, 410000);
+  assert.ok(summary.includes("Abmisibil"), "nama produk hilang");
+  assert.ok(summary.includes("BOLD 70:30"), "nama houseblend hilang");
+  assert.ok(summary.includes("Rp410.000"), "subtotal hilang");
+  assert.ok(!summary.includes(String.fromCharCode(10)), "ringkasan harus satu baris");
+});
+
+check("KD-06: baris hanya dirakit untuk kode order yang sah", () => {
+  assert.equal(T.buildOrderRecord("bukan-kode", "9567", "x"), null);
+  assert.equal(T.buildOrderRecord("TAK-260908-K0Q2", "9567", "x"), null);
+  assert.notEqual(T.buildOrderRecord("TAK-260908-K7Q2", "9567", "x"), null);
+});
+
+check("KD-06: last4 tidak sah menjadi kosong, bukan ikut tertulis", () => {
+  // Baris tetap dicatat supaya owner tidak kehilangan pesanannya; yang
+  // tertunda hanya pelacakan mandiri, sampai owner mengisi digitnya dari chat.
+  const record = T.buildOrderRecord("TAK-260908-K7Q2", "12", "Abmisibil");
+  assert.equal(record.last4, "");
+  assert.equal(record.code, "TAK-260908-K7Q2");
+});
+
+check("KEAMANAN: teks menuju spreadsheet dinetralkan dari rumus", () => {
+  // Sel yang diawali =, +, - atau @ dieksekusi Google Sheets sebagai rumus.
+  // Ringkasan berasal dari sisi klien, jadi ia sepenuhnya dikendalikan orang
+  // lain, dan owner-lah yang membuka sheet itu.
+  for (const attack of [
+    '=HYPERLINK("http://jahat","klik")',
+    "+1+1",
+    "-1+1",
+    "@SUM(A1:A9)",
+    "  =IMPORTXML(1,2)",
+  ]) {
+    const cleaned = T.sanitizeForSheet(attack);
+    assert.ok(
+      !/^[=+\-@]/.test(cleaned),
+      `"${attack}" masih diawali karakter rumus: "${cleaned}"`,
+    );
+  }
+});
+
+check("KD-06: ringkasan dipotong pada batasnya, bukan dibiarkan tumbuh", () => {
+  const long = "A".repeat(5000);
+  assert.equal(
+    T.sanitizeForSheet(long).length,
+    T.MAX_RECORD_ITEMS_LENGTH,
+    "ringkasan tanpa batas berarti satu orang bisa menggelembungkan sheet owner",
+  );
+});
+
+check("KD-06: baris baru dan tab runtuh menjadi satu spasi", () => {
+  const messy = "a" + String.fromCharCode(10) + String.fromCharCode(9) + "b   c";
+  assert.equal(T.sanitizeForSheet(messy), "a b c");
+});
+
+check("KD-06: pencatatan tidak pernah melempar walau endpoint kosong", () => {
+  // Aturan yang tidak boleh dilanggar: pembukuan tidak boleh menggagalkan
+  // pemesanan. Kalau ini melempar, `window.open` tidak akan pernah dipanggil.
+  const record = T.buildOrderRecord("TAK-260908-K7Q2", "9567", "Abmisibil");
+  assert.doesNotThrow(() => T.recordOrder(record, ""));
+});
+
+check("KD-06: batas panjang situs dan Apps Script sama", () => {
+  const gs = readFileSync(
+    join(import.meta.dirname, "..", "..", "ops", "order-tracker.gs"),
+    "utf8",
+  );
+  const match = gs.match(/var MAX_ITEMS_LENGTH = (\d+);/);
+  assert.ok(match, "MAX_ITEMS_LENGTH tidak ditemukan di Apps Script");
+  assert.equal(
+    Number(match[1]),
+    T.MAX_RECORD_ITEMS_LENGTH,
+    "batas panjang di situs dan di Apps Script berbeda",
+  );
+});
+
+check("KD-06: status awal Apps Script ada di kosakata situs", () => {
+  const gs = readFileSync(
+    join(import.meta.dirname, "..", "..", "ops", "order-tracker.gs"),
+    "utf8",
+  );
+  const match = gs.match(/var INITIAL_STATUS = '([a-z-]+)';/);
+  assert.ok(match, "INITIAL_STATUS tidak ditemukan di Apps Script");
+  assert.ok(
+    T.isOrderStatusSlug(match[1]),
+    `status awal "${match[1]}" tidak dikenali situs; setiap pesanan otomatis ` +
+      `akan tayang sebagai status yang belum dikenali`,
+  );
+});
+
+check("KEAMANAN: Apps Script menjaga ketiga pagar tulisnya", () => {
+  const gs = readFileSync(
+    join(import.meta.dirname, "..", "..", "ops", "order-tracker.gs"),
+    "utf8",
+  );
+  // Ketiganya pernah ditulis dengan alasan yang jelas; menghapus salah satunya
+  // tanpa sadar jauh lebih mudah daripada menulisnya.
+  assert.ok(/DAILY_WEB_ROW_CAP/.test(gs), "kuota harian hilang dari doPost");
+  assert.ok(/LockService/.test(gs), "kunci serentak hilang; dua POST bisa sama-sama menulis");
+  assert.ok(
+    /duplicate: true/.test(gs),
+    "penjaga kode ganda hilang; baris yang sudah disunting bisa tertimpa",
+  );
+  assert.ok(
+    /sanitizeCell_/.test(gs),
+    "netralisasi rumus hilang dari sisi yang mengikat",
+  );
+  assert.ok(
+    /indexOf\(SOURCE_COLUMN\) === -1/.test(gs),
+    "doPost tidak lagi gagal-tertutup saat kolom sumber hilang; kuota harian " +
+      "akan mati diam-diam dan endpoint tulis jadi tanpa batas",
+  );
+});
+
 summary("Pelacakan pesanan");

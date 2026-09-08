@@ -15,7 +15,7 @@
  */
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { QtyStepper } from "@/components/ui/qty-stepper";
 import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
 import { formatIDR, formatKgFromHalfUnits, formatPricePerKg } from "@/lib/format";
@@ -27,6 +27,7 @@ import { WhatsAppOrderButton } from "@/features/whatsapp/whatsapp-order-button";
 import type { ReactNode } from "react";
 import { useCart, useCartDispatch } from "./cart-provider";
 import { MAX_NOTE_LENGTH, MAX_QTY_PER_LINE } from "./cart-reducer";
+import { CartLast4Field } from "./cart-last4-field";
 import { CartNoteField } from "./cart-note-field";
 import { resolveCart } from "./cart-selectors";
 import type { CartCatalogIndex, ResolvedCartLine } from "./cart-types";
@@ -46,6 +47,9 @@ export function CartView({
 }) {
   const { items, note, hydrated } = useCart();
   const dispatch = useCartDispatch();
+  // Sengaja state lokal, bukan bagian keranjang tersimpan (KD-06). Lihat
+  // catatan di `cart-last4-field.tsx`.
+  const [last4, setLast4] = useState("");
   const cart = useMemo(
     () => resolveCart(items, note, index),
     [items, note, index],
@@ -160,12 +164,17 @@ export function CartView({
         <div className="mt-3">{shippingNote}</div>
 
         <div className="mt-5">
+          <CartLast4Field value={last4} onChange={setLast4} />
+        </div>
+
+        <div className="mt-5">
           <WhatsAppOrderButton
             lines={cart.lines}
             subtotal={cart.subtotal}
             itemCount={cart.itemCount}
             note={cart.note}
             noteLimit={MAX_NOTE_LENGTH}
+            last4={last4}
           />
         </div>
 
