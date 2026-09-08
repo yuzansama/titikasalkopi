@@ -792,6 +792,43 @@ check("KD-07: kedua lini tayang berdampingan tanpa saling menutupi", () => {
   assert.ok(html.includes("Rp110.000"), "harga Reguler 200 gr hilang");
 });
 
+/* ------------------------------------------------------------------ */
+/* 14c. Ikon tab                                                       */
+/* ------------------------------------------------------------------ */
+
+check("Ikon tab memakai logo brand, bukan bawaan Next, di setiap rute", () => {
+  // Asalnya: logo dipotong dari assets/brand/WhatsApp Image 2026-09-07 at
+  // 14.10.57.jpeg pada kotak (586, 12, 172, 138) — hanya tanda (busur, biji,
+  // gunung), tanpa wordmark, karena teks tidak terbaca pada 16 px. Latar
+  // disampel dari poster itu sendiri, bukan ditebak.
+  //
+  // `favicon.ico` bawaan Next sengaja DIHAPUS: bila ia ada, sebagian peramban
+  // memilihnya lebih dulu dan tab kembali menampilkan segitiga hitam walaupun
+  // icon.png sudah benar.
+  for (const [route, page] of pages) {
+    if (route === "_not-found") continue;
+    const icon = page.html.match(/<link rel="icon"[^>]*href="([^"]+)"/);
+    assert.ok(icon, `tautan ikon hilang pada /${route}`);
+    assert.ok(
+      icon[1].includes("icon."),
+      `ikon /${route} menunjuk "${icon[1]}", bukan icon.png`,
+    );
+    if (SITE_BASE_PATH) {
+      assert.ok(
+        icon[1].startsWith(SITE_BASE_PATH),
+        `ikon /${route} tidak memakai basePath: ${icon[1]}`,
+      );
+    }
+  }
+});
+
+check("Tidak ada rute yang masih menunjuk favicon.ico bawaan", () => {
+  const offenders = [...pages]
+    .filter(([, page]) => /favicon\.ico/.test(page.html))
+    .map(([route]) => `/${route}`);
+  assert.deepEqual(offenders, [], `favicon.ico dirujuk pada: ${offenders.join(", ")}`);
+});
+
 /* 15. Kartu placeholder tidak boleh meminta maaf                      */
 /* ------------------------------------------------------------------ */
 
