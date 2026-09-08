@@ -34,8 +34,13 @@ export type ProductStatus = "available" | "out-of-stock";
  * - "pack"    : 1 kemasan 200 gr           -> qty = jumlah pack
  * - "paket"   : 1 bundel berisi 3 x 200 gr -> qty = jumlah paket (BR-12, D-01)
  * - "half-kg" : 0,5 kg houseblend          -> qty = halfKgUnits (D-02)
+ * - "gram-100": 1 kemasan 100 gr            -> qty = jumlah kemasan (KD-07)
+ *
+ * `gram-100` melayani lini Katalog Kopi 100 gram, yang berharga PER BIJI dan
+ * karena itu tidak memakai `Tier` maupun `Product` sama sekali. Lihat
+ * `src/data/picks.ts`.
  */
-export type OrderUnit = "pack" | "paket" | "half-kg";
+export type OrderUnit = "pack" | "paket" | "half-kg" | "gram-100";
 
 export type Variant = {
   /** Stabil dan permanen; dipakai sebagai kunci baris keranjang. */

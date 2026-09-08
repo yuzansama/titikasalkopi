@@ -23,6 +23,7 @@ const SCRIPTS = [
   "scripts/check-whatsapp.mjs",
   "scripts/check-reply-hours.mjs",
   "scripts/check-format.mjs",
+  "scripts/check-picks.mjs",
   "scripts/check-tracking.mjs",
   "scripts/check-order-tracker-gs.mjs",
   "scripts/check-build-output.mjs",

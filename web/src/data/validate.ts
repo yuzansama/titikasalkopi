@@ -340,3 +340,54 @@ export function assertCatalogValid(products: Product[]): void {
     );
   }
 }
+
+/**
+ * V-20 — lini Katalog Kopi 100 gram (KD-07).
+ *
+ * Lini ini tidak melewati `assertCatalogValid` karena ia bukan `Product`, jadi
+ * invariannya diperiksa di sini. Yang paling berbahaya adalah slug bertabrakan
+ * dengan produk: `cartCatalogIndex` dirakit dari kedua daftar, dan yang belakangan
+ * menang secara diam-diam — pengunjung akan menambahkan satu barang lalu melihat
+ * barang lain beserta harga lain di keranjang.
+ */
+export function assertPicksValid(
+  picks: readonly { slug: string; name: string; price: number }[],
+  productSlugs: readonly string[],
+): void {
+  const errors: string[] = [];
+  const taken = new Set(productSlugs);
+  const seen = new Set<string>();
+
+  for (const pick of picks) {
+    if (!SLUG_PATTERN.test(pick.slug)) {
+      errors.push(`[V-20] ${pick.slug}: bentuk slug tidak sah.`);
+    }
+    if (seen.has(pick.slug)) {
+      errors.push(`[V-20] ${pick.slug}: slug ganda di dalam lini 100 gram.`);
+    }
+    seen.add(pick.slug);
+
+    if (taken.has(pick.slug)) {
+      errors.push(
+        `[V-20] ${pick.slug}: slug bentrok dengan produk 200 gram. ` +
+          `Keranjang akan menampilkan barang dan harga yang salah.`,
+      );
+    }
+    if (!isNonEmptyString(pick.name)) {
+      errors.push(`[V-20] ${pick.slug}: nama kosong.`);
+    }
+    if (!Number.isInteger(pick.price) || pick.price <= 0) {
+      errors.push(
+        `[V-20] ${pick.slug}: harga wajib bilangan bulat positif (BR-03).`,
+      );
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      ["Katalog Kopi 100 gram tidak sah:", ...errors.map((e) => `  ${e}`)].join(
+        "\n",
+      ),
+    );
+  }
+}

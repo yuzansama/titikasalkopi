@@ -753,6 +753,45 @@ check("BRD Bagian 12: halaman katalog menampilkan kesepuluh nama produk", () => 
 });
 
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/* 14b. KD-07 — Katalog Kopi 100 gram                                  */
+/* ------------------------------------------------------------------ */
+
+check(
+  "KD-07: kedelapan belas biji Katalog Kopi 100 gram tayang beserta harganya",
+  () => {
+    const html = pages.get("katalog").html;
+    const expected = [
+      ["Bali Kintamani", "Rp80.000"],
+      ["Gayo Lecie", "Rp120.000"],
+      ["Panama", "Rp270.000"],
+      ["Kenya", "Rp195.000"],
+      ["Luwak", "Rp140.000"],
+      ["Halu Banana Anaerob", "Rp90.000"],
+      ["Situjuah", "Rp80.000"],
+      ["Lawu", "Rp65.000"],
+    ];
+    const missing = expected.filter(
+      ([name, price]) => !html.includes(name) || !html.includes(price),
+    );
+    assert.deepEqual(
+      missing.map(([name]) => name),
+      [],
+      `biji atau harganya tidak tayang: ${missing.map(([n]) => n).join(", ")}`,
+    );
+  },
+);
+
+check("KD-07: kedua lini tayang berdampingan tanpa saling menutupi", () => {
+  // Dua lini hidup di halaman yang sama dengan harga berbeda untuk berat
+  // berbeda. Kerinci ada di KEDUANYA; menyembunyikan salah satunya berarti
+  // memilihkan jawaban yang belum owner berikan.
+  const html = pages.get("katalog").html;
+  assert.ok(html.includes("100 gr"), "label 100 gr hilang dari halaman");
+  assert.ok(html.includes("Rp85.000"), "harga Kerinci 100 gr hilang");
+  assert.ok(html.includes("Rp110.000"), "harga Reguler 200 gr hilang");
+});
+
 /* 15. Kartu placeholder tidak boleh meminta maaf                      */
 /* ------------------------------------------------------------------ */
 

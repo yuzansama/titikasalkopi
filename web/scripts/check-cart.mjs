@@ -299,6 +299,18 @@ check("subtotal contoh Bagian 7.4: 3 pack Abmisibil + 5 kg BOLD = Rp1.350.000", 
   assert.ok(Number.isInteger(resolved.subtotal));
 });
 
+/**
+ * Angkanya sengaja tetap eksplisit, bukan diturunkan dari `index` — kalau
+ * dihitung dari data yang sedang diuji, katalog yang menyusut diam-diam akan
+ * tetap lulus.
+ *
+ *   23 varian produk 200 gr dan houseblend
+ * + 18 varian lini Katalog Kopi 100 gram (KD-07)
+ */
+const EXPECTED_PRODUCT_VARIANTS = 23;
+const EXPECTED_PICK_VARIANTS = 18;
+const EXPECTED_VARIANT_COUNT = EXPECTED_PRODUCT_VARIANTS + EXPECTED_PICK_VARIANTS;
+
 check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () => {
   const items = Object.values(index).flatMap((entry) =>
     entry.variants.map((variant) => ({
@@ -308,7 +320,7 @@ check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () =>
     })),
   );
   const resolved = resolveCart(items, "", index);
-  assert.equal(resolved.lines.length, 23);
+  assert.equal(resolved.lines.length, EXPECTED_VARIANT_COUNT);
   for (const line of resolved.lines) {
     assert.ok(
       Number.isInteger(line.lineTotal),
@@ -318,8 +330,8 @@ check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () =>
   }
 });
 
-check("catalogValidKeys mencakup seluruh 23 varian katalog", () => {
-  assert.equal(catalogValidKeys(index).length, 23);
+check(`catalogValidKeys mencakup seluruh ${EXPECTED_VARIANT_COUNT} varian katalog`, () => {
+  assert.equal(catalogValidKeys(index).length, EXPECTED_VARIANT_COUNT);
 });
 
 summary("Keranjang");

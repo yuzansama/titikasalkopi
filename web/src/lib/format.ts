@@ -50,6 +50,7 @@ export function formatKgFromHalfUnits(halfKgUnits: number): string {
  * - pack    : 2 -> "2 pack"
  * - paket   : 2 -> "2 paket (3 pack)"
  * - half-kg : 5 -> "2,5 kg"
+ * - gram-100: 2 -> "2 x 100 gr"
  */
 export function formatQuantity(qty: number, unit: OrderUnit): string {
   switch (unit) {
@@ -59,6 +60,10 @@ export function formatQuantity(qty: number, unit: OrderUnit): string {
       return `${qty} paket (3 pack)`;
     case "half-kg":
       return formatKgFromHalfUnits(qty);
+    // Ditulis "2 x 100 gr", bukan "200 gr", supaya tidak pernah tertukar
+    // dengan kemasan 200 gram lini single origin yang harganya berbeda.
+    case "gram-100":
+      return `${qty} x 100 gr`;
   }
 }
 
@@ -71,6 +76,8 @@ export function unitLabel(unit: OrderUnit): string {
       return "per paket 3 pack";
     case "half-kg":
       return "per 0,5 kg";
+    case "gram-100":
+      return "per 100 gr";
   }
 }
 

@@ -133,3 +133,47 @@ Endpoint ini terbuka untuk siapa pun, dan itu tidak bisa dihindari karena peramb
 ### Aturan yang tidak boleh dilanggar
 
 Pencatatan **tidak boleh menunda atau menggagalkan pembukaan WhatsApp**. Ia dikirim sekali jalan lewat `sendBeacon`, tanpa ditunggu, dan kegagalannya diabaikan. Bila endpoint mati, pembeli tetap memesan dan owner tetap menerima chatnya persis seperti sebelum fitur ini ada. Pesanan lebih penting daripada pembukuannya.
+
+
+## D-07 — Katalog Kopi 100 gram sebagai lini kedua
+
+Tanggal: 8 September 2026. Dirujuk sebagai **KD-07** dari `02-BRD.md`. Membuka FR-52.
+
+Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping tujuh single origin 200 gram; keduanya tayang berdampingan dan tidak saling menggantikan. Ke-18 biji **bisa dipesan lewat keranjang**.
+
+### `BR-09` sengaja tidak berlaku di lini ini
+
+`BR-09` menetapkan harga single origin ditentukan **tier**, bukan biji — hanya dua angka untuk seluruh katalog: Signature Rp125.000 dan Reguler Rp110.000 per 200 gram. Lini baru memberi harga **per biji**, dari Rp65.000 sampai Rp270.000. Dua tier tidak mungkin menampung 18 harga berbeda.
+
+Karena itu lini ini tidak memakai `Tier`, dan `BR-09` tetap berlaku penuh untuk lini 200 gram. Bukan pengecualian yang dibiarkan, melainkan batas yang ditarik sengaja.
+
+### Lini ini tidak memakai tipe `Product`, dan itu keputusan
+
+Yang diketahui hanya **nama dan harga**. Asal desa, wilayah, provinsi, proses, ketinggian, varietas, dan catatan rasa tidak ada.
+
+`Product.origin` mewajibkan `province` terisi dan merakit judul metadata SEO dari sana. Memaksa 18 kopi ini ke dalamnya menuntut 18 provinsi karangan — dan untuk **Panama** serta **Kenya**, kolom itu salah secara konsep, bukan sekadar kosong. Karena itu lini ini punya bentuk datanya sendiri yang hanya memuat apa yang benar-benar diketahui.
+
+Konsekuensi yang diterima: tidak ada halaman produk per biji, jadi tidak ada halaman yang tampak lengkap padahal isinya karangan. Sebuah biji boleh naik menjadi `Product` penuh begitu owner menyerahkan data asalnya. Halaman katalog menyatakan terus terang bahwa data itu belum ada dan mengarahkan pertanyaan ke WhatsApp.
+
+Bentuknya daftar padat, bukan kartu seperti lini 200 gram. Kartu menjanjikan foto dan catatan rasa; delapan belas kartu berisi nama dan harga saja akan terbaca sebagai katalog yang rusak.
+
+### Dua bentrokan yang MASIH menunggu jawaban owner
+
+Keduanya tayang apa adanya. Tidak ada angka yang diselaraskan diam-diam, karena menyelaraskan berarti memilihkan jawaban yang belum owner berikan.
+
+**Kerinci ada di kedua lini dengan harga yang tidak sejalan.**
+
+| | Harga | Setara 100 gr |
+|---|---|---|
+| Single origin 200 gr, tier Reguler | Rp110.000 | Rp55.000 |
+| Katalog Kopi 100 gr | Rp85.000 | Rp85.000 |
+
+Selisih 55%. Entah dua lot berbeda, entah salah satunya keliru. Slug-nya dibedakan (`kerinci` versus `kerinci-100`) sehingga keduanya tidak pernah tertukar di keranjang, dan sebuah assertion menjaga pemisahan itu.
+
+**Gayo dan Pondok Baru bisa jadi kopi yang sama.** Pondok Baru berada di Bener Meriah, Aceh — dataran tinggi Gayo. Menayangkan keduanya sebagai produk terpisah berisiko membingungkan bila keduanya berasal dari lot yang sama.
+
+### Urutan poster dipertahankan
+
+Daftar mengikuti poster, kolom kiri lalu kanan, bukan diurutkan menurut harga atau abjad. Owner menyusun posternya sendiri, dan mengurutkan ulang diam-diam membuat daftar cetak dan daftar web tidak lagi bisa dibandingkan baris per baris.
+
+Harga di poster diketik ulang secara terpisah di dalam skrip pemeriksaan, bukan diimpor dari data yang diuji — pemeriksaan yang membandingkan data dengan dirinya sendiri selalu lulus.
