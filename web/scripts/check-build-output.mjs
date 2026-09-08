@@ -802,11 +802,19 @@ check("Ikon tab memakai logo brand, bukan bawaan Next, di setiap rute", () => {
   // gunung), tanpa wordmark, karena teks tidak terbaca pada 16 px. Latar
   // disampel dari poster itu sendiri, bukan ditebak.
   //
-  // icon1.png adalah varian ukuran kecil: busurnya dibuang dengan menyaring
-  // komponen terhubung — gunung adalah komponen hijau terbesar, biji adalah
-  // komponen cokelat, dan busur bukan keduanya. Bentuk yang tersisa TIDAK
-  // disentuh; ia disaring, bukan digambar ulang. Erosi morfologis sempat
-  // dicoba dan dibatalkan: ia ikut mengikis punggungan gunung sampai pecah.
+  // icon1.png adalah varian ukuran kecil, dan ia dibuat dua tahap:
+  //
+  // 1. Busurnya dibuang dengan menyaring komponen terhubung — gunung adalah
+  //    komponen hijau terbesar, biji komponen cokelat, dan busur bukan
+  //    keduanya. Erosi morfologis sempat dicoba lalu dibatalkan: ia ikut
+  //    mengikis punggungan gunung sampai pecah.
+  // 2. Siluet gunung DIPADATKAN atas permintaan CEO: pada tiap kolom, piksel
+  //    antara tinta paling atas dan paling bawah MILIK KOMPONEN GUNUNG diisi.
+  //    Pembatasan ke komponen itu penting — tanpanya rim gelap biji ikut
+  //    terhitung dan pengisian menarik slab gelap dari biji ke kaki gunung.
+  //
+  // Tahap 2 mengubah gambarnya, bukan sekadar menyaring, dan itu keputusan
+  // CEO 8 September 2026. icon.png tetap logo penuh yang tidak disentuh.
   //
   // `favicon.ico` bawaan Next sengaja DIHAPUS: bila ia ada, sebagian peramban
   // memilihnya lebih dulu dan tab kembali menampilkan segitiga hitam walaupun
