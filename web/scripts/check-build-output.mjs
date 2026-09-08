@@ -395,6 +395,24 @@ check("KD-03/BR-19: janji jam balas 08.00–21.00 WIB muncul di setiap rute", ()
   }
 });
 
+check(
+  "DEF-12/BR-19: /keranjang memuat janji jam balas di badan halaman, bukan " +
+    "hanya di footer",
+  () => {
+    // Footer menyumbang tepat satu kemunculan pada setiap rute. Kalau
+    // /keranjang tetap berhenti di satu, berarti blok checkout tidak
+    // memuatnya di HTML hasil build — persis kondisi DEF-12, ketika janji itu
+    // baru muncul setelah hydration DAN hanya ketika keranjang sudah berisi.
+    const html = pages.get(CART_ROUTE).html;
+    const hits = html.split("08.00–21.00 WIB").length - 1;
+    assert.ok(
+      hits >= 2,
+      `janji jam balas hanya muncul ${hits}x pada /keranjang; footer sudah ` +
+        `menyumbang satu, jadi badan halaman tidak memuatnya`,
+    );
+  },
+);
+
 check("BR-19: tidak ada janji balas lain di seluruh situs", () => {
   const banned = /balas 24 jam|balas cepat|24\/7|respon cepat/i;
   for (const [route, page] of pages) {
@@ -539,6 +557,41 @@ check("FR-45: sitemap memuat PERSIS 15 URL yang diharapkan", () => {
   );
   assert.deepEqual([...locs].sort(), [...expected].sort());
 });
+
+check(
+  "DEF-10/FR-45: kanonis dan <loc> sitemap sama persis, termasuk garis miring",
+  () => {
+    // Pemeriksaan di atas menormalkan garis miring penutup sebelum
+    // membandingkan, sehingga ia tidak akan pernah melihat DEF-10: pada target
+    // ekspor statis `trailingSlash` memberi kanonis akhiran "/" sementara
+    // sitemap sempat menuliskannya tanpa. Selama GitHub Pages hanya pratinjau
+    // yang ber-`Disallow: /` itu tidak berdampak; sejak Pages menjadi host
+    // produksi, dua bentuk URL untuk satu halaman adalah sinyal duplikat ke
+    // Google.
+    //
+    // Satu-satunya normalisasi yang diizinkan di sini adalah `new URL().href`,
+    // dan itu bukan pelonggaran: "https://situs.id" dan "https://situs.id/"
+    // adalah URL yang SAMA menurut RFC 3986 — path kosong pada root berarti
+    // "/". Next memang menuliskan kanonis beranda tanpa garis miring pada
+    // target Vercel sementara sitemap menuliskannya dengan. Di luar root,
+    // garis miring penutup membuat URL benar-benar berbeda, dan perbandingan
+    // ini tetap menangkapnya.
+    const href = (u) => new URL(u).href;
+    const locs = new Set(
+      [...readSitemap().matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => href(m[1])),
+    );
+    const mismatched = PUBLIC_ROUTES.filter(
+      (route) => !locs.has(href(canonicalOf(pages.get(route).html))),
+    );
+    assert.deepEqual(
+      mismatched,
+      [],
+      `kanonis tidak ada persis di sitemap untuk: ${mismatched
+        .map((route) => `/${route}`)
+        .join(", ")}`,
+    );
+  },
+);
 
 check("FR-45: sitemap TIDAK memuat /keranjang", () => {
   assert.ok(!readSitemap().includes("/keranjang"));

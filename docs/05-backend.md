@@ -426,7 +426,7 @@ Ditambah `poweredByHeader: false` dan `images.formats = ["image/avif", "image/we
 **Dua penyimpangan yang disengaja dari potongan kode di dokumen arsitektur, keduanya dicatat di komentar berkasnya:**
 
 - **`@/data/types` tidak ikut dilarang** di `components/` dan `lib/`. Tipe dihapus saat kompilasi sehingga nol byte masuk bundel klien; melarangnya hanya akan memaksa penyalinan tipe, yang justru memecah kontrak Bagian 5.2. Yang dilarang adalah modul yang membawa **data**. Konsekuensinya `lib/seo.ts` dan `lib/format.ts` mengimpor tipe saja dan tetap bersih dari katalog — `productJsonLd()` tidak membutuhkan `priceFrom()` seperti pada contoh Bagian 10.4, karena ia memetakan `product.variants` langsung.
-- **`src/app/page.tsx` untuk sementara dikecualikan** dari aturan nomor 2. Kerangka beranda bawaan masih membaca `@/data/products` langsung, dan berkas itu milik FE — BE tidak menyuntingnya. Barisnya sudah ditandai `SEMENTARA` beserta instruksi: **hapus pengecualian itu setelah `src/app/page.tsx` pindah ke `@/data/catalog`** pada commit kerangka hari pertama.
+- **`src/app/page.tsx` pernah dikecualikan** dari aturan nomor 2, karena kerangka beranda bawaan masih membaca `@/data/products` langsung. Pengecualian itu **sudah dihapus**: beranda kini mengambil dari `@/data/catalog` dan `eslint.config.mjs` tidak lagi memuat penanda `SEMENTARA`. Butir ini disimpan sebagai catatan sejarah, bukan sebagai pekerjaan yang tersisa (DEF-13).
 
 Aturan nomor 4 arsitektur (`"use client"` dilarang mengimpor `@/data/*`) tidak bisa ditegakkan ESLint dengan mudah karena bergantung pada direktif. Penegakannya lewat tinjauan kode dan pemeriksaan `First Load JS` pada daftar periksa rilis.
 

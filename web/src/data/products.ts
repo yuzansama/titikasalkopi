@@ -406,6 +406,13 @@ export const singleOriginBeans: SingleOriginBean[] = [
     tier: "reguler",
     origin: "Desa Palimping",
     region: "Garut",
+    // DEF-11. Brand brief hanya menulis "Desa Palimping, Garut" — satu-satunya
+    // origin tanpa provinsi tertulis. Nilai ini TIDAK datang dari brief: ia
+    // diturunkan dari fakta administratif bahwa Garut adalah kabupaten di Jawa
+    // Barat, bukan dari klaim apa pun tentang kopinya. Ditulis di sini karena
+    // `province` wajib terisi (validate.ts) dan judul metadata SEO merakit
+    // dirinya dari kolom ini. Menunggu satu kalimat konfirmasi owner; kalau ia
+    // menolak, hapus barisnya dan longgarkan validasi, jangan ganti tebakan.
     province: "Jawa Barat",
     process: null,
     altitudeMasl: null,

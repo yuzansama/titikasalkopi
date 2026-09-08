@@ -60,9 +60,17 @@ export function CartView({
 
   if (!hydrated) {
     return (
-      <p className="py-10 text-olive" aria-live="polite">
-        Memuat keranjang…
-      </p>
+      <div className="py-10">
+        <p className="text-olive" aria-live="polite">
+          Memuat keranjang…
+        </p>
+        {/* DEF-12. Kerangka "memuat" inilah satu-satunya isi keranjang yang
+            benar-benar ada di HTML hasil build, karena sisa komponen ini
+            menunggu hydration. Selama janji jam balas hanya dipasang di
+            <aside> ringkasan, HTML statis /keranjang memuatnya lewat footer
+            saja — bukan di tempat yang diminta BR-19/FR-26. */}
+        <ReplyHoursStatus className="mt-6" />
+      </div>
     );
   }
 
@@ -85,6 +93,9 @@ export function CartView({
             Houseblend per kg
           </Link>
         </div>
+        {/* DEF-12. Keranjang kosong bukan alasan menyembunyikan janji balas:
+            pengunjung yang ragu memesan justru sering berada di layar ini. */}
+        <ReplyHoursStatus className="mt-8" />
       </div>
     );
   }
