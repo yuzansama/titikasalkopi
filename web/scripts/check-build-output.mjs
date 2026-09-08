@@ -887,6 +887,23 @@ check(
 /* 14. FR-51 — halaman lacak pesanan                                   */
 /* ------------------------------------------------------------------ */
 
+check(
+  "FR-51: build produksi membawa endpoint buku order",
+  () => {
+    // Tanpa penjaga ini, hilangnya satu variabel lingkungan membuat /lacak
+    // diam-diam kembali ke keadaan "belum aktif" di situs yang sudah tayang.
+    // Halamannya tetap 200 dan tetap rapi, jadi tidak ada yang akan sadar
+    // sampai ada pembeli yang mengeluh.
+    if (process.env.SITE_ENV !== "production") return;
+    const endpoint = process.env.NEXT_PUBLIC_TRACKING_ENDPOINT ?? "";
+    assert.ok(
+      endpoint.startsWith("https://"),
+      "NEXT_PUBLIC_TRACKING_ENDPOINT kosong pada build produksi; /lacak akan " +
+        "tayang sebagai 'pelacakan belum aktif'. Lihat pages.yml.",
+    );
+  },
+);
+
 check("FR-51: rute /lacak hadir di hasil build", () => {
   assert.ok(pages.has(TRACK_ROUTE), "halaman lacak tidak dibangun");
 });
