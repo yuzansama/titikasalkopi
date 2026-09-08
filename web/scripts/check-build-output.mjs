@@ -798,27 +798,24 @@ check("KD-07: kedua lini tayang berdampingan tanpa saling menutupi", () => {
 
 check("Ikon tab memakai logo brand, bukan bawaan Next, di setiap rute", () => {
   // Asalnya: logo dipotong dari assets/brand/WhatsApp Image 2026-09-07 at
-  // 14.10.57.jpeg pada kotak (586, 12, 172, 138) — hanya tanda (busur, biji,
-  // gunung), tanpa wordmark, karena teks tidak terbaca pada 16 px. Latar
-  // disampel dari poster itu sendiri, bukan ditebak.
+  // 14.10.57.jpeg pada kotak (586, 12, 172, 138) — tanda saja, tanpa wordmark,
+  // karena teks tidak terbaca pada 16 px. Latar disampel dari poster itu
+  // sendiri, bukan ditebak.
   //
-  // icon1.png adalah varian ukuran kecil, dan ia dibuat dua tahap:
+  // Gunung DIBUANG atas permintaan CEO 8 September 2026: ikon memakai biji dan
+  // busurnya saja. Dilakukan dengan menyaring komponen terhubung — gunung
+  // adalah komponen hijau terbesar — sehingga bentuk yang tersisa adalah
+  // piksel asli artwork, tidak digambar ulang. Serpihan di bawah ambang 800 px
+  // ikut dibuang; itu potongan gunung yang terputus dari badannya.
   //
-  // 1. Busurnya dibuang dengan menyaring komponen terhubung — gunung adalah
-  //    komponen hijau terbesar, biji komponen cokelat, dan busur bukan
-  //    keduanya. Erosi morfologis sempat dicoba lalu dibatalkan: ia ikut
-  //    mengikis punggungan gunung sampai pecah.
-  // 2. Siluet gunung DIPADATKAN atas permintaan CEO: pada tiap kolom, piksel
-  //    antara tinta paling atas dan paling bawah MILIK KOMPONEN GUNUNG diisi.
-  //    Pembatasan ke komponen itu penting — tanpanya rim gelap biji ikut
-  //    terhitung dan pengisian menarik slab gelap dari biji ke kaki gunung.
+  // Busur sempat ditebalkan supaya lebih terbaca kecil, lalu dibatalkan:
+  // dilatasi menumbuhkan halo di tepi anti-aliasing sehingga busur terlihat
+  // seperti rantai manik pada ukuran besar. Konsekuensi yang diterima: pada
+  // 16 px busur melembut menjadi lengkung samar, dan yang memikul pengenalan
+  // adalah bijinya.
   //
-  // Tahap 2 mengubah gambarnya, bukan sekadar menyaring, dan itu keputusan
-  // CEO 8 September 2026. icon.png tetap logo penuh yang tidak disentuh.
-  //
-  // `favicon.ico` bawaan Next sengaja DIHAPUS: bila ia ada, sebagian peramban
-  // memilihnya lebih dulu dan tab kembali menampilkan segitiga hitam walaupun
-  // icon.png sudah benar.
+  // Kedua berkas memakai tanda yang SAMA, hanya beda resolusi — dua ukuran
+  // tetap ada supaya peramban memilih sendiri yang terdekat.
   for (const [route, page] of pages) {
     if (route === "_not-found") continue;
     const icons = [
