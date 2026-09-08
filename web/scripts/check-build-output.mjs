@@ -802,23 +802,46 @@ check("Ikon tab memakai logo brand, bukan bawaan Next, di setiap rute", () => {
   // gunung), tanpa wordmark, karena teks tidak terbaca pada 16 px. Latar
   // disampel dari poster itu sendiri, bukan ditebak.
   //
+  // icon1.png adalah varian ukuran kecil: busurnya dibuang dengan menyaring
+  // komponen terhubung — gunung adalah komponen hijau terbesar, biji adalah
+  // komponen cokelat, dan busur bukan keduanya. Bentuk yang tersisa TIDAK
+  // disentuh; ia disaring, bukan digambar ulang. Erosi morfologis sempat
+  // dicoba dan dibatalkan: ia ikut mengikis punggungan gunung sampai pecah.
+  //
   // `favicon.ico` bawaan Next sengaja DIHAPUS: bila ia ada, sebagian peramban
   // memilihnya lebih dulu dan tab kembali menampilkan segitiga hitam walaupun
   // icon.png sudah benar.
   for (const [route, page] of pages) {
     if (route === "_not-found") continue;
-    const icon = page.html.match(/<link rel="icon"[^>]*href="([^"]+)"/);
-    assert.ok(icon, `tautan ikon hilang pada /${route}`);
-    assert.ok(
-      icon[1].includes("icon."),
-      `ikon /${route} menunjuk "${icon[1]}", bukan icon.png`,
-    );
-    if (SITE_BASE_PATH) {
+    const icons = [
+      ...page.html.matchAll(/<link rel="icon"[^>]*href="([^"]+)"[^>]*sizes="(\d+)x\d+"/g),
+    ];
+    assert.ok(icons.length > 0, `tautan ikon hilang pada /${route}`);
+    for (const [, href] of icons) {
       assert.ok(
-        icon[1].startsWith(SITE_BASE_PATH),
-        `ikon /${route} tidak memakai basePath: ${icon[1]}`,
+        href.includes("icon"),
+        `ikon /${route} menunjuk "${href}", bukan berkas icon`,
       );
+      if (SITE_BASE_PATH) {
+        assert.ok(
+          href.startsWith(SITE_BASE_PATH),
+          `ikon /${route} tidak memakai basePath: ${href}`,
+        );
+      }
     }
+
+    // Dua ukuran, dan peramban memilih sendiri yang terdekat. Tanpa yang kecil,
+    // tab kembali memakai logo penuh yang busurnya melebur jadi halo di 16 px —
+    // persis masalah yang icon1.png ada untuk menyelesaikannya.
+    const sizes = icons.map(([, , size]) => Number(size)).sort((a, b) => a - b);
+    assert.ok(
+      sizes.some((size) => size <= 64),
+      `/${route} tidak punya ikon kecil; ukuran yang ada: ${sizes.join(", ")}`,
+    );
+    assert.ok(
+      sizes.some((size) => size >= 192),
+      `/${route} tidak punya ikon besar; ukuran yang ada: ${sizes.join(", ")}`,
+    );
   }
 });
 
