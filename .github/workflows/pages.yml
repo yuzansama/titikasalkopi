@@ -42,6 +42,14 @@ jobs:
       # site. Change this to https://titikasalkopi.id once the domain is
       # registered and pointed here, and clear BASE_PATH at the same time.
       NEXT_PUBLIC_SITE_ORIGIN: https://yuzansama.github.io
+      # Order-book endpoint for /lacak (FR-51). Set the repository variable
+      # TRACKING_ENDPOINT to the Apps Script Web app URL - see
+      # docs/08-lacak-pesanan.md section 4. Not a secret: the buyer's browser
+      # is what calls it, so it ships in the client bundle either way, and what
+      # protects the data is the column allowlist on the Apps Script side.
+      # While empty, /lacak still builds and says tracking is not active yet
+      # instead of failing silently.
+      NEXT_PUBLIC_TRACKING_ENDPOINT: ${{ vars.TRACKING_ENDPOINT }}
     steps:
       - uses: actions/checkout@v4
 

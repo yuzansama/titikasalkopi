@@ -207,6 +207,21 @@ export function keranjangMetadata(): Metadata {
   });
 }
 
+/**
+ * `/lacak` (FR-51). `noindex` dengan alasan yang sama seperti `/keranjang`:
+ * halaman formulir kosong tidak punya nilai pencarian dan hanya bersaing
+ * dengan halaman yang punya.
+ */
+export function lacakMetadata(): Metadata {
+  return buildPageMetadata({
+    title: "Lacak pesanan",
+    description:
+      "Periksa status pesanan Titik Asal Kopi dengan kode order dari pesan WhatsApp Anda.",
+    path: "/lacak",
+    noIndex: true,
+  });
+}
+
 /** `not-found.tsx`. */
 export function notFoundMetadata(): Metadata {
   return buildPageMetadata({

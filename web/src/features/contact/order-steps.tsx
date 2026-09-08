@@ -7,6 +7,9 @@
  * brand brief maupun BRD.
  */
 
+import Link from "next/link";
+import { FOCUS_RING } from "@/components/ui/styles";
+
 const STEPS: Array<{ title: string; detail: string }> = [
   {
     title: "Pilih kopi dan variannya",
@@ -29,6 +32,10 @@ const STEPS: Array<{ title: string; detail: string }> = [
       "Ongkos kirim dan total akhir dikonfirmasi lewat WhatsApp. Pembayaran tidak dilakukan di website ini.",
   },
 ];
+
+/* Disebut di langkah terakhir, bukan sebagai langkah kelima: melacak bukan
+   bagian dari memesan, dan menjadikannya langkah tersendiri membuat alur
+   empat langkah terbaca lebih panjang daripada sebenarnya. */
 
 export function OrderSteps({
   headingLevel = "h2",
@@ -68,6 +75,16 @@ export function OrderSteps({
       <p className="mt-5 rounded-md bg-coffee px-4 py-3 text-[0.95rem] text-cream">
         Harga di keranjang belum termasuk ongkos kirim. Total akhir dan
         pembayaran dikonfirmasi lewat WhatsApp, bukan di website.
+      </p>
+      <p className="mt-3 text-[0.95rem] text-olive">
+        Setelah memesan, status pesanan bisa diperiksa di{" "}
+        <Link
+          href="/lacak"
+          className={`rounded-sm text-rust underline underline-offset-4 ${FOCUS_RING}`}
+        >
+          halaman lacak pesanan
+        </Link>{" "}
+        memakai kode order Anda.
       </p>
     </section>
   );

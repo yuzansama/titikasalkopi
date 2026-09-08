@@ -116,6 +116,12 @@ const PUBLIC_ROUTES = [
 
 const CART_ROUTE = "keranjang";
 
+/**
+ * `/lacak` (FR-51). Bukan rute publik: ia `noindex` dengan alasan yang sama
+ * seperti keranjang — halaman formulir kosong tidak punya nilai pencarian.
+ */
+const TRACK_ROUTE = "lacak";
+
 const attr = (html, re) => {
   const match = html.match(re);
   return match ? match[1] : null;
@@ -216,13 +222,15 @@ check("FR-45: kanonis menunjuk rutenya sendiri, bukan rute lain", () => {
   }
 });
 
-check("Bagian 3.2: /keranjang membawa noindex", () => {
-  const robots = robotsOf(pages.get(CART_ROUTE).html);
-  assert.ok(robots, "meta robots tidak ada pada /keranjang");
-  assert.ok(
-    robots.includes("noindex"),
-    `meta robots /keranjang = "${robots}" (harus memuat noindex)`,
-  );
+check("Bagian 3.2: /keranjang dan /lacak membawa noindex", () => {
+  for (const route of [CART_ROUTE, TRACK_ROUTE]) {
+    const robots = robotsOf(pages.get(route).html);
+    assert.ok(robots, `meta robots tidak ada pada /${route}`);
+    assert.ok(
+      robots.includes("noindex"),
+      `meta robots /${route} = "${robots}" (harus memuat noindex)`,
+    );
+  }
 });
 
 check("FR-45: tidak ada rute publik yang ikut ter-noindex", () => {
@@ -387,7 +395,7 @@ check("KD-01: halaman produk menyatakan 3 pack berasal dari origin yang sama", (
 /* ------------------------------------------------------------------ */
 
 check("KD-03/BR-19: janji jam balas 08.00–21.00 WIB muncul di setiap rute", () => {
-  for (const route of [...PUBLIC_ROUTES, CART_ROUTE]) {
+  for (const route of [...PUBLIC_ROUTES, CART_ROUTE, TRACK_ROUTE]) {
     assert.ok(
       pages.get(route).html.includes("08.00–21.00 WIB"),
       `janji jam balas hilang pada /${route}`,
@@ -593,8 +601,11 @@ check(
   },
 );
 
-check("FR-45: sitemap TIDAK memuat /keranjang", () => {
-  assert.ok(!readSitemap().includes("/keranjang"));
+check("FR-45: sitemap TIDAK memuat /keranjang maupun /lacak", () => {
+  const xml = readSitemap();
+  for (const route of [CART_ROUTE, TRACK_ROUTE]) {
+    assert.ok(!xml.includes(`/${route}`), `/${route} tidak boleh ada di sitemap`);
+  }
 });
 
 check("FR-45: robots.txt dibangun", () => {
@@ -871,5 +882,84 @@ check(
     );
   },
 );
+
+/* ------------------------------------------------------------------ */
+/* 14. FR-51 — halaman lacak pesanan                                   */
+/* ------------------------------------------------------------------ */
+
+check("FR-51: rute /lacak hadir di hasil build", () => {
+  assert.ok(pages.has(TRACK_ROUTE), "halaman lacak tidak dibangun");
+});
+
+check("FR-51: robots.txt produksi melarang /lacak", () => {
+  const robots = readRobots();
+  // Pada build non-produksi seluruh situs sudah `Disallow: /`, jadi aturan ini
+  // hanya berlaku pada cabang produksi.
+  if (!/Allow: \//.test(robots)) return;
+  assert.ok(
+    /Disallow: \/lacak/.test(robots),
+    "produksi harus melarang /lacak, sama seperti /keranjang",
+  );
+});
+
+check(
+  "FR-51: HTML /lacak TIDAK memuat data pesanan siapa pun",
+  () => {
+    // Halaman ini statis; seluruh data pesanan diambil di klien. Kalau ada kode
+    // order sungguhan yang ikut masuk ke hasil build, itu berarti data pembeli
+    // bocor ke repositori publik dan ke cache CDN.
+    const html = pages.get(TRACK_ROUTE).html;
+    const codes = [...html.matchAll(/TAK-\d{6}-[A-Z0-9]{4}/g)].map((m) => m[0]);
+    // Satu-satunya yang boleh muncul adalah contoh bentuk pada placeholder dan
+    // teks bantu.
+    const ALLOWED = "TAK-260908-K7Q2";
+    const leaked = codes.filter((code) => code !== ALLOWED);
+    assert.deepEqual(
+      leaked,
+      [],
+      `kode order selain contoh ikut ter-render ke HTML: ${leaked.join(", ")}`,
+    );
+  },
+);
+
+check(
+  "FR-51: setiap cabang kegagalan lacak mengarahkan pembeli ke WhatsApp",
+  () => {
+    // Halaman yang gagal tanpa memberi jalan keluar terbaca sebagai "pesanan
+    // Anda tidak ada". Sumbernya diperiksa, bukan HTML, karena cabang-cabang
+    // itu memang baru dirender setelah pencarian dijalankan.
+    const source = readFileSync(
+      join("src", "features", "tracking", "track-order-form.tsx"),
+      "utf8",
+    );
+    for (const branch of [
+      '"not-found"',
+      '"unknown-status"',
+      '"not-configured"',
+      '"error"',
+    ]) {
+      assert.ok(
+        source.includes(`case ${branch}:`),
+        `cabang ${branch} tidak ditangani di track-order-form.tsx`,
+      );
+    }
+    const waLinkUses = source.match(/<WaLink/g) ?? [];
+    assert.ok(
+      waLinkUses.length >= 4,
+      `hanya ${waLinkUses.length} cabang yang menawarkan WhatsApp; ` +
+        `setiap kegagalan wajib punya jalan keluar`,
+    );
+  },
+);
+
+check("FR-51: /lacak dan buku order tertaut dari footer setiap rute", () => {
+  for (const [route, page] of pages) {
+    if (route === "404" || route === "_not-found") continue;
+    assert.ok(
+      page.html.includes("Lacak pesanan"),
+      `tautan lacak pesanan hilang dari footer pada /${route}`,
+    );
+  }
+});
 
 summary("HTML hasil build");

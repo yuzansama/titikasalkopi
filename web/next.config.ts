@@ -22,7 +22,11 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "img-src 'self' data: blob: https://www.google-analytics.com",
   "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
-  "connect-src 'self' https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
+  // script.google.com melayani Web App Apps Script (buku order, FR-50) dan
+  // MENGALIHKAN ke script.googleusercontent.com; keduanya wajib disebut atau
+  // pengalihannya diblokir. Ini konten dari luar repositori — pemicu yang
+  // ditulis pada catatan CSP di bawah sudah aktif sejak /lacak ada.
+  "connect-src 'self' https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://script.google.com https://script.googleusercontent.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:", // next/font meng-host sendiri; tidak ada domain font eksternal
   "manifest-src 'self'",
@@ -85,6 +89,9 @@ const nextConfig: NextConfig = {
   // sungguh melayani situs (lihat src/lib/site.ts).
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
+    // Endpoint buku order (FR-50). Kosong = halaman /lacak tetap dibangun dan
+    // menyatakan pelacakan belum aktif, bukan gagal diam-diam.
+    NEXT_PUBLIC_TRACKING_ENDPOINT: process.env.NEXT_PUBLIC_TRACKING_ENDPOINT ?? "",
     NEXT_PUBLIC_SITE_ORIGIN:
       process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://yuzansama.github.io",
   },

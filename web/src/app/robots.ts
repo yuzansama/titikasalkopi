@@ -28,8 +28,10 @@ export default function robots(): MetadataRoute.Robots {
   }
 
   return {
-    // /keranjang tidak layak diindeks; halamannya juga noindex lewat metadata.
-    rules: [{ userAgent: "*", allow: "/", disallow: ["/keranjang"] }],
+    // /keranjang dan /lacak tidak layak diindeks; keduanya juga noindex lewat
+    // metadata. /lacak tidak pernah membawa kode order di URL, jadi ini soal
+    // nilai pencarian, bukan kebocoran.
+    rules: [{ userAgent: "*", allow: "/", disallow: ["/keranjang", "/lacak"] }],
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,
   };

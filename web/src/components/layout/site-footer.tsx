@@ -26,6 +26,7 @@ const PAGES = [
   { href: "/cerita-kami", label: "Cerita Kami" },
   { href: "/kontak", label: "Kontak" },
   { href: "/keranjang", label: "Keranjang" },
+  { href: "/lacak", label: "Lacak pesanan" },
 ] as const;
 
 const linkClass = `inline-flex min-h-11 items-center gap-2 rounded-md text-cream underline-offset-4 hover:underline ${FOCUS_RING_INVERSE}`;

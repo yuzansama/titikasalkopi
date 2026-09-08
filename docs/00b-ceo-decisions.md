@@ -82,3 +82,28 @@ Layout sudah dikembalikan persis seperti semula setelah eksperimen; tidak ada si
 Konsekuensi yang diterima: skor Lighthouse mobile bertahan di 89, sedikit di bawah target BRD 90, karena Total Blocking Time 330 ms berakar pada beban runtime yang sama. Seluruh metrik lain sudah lulus — Accessibility 100, Best Practices 100, SEO 100, CLS 0, LCP 2,5 detik. Target Performance >= 90 ikut direvisi menjadi **>= 88** pada host saat ini, dan ditinjau ulang bila situs pindah ke host yang menyajikan brotli.
 
 **Yang tidak boleh disimpulkan dari keputusan ini:** ini bukan izin untuk menambah berat. Setiap pustaka klien baru wajib dibenarkan lebih dulu, karena marginnya sekarang tinggal 1,7 KB.
+
+## D-05 — Pelacakan pesanan dilakukan di website sendiri, bukan dialihkan ke marketplace
+
+Tanggal: 8 September 2026. Membuka FR-51 pada `02-BRD.md`, yang merujuk keputusan ini sebagai **KD-05** — awalan `KD-` dipakai di BRD dan rencana uji karena `D-05` di sana sudah berarti dependensi bisnis pada Bagian 14.2, bukan keputusan CEO. Pemetaan yang sama sudah berlaku untuk D-01 sampai D-03.
+
+CEO menyatakan Shopee **bukan** platform penjualannya; website inilah kanal jualnya. Karena itu jawaban "pembeli yang mau pelacakan silakan lewat Shopee" tidak berlaku, dan pelacakan pesanan harus ada di `titikasalkopi.id`.
+
+Keputusan turunannya:
+
+**Shopee tetap tayang apa adanya.** Tautan di footer, Kontak, Cerita Kami, keranjang, halaman produk, dan beranda tidak diubah. US-15 dan FR-25 tidak dibatalkan. Yang berubah hanya cara kami menjawab: Shopee bukan lagi jalan keluar untuk kebutuhan pelacakan.
+
+**Sumber kebenaran status adalah buku order owner**, bukan basis data baru. Buku itu berbentuk Google Sheet dan disajikan sebagai endpoint baca-saja lewat Apps Script. Alasannya operasional, bukan teknis: adminnya satu orang, dan sistem apa pun yang menuntut ia membuka dashboard kedua akan berakhir tidak diperbarui. Halaman lacak yang menampilkan status basi lebih merusak kepercayaan daripada tidak punya halaman lacak sama sekali.
+
+**Dua syarat privasi yang tidak boleh dilanggar**, keduanya sudah punya pemeriksaan otomatis:
+
+1. Endpoint hanya mengirim kolom pada daftar putih. Nama, nomor telepon, alamat, dan catatan internal tidak pernah keluar, walaupun tersimpan di sheet yang sama.
+2. Kode order salah dan 4 digit salah menghasilkan jawaban yang **persis sama**. Membedakannya mengubah endpoint menjadi alat untuk menebak pesanan orang lain.
+
+**Kejujuran atas kebasian.** Setelah lima hari tanpa perubahan pada pesanan yang belum selesai, halaman menyatakan sendiri bahwa statusnya mungkin sudah tidak mutakhir. Ini disengaja: kami memilih mengakui keterlambatan daripada menampilkan label yang terbaca pasti padahal tidak.
+
+### Konsekuensi yang masih menunggu keputusan CEO
+
+`next.config.ts` sudah menulis pemicunya sejak awal: begitu situs menampilkan konten dari luar repositori, ia harus pindah ke host yang bisa menyetel header. Halaman lacak memenuhi syarat itu, sementara host produksi sekarang GitHub Pages yang tidak dapat menyetel header sama sekali — sehingga CSP, `X-Frame-Options`, dan `Permissions-Policy` tidak aktif di produksi.
+
+Pilihannya ada dua: pindah produksi ke Vercel, di mana seluruh header itu sudah ditulis dan langsung aktif tanpa perubahan kode; atau bertahan di Pages dan menerima risikonya secara sadar. Rinciannya di `08-lacak-pesanan.md` Bagian 7. Keputusan ini belum diambil dan tidak boleh digantung.
