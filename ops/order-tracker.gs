@@ -82,6 +82,12 @@ var MAX_ITEMS_LENGTH = 200;
 function doGet(e) {
   try {
     var params = (e && e.parameter) || {};
+
+    // Katalog (KD-08). Dipisahkan lebih dulu karena ia tidak memakai kode order
+    // sama sekali. Isinya harga dan stok — yang memang sudah tayang di situs,
+    // jadi tidak ada yang bocor dengan menyajikannya di sini.
+    if (params.katalog === '1') return json(readCatalog_());
+
     var code = normalizeCode(params.code);
     var last4 = String(params.last4 || '').trim();
 
@@ -177,6 +183,105 @@ function json(payload) {
   return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(
     ContentService.MimeType.JSON,
   );
+}
+
+/* ================================================================== */
+/* Katalog: harga, stok, dan lini 100 gram (KD-08)                     */
+/* ================================================================== */
+
+var PRICE_SHEET = 'harga';
+var STOCK_SHEET = 'stok';
+var PICKS_SHEET = 'katalog100';
+
+/** Membaca satu tab sebagai array objek berkunci judul kolom. */
+function readSheetRows_(name) {
+  var sheet = SpreadsheetApp.getActive().getSheetByName(name);
+  if (!sheet) return null;
+
+  var values = sheet.getDataRange().getValues();
+  if (values.length === 0) return [];
+
+  var headers = values[0].map(function (h) {
+    return String(h || '').trim().toLowerCase();
+  });
+
+  return values.slice(1).map(function (row) {
+    var record = {};
+    headers.forEach(function (header, i) {
+      if (!header) return;
+      var value = row[i];
+      record[header] =
+        Object.prototype.toString.call(value) === '[object Date]'
+          ? Utilities.formatDate(value, 'Asia/Jakarta', 'yyyy-MM-dd')
+          : String(value == null ? '' : value).trim();
+    });
+    return record;
+  });
+}
+
+/** Angka rupiah dari sel. Mengembalikan null bila bukan bilangan bulat positif. */
+function money_(raw) {
+  // Sel bisa terbaca "Rp125.000", "125.000", atau 125000. Ketiganya diterima;
+  // yang tidak diterima adalah apa pun yang menyisakan karakter selain digit,
+  // karena "125.0o0" harus gagal, bukan diam-diam menjadi 1250.
+  var text = String(raw == null ? '' : raw).trim();
+  if (!text) return null;
+  var digits = text.replace(/^Rp\s*/i, '').replace(/[.\s]/g, '');
+  if (!/^\d+$/.test(digits)) return null;
+  var value = Number(digits);
+  return Number.isInteger(value) && value > 0 ? value : null;
+}
+
+/**
+ * Seluruh katalog yang boleh diubah owner tanpa menyentuh kode.
+ *
+ * Tab yang tidak ada dikembalikan sebagai null, BUKAN sebagai objek kosong.
+ * Perbedaannya menentukan: skrip sinkronisasi menolak menulis apa pun bila
+ * sebuah tab hilang, sementara objek kosong akan terbaca sebagai "owner
+ * menghapus semuanya" dan menerbitkan katalog kosong.
+ */
+function readCatalog_() {
+  var priceRows = readSheetRows_(PRICE_SHEET);
+  var stockRows = readSheetRows_(STOCK_SHEET);
+  var pickRows = readSheetRows_(PICKS_SHEET);
+
+  var harga = null;
+  if (priceRows) {
+    harga = {};
+    priceRows.forEach(function (row) {
+      var key = String(row.kunci || '').trim();
+      var value = money_(row.harga);
+      if (key && value !== null) harga[key] = value;
+    });
+  }
+
+  var stok = null;
+  if (stockRows) {
+    stok = {};
+    stockRows.forEach(function (row) {
+      var slug = String(row.slug || '').trim().toLowerCase();
+      var status = String(row.status || '').trim().toLowerCase();
+      if (slug && (status === 'available' || status === 'out-of-stock')) {
+        stok[slug] = status;
+      }
+    });
+  }
+
+  var picks = null;
+  if (pickRows) {
+    picks = [];
+    pickRows.forEach(function (row) {
+      var slug = String(row.slug || '').trim().toLowerCase();
+      var nama = sanitizeCell_(row.nama);
+      var harga100 = money_(row.harga);
+      var status = String(row.status || 'available').trim().toLowerCase();
+      if (!slug || !nama || harga100 === null) return;
+      if (status === 'out-of-stock') return; // disembunyikan, bukan dihapus
+      picks.push({ slug: slug, name: nama, price: harga100 });
+    });
+  }
+
+  return { harga: harga, stok: stok, picks: picks };
 }
 
 /* ================================================================== */

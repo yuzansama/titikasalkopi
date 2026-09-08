@@ -177,3 +177,37 @@ Selisih 55%. Entah dua lot berbeda, entah salah satunya keliru. Slug-nya dibedak
 Daftar mengikuti poster, kolom kiri lalu kanan, bukan diurutkan menurut harga atau abjad. Owner menyusun posternya sendiri, dan mengurutkan ulang diam-diam membuat daftar cetak dan daftar web tidak lagi bisa dibandingkan baris per baris.
 
 Harga di poster diketik ulang secara terpisah di dalam skrip pemeriksaan, bukan diimpor dari data yang diuji — pemeriksaan yang membandingkan data dengan dirinya sendiri selalu lulus.
+
+
+## D-08 — Katalog dikelola owner lewat Google Sheet, bukan lewat kode
+
+Tanggal: 8 September 2026. Dirujuk sebagai **KD-08** dari `02-BRD.md`. Membuka FR-53.
+
+Owner meminta katalog mudah dikelola. Sebelum ini, mengubah satu harga menuntut menyunting berkas TypeScript, commit, dan push — alur kerja developer, bukan alur kerja pemilik toko.
+
+**Keputusan.** Harga, status stok, dan seluruh lini 100 gram pindah ke tiga tab pada spreadsheet yang sudah dipakai untuk buku order. Owner menyunting di sana, menekan satu tombol di GitHub Actions, dan situs terbit ulang. Ada pula jadwal harian pukul 01.00 WIB.
+
+**Yang TIDAK ikut pindah**: asal, proses, ketinggian, varietas, catatan rasa, dan foto. Batasnya bukan teknis — semuanya klaim tentang produk, bukan angka, pada toko yang dibayar di muka lewat transfer. Klaim yang salah merusak kepercayaan pada seluruh katalog, termasuk bagian yang benar.
+
+### Sheet adalah permukaan sunting; repositori tetap catatannya
+
+Harga TIDAK diambil saat pengunjung membuka halaman. Sinkronisasi menulis ulang `src/data/managed.generated.ts`, meng-commit-nya, dan situs dibangun dari berkas itu.
+
+Alasannya: mengambil harga saat halaman dibuka berarti sheet yang mati atau lambat menjadi halaman produk tanpa harga, dan seluruh situs berhenti bisa di-cache. Harga adalah data paling kritis di sini — ia harus statis, tervalidasi, dan punya riwayat. Cara ini memberi ketiganya sekaligus: setiap perubahan harga masuk riwayat git dengan tanggal dan isinya.
+
+Berkas hasil itu **satu-satunya** sumber harga, stok, dan lini 100 gram. Tidak ada nilai cadangan di berkas lain, karena dua sumber kebenaran untuk harga berarti suatu hari situs menayangkan angka yang tidak seorang pun merasa menuliskannya.
+
+### Gagal tertutup, di empat lapis
+
+Menerbitkan harga yang salah jauh lebih merugikan daripada menerbitkan harga kemarin. Karena itu setiap keraguan menghentikan penerbitan, dan katalog yang sudah ter-commit tetap tayang:
+
+1. Apps Script membedakan tab yang **tidak ada** (`null`) dari tab yang **kosong**. Yang pertama berarti salah nama tab, yang kedua berarti owner mengosongkan isinya; keduanya ditolak dengan pesan berbeda.
+2. `validateCatalogPayload()` menolak tab hilang, harga hilang, kunci tak dikenal, slug bentrok, dan daftar 100 gram kosong — tanpa menyentuh berkas apa pun.
+3. Validator katalog berjalan saat modul dievaluasi, sehingga data rusak menggagalkan build alih-alih tayang.
+4. Workflow menjalankan `tsc` dan tiga skrip pemeriksaan sebelum commit.
+
+Ditambah satu hal kecil yang menentukan: `managedPrice()` **melempar** bila kuncinya hilang, bukan mengembalikan 0. Nol akan tampil sebagai "Rp0" di halaman produk dan ikut ke pesan WhatsApp sebagai penawaran sungguhan.
+
+### Batas kewarasan harga Rp10.000 sampai Rp5.000.000
+
+Bukan aturan bisnis, melainkan jaring pengaman terhadap salah ketik. Satu nol kelebihan mengubah Rp125.000 menjadi Rp1.250.000; satu nol kurang menjadikannya Rp12.500. Keduanya bilangan bulat positif yang sah, jadi pemeriksaan tipe saja tidak akan pernah melihatnya. Bila katalog suatu saat sungguh memuat harga di luar rentang itu, ubah batasnya secara sadar — jangan hapus pemeriksaannya.

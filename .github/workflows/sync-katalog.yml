@@ -1,0 +1,72 @@
+# Pull the catalogue from the owner's Google Sheet into the repository.
+#
+# The owner edits prices, stock and the 100 gram line in the sheet, then runs
+# this from the Actions tab. It rewrites src/data/managed.generated.ts, commits,
+# and the push triggers the Pages deploy - so one button republishes the site.
+#
+# It fails closed. A missing tab, an unreachable endpoint, a price with a typo'd
+# zero: the sync exits non-zero and writes nothing, so the committed catalogue
+# stays live. Publishing a wrong price is far worse than publishing yesterday's.
+name: Sync katalog dari Google Sheet
+
+on:
+  workflow_dispatch:
+  # Daily at 01:00 WIB. Catches edits the owner forgot to publish, and means a
+  # broken sheet surfaces as a failed run rather than at the moment they need it.
+  schedule:
+    - cron: "0 18 * * *"
+
+permissions:
+  contents: write
+
+# Never race the sync against itself; a second run would rebase on a tree the
+# first one is still writing.
+concurrency:
+  group: sync-katalog
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      # Same Apps Script Web app as /lacak - one deployment serves the order
+      # book and the catalogue. Keep in step with pages.yml.
+      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbzGbe4W2zxmPp9fErxcbG9MN2ZSau4qAjmyNNrmSke56_FJvakzr_HAyECwoVWdMQ74RQ/exec
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+
+      # Writes nothing unless every check passes.
+      - name: Tarik katalog dari sheet
+        run: node scripts/sync-katalog.mjs
+
+      # The sync only guarantees the sheet was sane. These prove the catalogue
+      # the site will actually build is sane - the validator runs at module
+      # evaluation, so a bad price fails here rather than on the live site.
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - run: node scripts/check-picks.mjs
+      - run: node scripts/check-cart.mjs
+      - run: node scripts/check-sync-katalog.mjs
+
+      - name: Commit bila ada perubahan
+        run: |
+          if git diff --quiet -- src/data/managed.generated.ts; then
+            echo "Katalog sudah sama dengan sheet. Tidak ada commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/managed.generated.ts
+          git commit -m "chore(katalog): sinkronkan harga dan stok dari Google Sheet"
+          git push

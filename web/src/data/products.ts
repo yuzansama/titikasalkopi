@@ -20,6 +20,7 @@
  */
 
 import abmisibilArtwork from "@/images/produk/abmisibil.jpg";
+import { managedPrice, managedStatus } from "./managed.generated";
 import boldPhoto from "@/images/produk/bold.jpg";
 import brightPhoto from "@/images/produk/bright.jpg";
 import pondokBaruArtwork from "@/images/produk/pondok-baru.jpg";
@@ -59,42 +60,42 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     arabicaPercent: 70,
     robustaPercent: 30,
     label: "70% Arabica : 30% Robusta",
-    pricePerKg: 210_000,
+    pricePerKg: managedPrice("houseblend.bold-70-30"),
   },
   {
     id: "bold-60-40",
     arabicaPercent: 60,
     robustaPercent: 40,
     label: "60% Arabica : 40% Robusta",
-    pricePerKg: 200_000,
+    pricePerKg: managedPrice("houseblend.bold-60-40"),
   },
   {
     id: "bold-50-50",
     arabicaPercent: 50,
     robustaPercent: 50,
     label: "50% Arabica : 50% Robusta",
-    pricePerKg: 195_000,
+    pricePerKg: managedPrice("houseblend.bold-50-50"),
   },
   {
     id: "bold-40-60",
     arabicaPercent: 40,
     robustaPercent: 60,
     label: "40% Arabica : 60% Robusta",
-    pricePerKg: 190_000,
+    pricePerKg: managedPrice("houseblend.bold-40-60"),
   },
   {
     id: "bold-30-70",
     arabicaPercent: 30,
     robustaPercent: 70,
     label: "30% Arabica : 70% Robusta",
-    pricePerKg: 185_000,
+    pricePerKg: managedPrice("houseblend.bold-30-70"),
   },
   {
     id: "bold-20-80",
     arabicaPercent: 20,
     robustaPercent: 80,
     label: "20% Arabica : 80% Robusta",
-    pricePerKg: 175_000,
+    pricePerKg: managedPrice("houseblend.bold-20-80"),
   },
 ];
 
@@ -127,13 +128,13 @@ export const houseblendBright: HouseblendBrightVariant[] = [
     id: "bright-signature",
     tier: "signature",
     label: "Signature",
-    pricePerKg: 260_000,
+    pricePerKg: managedPrice("houseblend.bright-signature"),
   },
   {
     id: "bright-reguler",
     tier: "reguler",
     label: "Reguler",
-    pricePerKg: 230_000,
+    pricePerKg: managedPrice("houseblend.bright-reguler"),
   },
 ];
 
@@ -150,7 +151,7 @@ export type HouseblendFullRobusta = {
 export const houseblendFullRobusta: HouseblendFullRobusta = {
   id: "full-robusta",
   label: "Full Robusta",
-  pricePerKg: 175_000,
+  pricePerKg: managedPrice("houseblend.full-robusta"),
 };
 
 /* ------------------------------------------------------------------ */
@@ -190,7 +191,7 @@ export const houseblendLines: HouseblendLine[] = [
       src: boldPhoto,
       alt: "Biji kopi sangrai gelap yang mengilap menumpuk rapat, dengan sekop logam menyendok dari sisi kanan atas.",
     },
-    status: "available",
+    status: managedStatus("bold"),
     searchTerms: [
       "houseblend kopi per kg",
       "blend arabica robusta",
@@ -211,7 +212,7 @@ export const houseblendLines: HouseblendLine[] = [
       src: brightPhoto,
       alt: "Biji kopi arabica sangrai terang di dalam mangkuk kayu, dengan sendok kayu bersandar di tepi mangkuk.",
     },
-    status: "available",
+    status: managedStatus("bright"),
     searchTerms: [
       "houseblend full arabica",
       "blend arabica natural washed",
@@ -231,7 +232,7 @@ export const houseblendLines: HouseblendLine[] = [
     // memotret BOLD dan BRIGHT. Memakai foto BOLD di sini berarti menampilkan
     // produk lain (FR-07), jadi lini ini tetap memakai placeholder (R-13).
     image: null,
-    status: "available",
+    status: managedStatus("full-robusta"),
     searchTerms: [
       "kopi robusta per kg",
       "houseblend robusta",
@@ -270,8 +271,14 @@ export type TierPricing = {
  * Signature = Kupang / Papua. Reguler = Sumatera / Jawa.
  */
 export const singleOriginPricing: Record<Tier, TierPricing> = {
-  signature: { pack1: 125_000, pack3: 350_000 },
-  reguler: { pack1: 110_000, pack3: 310_000 },
+  signature: {
+    pack1: managedPrice("single.signature.pack1"),
+    pack3: managedPrice("single.signature.pack3"),
+  },
+  reguler: {
+    pack1: managedPrice("single.reguler.pack1"),
+    pack3: managedPrice("single.reguler.pack3"),
+  },
 };
 
 export type SingleOriginBean = {
@@ -322,7 +329,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
-    status: "available",
+    status: managedStatus("oelbiteno"),
     searchTerms: ["kopi Kupang", "kopi NTT", "kopi Timor", "single origin NTT"],
   },
   {
@@ -345,7 +352,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
       src: abmisibilArtwork,
       alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: kanguru pohon bertengger di dahan berlumut di atas lembah hutan berkabut, dengan para-para penjemuran ceri kopi merah di kejauhan.",
     },
-    status: "available",
+    status: managedStatus("abmisibil"),
     searchTerms: [
       "kopi Papua",
       "kopi Pegunungan Bintang",
@@ -373,7 +380,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
       src: sabinArtwork,
       alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: burung cendrawasih bertengger di dahan pohon menghadap lembah sungai berhutan, dengan para-para penjemuran ceri kopi di halaman.",
     },
-    status: "available",
+    status: managedStatus("sabin"),
     searchTerms: [
       "kopi Papua",
       "kopi Pegunungan Bintang",
@@ -394,7 +401,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
-    status: "available",
+    status: managedStatus("pyramid"),
     searchTerms: ["kopi Papua", "kopi Jayawijaya", "kopi Wamena", "arabica Papua"],
   },
 
@@ -419,7 +426,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
-    status: "available",
+    status: managedStatus("palimping"),
     searchTerms: ["kopi Garut", "kopi Jawa Barat", "arabica Garut"],
   },
   {
@@ -435,7 +442,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
-    status: "available",
+    status: managedStatus("kerinci"),
     searchTerms: ["kopi Kerinci", "kopi Jambi", "arabica Kerinci"],
   },
   {
@@ -459,7 +466,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
       src: pondokBaruArtwork,
       alt: "Ilustrasi lanskap dataran tinggi Bener Meriah, Aceh: harimau berjalan di antara kebun kopi berbuah merah dengan punggungan gunung berkabut di kejauhan.",
     },
-    status: "available",
+    status: managedStatus("pondok-baru"),
     searchTerms: [
       "kopi Gayo",
       "arabica Gayo",
