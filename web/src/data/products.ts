@@ -202,9 +202,9 @@ export const houseblendLines: HouseblendLine[] = [
     name: "Houseblend BOLD",
     composition: "Arabica Natural & Fine Robusta Natural",
     summary:
-      "Houseblend BOLD — campuran Arabica Natural dan Fine Robusta Natural dalam enam rasio, dijual per kilogram mulai Rp185.000.",
+      "Houseblend BOLD — campuran Arabica Natural dan Fine Robusta Natural dalam enam rasio, kemasan 1 kg mulai Rp185.000.",
     description:
-      "Houseblend BOLD memadukan Arabica Natural dan Fine Robusta Natural. Tersedia dalam enam rasio Arabica:Robusta sehingga kedai dapat memilih titik keseimbangan body dan manis yang paling cocok dengan mesin dan menunya. Seluruh rasio dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
+      "Houseblend BOLD memadukan Arabica Natural dan Fine Robusta Natural. Tersedia dalam enam rasio Arabica:Robusta sehingga kedai dapat memilih titik keseimbangan body dan manis yang paling cocok dengan mesin dan menunya. Rasio paling robusta, 20:80, masih memuat seperlima arabica — bila Anda menginginkan robusta penuh tanpa arabica sama sekali, lini Full Robusta yang dimaksud. Setiap rasio tersedia dalam kemasan 1 kg dan 0,5 kg.",
     tastingNotes: [...HOUSEBLEND_BOLD_NOTES],
     image: {
       src: boldPhoto,
@@ -223,9 +223,9 @@ export const houseblendLines: HouseblendLine[] = [
     name: "Houseblend BRIGHT",
     composition: "Full Arabica, natural & washed",
     summary:
-      "Houseblend BRIGHT — full Arabica natural dan washed, tersedia varian Signature dan Reguler, dijual per kilogram.",
+      "Houseblend BRIGHT — full Arabica natural dan washed, tersedia varian Signature dan Reguler, dalam kemasan 1 kg dan 0,5 kg.",
     description:
-      "Houseblend BRIGHT adalah blend full Arabica yang menggabungkan proses natural dan washed. Tersedia dalam dua varian, Signature dan Reguler. Pada lini ini Signature dan Reguler adalah nama varian blend, bukan tier harga single origin. Dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
+      "Houseblend BRIGHT adalah blend full Arabica yang menggabungkan proses natural dan washed. Tersedia dalam dua varian, Signature dan Reguler. Pada lini ini Signature dan Reguler adalah nama varian blend, bukan tier harga single origin. Kedua varian tersedia dalam kemasan 1 kg dan 0,5 kg.",
     tastingNotes: [...HOUSEBLEND_BRIGHT_NOTES],
     image: {
       src: brightPhoto,
@@ -242,10 +242,17 @@ export const houseblendLines: HouseblendLine[] = [
     slug: "full-robusta",
     name: "Houseblend Full Robusta",
     composition: "Full Robusta",
+    // BR-16 — membedakan lini ini dari BOLD 20:80, yang harganya kini hanya
+    // Rp5.000 lebih tinggi. Premis lama BR-16 (harga keduanya identik) sudah
+    // batal, tetapi kebutuhannya tetap: selisih Rp5.000 terlalu tipis untuk
+    // menjelaskan apa pun, jadi pembedanya harus komposisi, bukan harga.
+    // Yang ditulis di bawah hanya turunan dari komposisi yang memang tercatat
+    // — 100% robusta terhadap 20% arabica — bukan klaim rasa yang belum
+    // pernah dicicip pada lot ini (FR-07).
     summary:
-      "Houseblend Full Robusta — blend robusta penuh untuk kebutuhan volume kedai, Rp180.000 per kilogram.",
+      "Houseblend Full Robusta — 100% robusta, tanpa arabica sama sekali. Kemasan 1 kg Rp180.000.",
     description:
-      "Houseblend Full Robusta adalah blend robusta penuh untuk kedai yang mengutamakan body tebal dan biaya per cangkir yang terjaga. Dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
+      "Houseblend Full Robusta adalah blend robusta penuh untuk kedai yang mengutamakan body tebal dan biaya per cangkir yang terjaga. Bedanya dengan BOLD 20:80 bukan terletak pada harga, yang hanya berselisih Rp5.000 per kilogram, melainkan pada komposisi: BOLD 20:80 masih memuat seperlima arabica, sementara lini ini tidak memuatnya sama sekali. Pilih lini ini bila resep espresso Anda sudah dikunci di sekitar karakter robusta dan tambahan arabica justru menggeser rasa yang sudah pas. Tersedia dalam kemasan 1 kg dan 0,5 kg.",
     tastingNotes: null,
     // Tidak ada artwork yang jujur mewakili lini ini: lembar HOUSEBLEND hanya
     // memotret BOLD dan BRIGHT. Memakai foto BOLD di sini berarti menampilkan

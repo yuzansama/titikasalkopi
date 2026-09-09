@@ -140,6 +140,26 @@ Pemeriksaan otomatis tidak menangkapnya karena **saya memperbarui pemeriksaannya
 
 ---
 
+## 3b. Status pengerjaan, 9 September 2026
+
+Sprint 0 **selesai**, termasuk 0.5 (Kerinci dihapus dari lini poster atas
+keputusan owner) dan 0.6 (saklar stok kini benar-benar menolak pesanan).
+
+Dari sprint berikutnya, yang sudah dikerjakan lebih awal karena tidak menunggu
+siapa pun:
+
+| Item | Status |
+|---|---|
+| 1.6 Environment staging | **Selesai.** `npm run build:preview` + `npm run preview` menyajikan ekspor produksi di mesin lokal, lengkap dengan basePath, dan `.github/workflows/preview.yml` membangun serta memeriksa setiap pull request. |
+| 2.1 Tulis ulang rencana uji | **Selesai**, lihat `docs/06-qa-test-plan.md`. |
+| 2.6 Gerbang ukuran bundel | **Selesai.** `check-bundle-size.mjs` mengukur JS muat awal per rute dan menggagalkan build di atas 190 KB ter-gzip. Rute terberat terukur 186,3 KB — sisa margin 3,7 KB, dan sekarang ada yang menjaganya. |
+| 3.5 Copy pembeda Full Robusta | **Selesai.** Pembedanya komposisi (100% robusta terhadap 20% arabica), bukan harga yang cuma berselisih Rp5.000. |
+
+Sisanya menunggu owner. Daftarnya, beserta langkah persisnya, ada di
+**`docs/12-tugas-owner.md`**.
+
+---
+
 ## 4. Yang paling mungkin membuat timeline ini meleset
 
 **Bukan kodenya.** Sprint 0 dan gerbang CI sepenuhnya di tangan developer dan bisa dipastikan.

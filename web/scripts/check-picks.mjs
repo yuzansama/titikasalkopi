@@ -16,12 +16,21 @@ import { check, loadTs, summary } from "./_ts-load.mjs";
 const picksModule = await loadTs("src/data/picks.ts");
 const format = await loadTs("src/lib/format.ts");
 const validate = await loadTs("src/data/validate.ts");
+const catalog = await loadTs("src/data/catalog.ts");
 
 const { coffeePicks, PICK_GRAMS, pickVariantId } = picksModule;
 
 /**
  * Poster owner, 8 September 2026, disalin ulang secara terpisah dari
- * `picks.ts`.
+ * `picks.ts`, DIKURANGI satu baris.
+ *
+ * Kerinci dihapus dari lini ini pada 9 September 2026 atas keputusan owner.
+ * Sejak single origin punya kemasan mini 100 gram, kedua lini menjual Kerinci
+ * dalam ukuran yang sama dengan harga berbeda — Rp70.000 dan Rp85.000 — pada
+ * satu halaman katalog. Pada toko yang dibayar di muka lewat transfer, dua
+ * harga untuk satu barang terbaca sebagai kesalahan atau itikad buruk. Yang
+ * dipertahankan adalah versi single origin, karena ia punya halaman produk
+ * dan data asal; baris poster hanya punya nama dan harga.
  *
  * Sengaja diketik ulang alih-alih diimpor: pemeriksaan yang membandingkan data
  * dengan dirinya sendiri selalu lulus. Ini satu-satunya salinan kedua dari
@@ -36,7 +45,6 @@ const POSTER = [
   ["Panama", 270_000],
   ["Kenya", 195_000],
   ["Luwak", 140_000],
-  ["Kerinci", 85_000],
   ["Ciwidey", 85_000],
   ["Telomoyo", 65_000],
   ["Gedong Songo", 75_000],
@@ -49,7 +57,7 @@ const POSTER = [
   ["Lawu", 65_000],
 ];
 
-check("KD-07: seluruh 18 baris poster tayang, dengan nama dan harga persis", () => {
+check("KD-07: seluruh 17 baris poster tayang, dengan nama dan harga persis", () => {
   assert.equal(coffeePicks.length, POSTER.length, "jumlah biji berbeda dari poster");
   const actual = coffeePicks.map((pick) => [pick.name, pick.price]);
   assert.deepEqual(actual, POSTER);
@@ -105,14 +113,28 @@ check("KD-07: slug tidak bertabrakan dengan produk 200 gram", () => {
   );
 });
 
-check("KD-07: Kerinci 100 gram TIDAK memakai slug Kerinci 200 gram", () => {
-  // Dua kopi bernama sama dengan harga berbeda hidup berdampingan sampai owner
-  // menjelaskan hubungannya. Sampai saat itu, satu-satunya hal yang tidak boleh
-  // terjadi adalah keduanya tertukar.
-  const kerinci = coffeePicks.find((pick) => pick.name === "Kerinci");
-  assert.ok(kerinci, "Kerinci hilang dari lini 100 gram");
-  assert.notEqual(kerinci.slug, "kerinci");
-  assert.equal(kerinci.price, 85_000);
+check("0.5: tidak ada nama kopi yang dijual di kedua lini sekaligus", () => {
+  /* Sampai 8 September 2026 Kerinci hidup di kedua lini, dan itu bisa
+     dijelaskan: beratnya berbeda, 200 gr terhadap 100 gr. Kemasan mini
+     single origin yang masuk 9 September menghapus penjelasan itu — kedua
+     lini menjual Kerinci dalam ukuran YANG SAMA, Rp70.000 dan Rp85.000, pada
+     satu halaman katalog.
+
+     Owner memutuskan mempertahankan versi single origin dan menghapus baris
+     posternya. Pemeriksaan ini berjalan di alur sinkronisasi katalog, jadi ia
+     juga menahan baris itu kembali masuk lewat sheet tanpa disadari. */
+  const productNames = new Set(
+    catalog.singleOriginProducts.map((product) => product.name.toLowerCase()),
+  );
+  const clashes = coffeePicks
+    .filter((pick) => productNames.has(pick.name.trim().toLowerCase()))
+    .map((pick) => pick.name);
+  assert.deepEqual(
+    clashes,
+    [],
+    `nama berikut dijual di kedua lini: ${clashes.join(", ")}. ` +
+      `Pembeli melihat dua harga untuk berat yang sama.`,
+  );
 });
 
 check("KD-07: validator menolak slug yang bentrok dengan produk", () => {

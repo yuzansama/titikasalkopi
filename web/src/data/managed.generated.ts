@@ -83,7 +83,6 @@ export const managedCatalog: ManagedCatalog = {
     { slug: "panama", name: "Panama", price: 270_000 },
     { slug: "kenya", name: "Kenya", price: 195_000 },
     { slug: "luwak", name: "Luwak", price: 140_000 },
-    { slug: "kerinci-100", name: "Kerinci", price: 85_000 },
     { slug: "ciwidey", name: "Ciwidey", price: 85_000 },
     { slug: "telomoyo", name: "Telomoyo", price: 65_000 },
     { slug: "gedong-songo", name: "Gedong Songo", price: 75_000 },

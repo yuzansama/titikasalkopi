@@ -93,7 +93,6 @@ Hanya dua nilai yang diterima: `available` dan `out-of-stock`. Kesebelas baris w
 |---|---|---|---|
 | bali-kintamani | Bali Kintamani | 80000 | available |
 | gayo | Gayo | 80000 | available |
-| kerinci-100 | Kerinci | 85000 | available |
 | … | | | |
 
 Aturannya:

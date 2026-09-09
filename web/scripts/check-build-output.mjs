@@ -826,7 +826,7 @@ check("BRD Bagian 12: halaman katalog menampilkan kesebelas nama produk", () => 
 /* ------------------------------------------------------------------ */
 
 check(
-  "KD-07: kedelapan belas biji Katalog Kopi 100 gram tayang beserta harganya",
+  "KD-07: seluruh biji Katalog Kopi 100 gram tayang beserta harganya",
   () => {
     const html = pages.get("katalog").html;
     const expected = [
@@ -856,11 +856,22 @@ check("KD-07: kedua lini tayang berdampingan tanpa saling menutupi", () => {
   // memilihkan jawaban yang belum owner berikan.
   const html = pages.get("katalog").html;
   assert.ok(html.includes("100 gr"), "label 100 gr hilang dari halaman");
-  const pick = picksModule.coffeePicks.find((p) => p.slug === "kerinci-100");
+  const pick = picksModule.coffeePicks[0];
   const bean = catalogModule.findSingleOriginBySlug("kerinci");
   const beanPack = bean.variants.find((v) => v.unit === "pack");
-  assert.ok(html.includes(formatIDR(pick.price)), "harga Kerinci 100 gr hilang");
+  assert.ok(html.includes(formatIDR(pick.price)), `harga ${pick.name} 100 gr hilang`);
   assert.ok(html.includes(formatIDR(beanPack.unitPrice)), "harga Reguler 200 gr hilang");
+
+  // 0.5 — tidak boleh ada nama produk yang tayang dengan dua harga berbeda
+  // untuk berat yang sama. Kerinci melanggarnya sampai 9 September 2026.
+  const pickNames = new Set(picksModule.coffeePicks.map((p) => p.name.toLowerCase()));
+  for (const product of catalogModule.singleOriginProducts) {
+    assert.ok(
+      !pickNames.has(product.name.toLowerCase()),
+      `"${product.name}" tayang di dua lini sekaligus; pembeli melihat dua harga ` +
+        `untuk berat yang sama pada satu halaman`,
+    );
+  }
 });
 
 /* ------------------------------------------------------------------ */

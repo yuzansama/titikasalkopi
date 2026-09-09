@@ -9,6 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm run lint && npm run build",
+    "build:preview": "node scripts/build-preview.mjs",
+    "preview": "node scripts/serve-out.mjs",
     "sync:katalog": "node scripts/sync-katalog.mjs"
   },
   "dependencies": {

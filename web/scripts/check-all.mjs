@@ -14,6 +14,10 @@
  *   melewatkan dirinya sendiri (kode 0) bila belum ada folder build, jadi
  *   urutan `npm run build && node scripts/check-all.mjs` yang memberi
  *   cakupan penuh.
+ * - `check-bundle-size.mjs` menjaga plafon 190 KB ter-gzip (NFR-03, D-04).
+ *   Ditambahkan 9 September 2026: plafonnya disepakati sejak awal, tetapi
+ *   tidak pernah ada yang mengukur ulang setelah tiga fitur bertambah.
+ *   Sama seperti check-build-output, ia butuh folder build.
  */
 
 import { spawnSync } from "node:child_process";
@@ -28,6 +32,7 @@ const SCRIPTS = [
   "scripts/check-tracking.mjs",
   "scripts/check-order-tracker-gs.mjs",
   "scripts/check-build-output.mjs",
+  "scripts/check-bundle-size.mjs",
 ];
 
 let failed = 0;

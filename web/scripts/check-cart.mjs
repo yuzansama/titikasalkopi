@@ -473,10 +473,10 @@ check("tidak ada baris keranjang yang membawa harga kedua", () => {
  *   41 varian produk single origin dan houseblend
  *     (7 biji x 3 kemasan + Sindoro tanpa mini x 2 = 23,
  *      ditambah 9 rasio houseblend x 2 ukuran kemasan = 18)
- * + 18 varian lini Katalog Kopi 100 gram (KD-07)
+ * + 17 varian lini Katalog Kopi 100 gram (KD-07; Kerinci dihapus 9 Sep 2026)
  */
 const EXPECTED_PRODUCT_VARIANTS = 41;
-const EXPECTED_PICK_VARIANTS = 18;
+const EXPECTED_PICK_VARIANTS = 17;
 const EXPECTED_VARIANT_COUNT = EXPECTED_PRODUCT_VARIANTS + EXPECTED_PICK_VARIANTS;
 
 check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () => {
