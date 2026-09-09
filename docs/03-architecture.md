@@ -32,7 +32,7 @@ Ketiganya **sudah tertutup** oleh `00b-ceo-decisions.md` dan seluruh dokumen ini
 | OQ | Keputusan | Dampak arsitektur |
 |---|---|---|
 | **OQ-01** → D-01 | 3 pack wajib satu origin, paket campur tidak ditawarkan | Tidak ada pemilih origin campur di kontrak data maupun UI. `pack3` cukup menjadi varian biasa milik satu produk (Bagian 5) |
-| **OQ-02** → D-02 | Houseblend minimum **0,5 kg**, kelipatan **0,5 kg**; harga 0,5 kg dihitung dari harga per kg | `BR-13` direvisi. Kuantitas keranjang houseblend disimpan sebagai bilangan bulat `halfKgUnits`; `pricePerKg` tetap satu-satunya angka tersimpan (ADR-05; Bagian 5, 6, 7) |
+| **OQ-02** → D-02 | Houseblend minimum **0,5 kg**, kelipatan **0,5 kg**. **Direvisi 9 September 2026:** houseblend dijual dalam **dua ukuran kemasan** (1 kg dan 0,5 kg), masing-masing dengan harga **tersimpan sendiri**. Aturan lama "harga 0,5 kg dihitung dari harga per kg" sudah **dicabut** | `BR-13` direvisi dua kali. Kuantitas keranjang houseblend tetap bilangan bulat `halfKgUnits`. Yang berubah: harga kedua ukuran kemasan sama-sama data, bukan turunan, dan `V-06` berpindah dari kesamaan aritmetika ke dua batas kewarasan (ADR-05 beserta REVISI-nya; Bagian 5, 6, 7) |
 | **OQ-07** → D-03 | Jam balas WhatsApp setiap hari 08.00–21.00 WIB | Status "di luar jam balas" dihitung di klien setelah hydration agar halaman tetap statis (ADR-08; Bagian 1.5 dan 6.6) |
 
 ### 0.3 Batasan yang tidak dibuka ulang
@@ -214,20 +214,28 @@ Perlu dicatat bahwa keputusan ini **berbeda dari kalimat literal BRD 11.1** yang
 
 ### ADR-05 — Uang dan kuantitas selalu bilangan bulat; houseblend dihitung dalam satuan setengah kilo
 
-**Konteks.** D-02 menurunkan minimum houseblend menjadi 0,5 kg dengan kelipatan 0,5 kg, dan menetapkan harga 0,5 kg **tepat setengah** harga per kg. BR-03 melarang pembulatan sistem dan mensyaratkan seluruh perhitungan memakai bilangan bulat rupiah.
+**Konteks.** D-02 menurunkan minimum houseblend menjadi 0,5 kg dengan kelipatan 0,5 kg. Versi pertamanya juga menetapkan harga 0,5 kg **tepat setengah** harga per kg — bagian itu **sudah dicabut pada 9 September 2026**; lihat blok REVISI di bawah, yang berlaku atas seluruh ADR ini. BR-03 melarang pembulatan sistem dan mensyaratkan seluruh perhitungan memakai bilangan bulat rupiah.
 
 **Keputusan.** Tiga aturan berlaku di seluruh basis kode:
 
 1. Seluruh harga bertipe `number` bilangan bulat rupiah penuh. Tidak ada `float`, tidak ada `toFixed`, tidak ada pustaka desimal.
-2. Setiap varian memiliki **satuan pesan** dan **harga satu satuan pesan** (`unitPrice`). Untuk houseblend, satuan pesan adalah **0,5 kg** dan `unitPrice = pricePerKg / 2`. `pricePerKg` tetap satu-satunya angka yang tersimpan di `products.ts`; `unitPrice` selalu dihitung.
+2. Setiap varian memiliki **satuan pesan** dan **harga satu satuan pesan** (`unitPrice`). Untuk houseblend ada **dua** satuan pesan — kemasan **1 kg** dan kemasan **0,5 kg** — dan `unitPrice` masing-masing **dibaca dari data**, tidak dihitung. *(Butir ini semula berbunyi `unitPrice = pricePerKg / 2` dengan `pricePerKg` sebagai satu-satunya angka tersimpan; dicabut 9 September 2026 — lihat REVISI di bawah.)*
 3. Kuantitas di keranjang selalu bilangan bulat **jumlah satuan pesan**. Untuk houseblend variabel ini bermakna `halfKgUnits`: nilai 1 berarti 0,5 kg, nilai 5 berarti 2,5 kg, nilai 10 berarti 5 kg. Konversi ke kilogram hanya terjadi **saat menampilkan**, tidak pernah saat menghitung.
 
 Subtotal baris karena itu selalu `qty * unitPrice` — perkalian dua bilangan bulat, seragam untuk seluruh kategori produk tanpa cabang khusus.
 
-**Konsekuensi.** Tidak ada aritmetika pecahan pada uang di mana pun, sesuai perintah eksplisit D-02. Contoh pada BRD tetap benar: BOLD 60:40 sebanyak 5 kg sama dengan `halfKgUnits 10 × Rp100.000 = Rp1.000.000`. Validator build menegakkan `pricePerKg % 1000 === 0` sehingga setengahnya dijamin bilangan bulat dan kelipatan Rp500 — bila kelak owner memasukkan harga ganjil, build gagal alih-alih menampilkan `Rp97.500,5`.
+**Konsekuensi.** Tidak ada aritmetika pecahan pada uang di mana pun, sesuai perintah eksplisit D-02: subtotal baris selalu `qty × unitPrice`, perkalian dua bilangan bulat. Bagian itu tetap berlaku setelah revisi. *(Dua kalimat berikutnya sudah tidak berlaku sejak 9 September 2026 dan disimpan hanya sebagai riwayat: contoh "BOLD 60:40 sebanyak 5 kg = `halfKgUnits 10 × Rp100.000` = Rp1.000.000" memakai harga yang sudah dibatalkan, dan pemeriksaan `pricePerKg % 1000 === 0` dulu ada untuk menjamin setengahnya bulat — sekarang tidak ada yang dibagi dua, sehingga jaminannya datang dari harga yang memang tersimpan sebagai bilangan bulat.)*
 
 **Alternatif ditolak.**
-- *Menyimpan `pricePerHalfKg` sebagai medan kedua di `products.ts`.* Ditolak secara eksplisit oleh D-02: dua sumber kebenaran, dan owner pasti akan lupa mengubah salah satunya.
+- *Menyimpan `pricePerHalfKg` sebagai medan kedua di `products.ts`.* Ditolak secara eksplisit oleh D-02: dua sumber kebenaran, dan owner pasti akan lupa mengubah salah satunya. **Penolakan ini sudah dibatalkan — baca blok REVISI tepat di bawah sebelum bertindak atas bullet ini.**
+
+> **REVISI 9 September 2026 — alternatif yang ditolak di atas justru yang berlaku sekarang.**
+>
+> Lembar `Product` pada `assets/brand/Kopi from heart.xlsx` memberi kemasan 0,5 kg modal dan margin sendiri: BOLD 70:30 dijual Rp215.000 per kg tetapi Rp120.000 per 0,5 kg, bukan Rp107.500. Harga itu **bukan turunan**, jadi ia tidak bisa dihitung — memaksanya tetap turunan berarti menayangkan harga yang tidak pernah owner tetapkan.
+>
+> Yang tetap dipertahankan dari alasan penolakan lama adalah kekhawatirannya: dua angka yang bisa saling bertentangan. Jawabannya bukan menghapus salah satu, melainkan memindahkan keduanya ke satu permukaan sunting — Google Sheet owner lewat KD-08 — dan mengganti V-06 dari kesamaan aritmetika menjadi dua batas kewarasan (harga 0,5 kg tidak boleh di bawah separuh harga per kg, dan tidak boleh mencapai harga per kg penuh). Angka yang salah ketik tetap menggagalkan build; yang hilang hanyalah asumsi bahwa satu angka bisa menyimpulkan yang lain.
+>
+> `halfKgPrice()` digantikan `packSaving()`, yang menghitung selisih dua kemasan 0,5 kg terhadap satu kemasan 1 kg. Kuantitas houseblend tetap bilangan bulat `halfKgUnits`; tidak ada aritmetika pecahan pada uang yang kembali masuk.
 - *Menyimpan kuantitas sebagai kilogram bertipe `number` pecahan (0,5 dan 1,5).* Ditolak: selain masalah presisi biner klasik, ia memaksa perkalian uang dengan pecahan yang dilarang BR-03.
 - *Pustaka `decimal.js` atau `dinero.js`.* Ditolak sebagai over-engineering. Rupiah tidak mengenal sen; bilangan bulat sudah merupakan representasi yang tepat.
 
@@ -618,11 +626,13 @@ export type ProductStatus = "available" | "out-of-stock";
 
 /**
  * Satuan pesan sebuah varian.
- * - "pack"    : 1 kemasan 200 gr           -> qty = jumlah pack
- * - "paket"   : 1 bundel berisi 3 × 200 gr -> qty = jumlah paket (BR-12, D-01)
- * - "half-kg" : 0,5 kg houseblend          -> qty = halfKgUnits (D-02)
+ * - "pack"     : 1 kemasan 200 gr           -> qty = jumlah pack
+ * - "paket"    : 1 bundel berisi 3 × 200 gr -> qty = jumlah paket (BR-12, D-01)
+ * - "kg"       : 1 kemasan 1 kg houseblend  -> qty = jumlah kemasan (D-02 rev. 2)
+ * - "half-kg"  : 1 kemasan 0,5 kg houseblend-> qty = halfKgUnits (D-02)
+ * - "gram-100" : 1 kemasan mini 100 gr single origin (BR-08, 9 Sep 2026)
  */
-export type OrderUnit = "pack" | "paket" | "half-kg";
+export type OrderUnit = "pack" | "paket" | "kg" | "half-kg" | "gram-100";
 
 export type Variant = {
   /** Stabil dan permanen; dipakai sebagai kunci baris keranjang. */
@@ -630,13 +640,18 @@ export type Variant = {
   /** Label siap tampil, mis. "3 pack (200 gr)" atau "60% Arabica : 40% Robusta". */
   label: string;
   unit: OrderUnit;
-  /** Harga SATU satuan pesan, bilangan bulat. Untuk half-kg = pricePerKg / 2. */
+  /**
+   * Harga SATU satuan pesan, bilangan bulat, SELALU dibaca dari data.
+   * Sejak D-02 revisi kedua (9 September 2026) houseblend punya dua satuan
+   * pesan — kemasan 1 kg dan kemasan 0,5 kg — dan keduanya harga tersimpan.
+   * Harga kemasan 0,5 kg BUKAN pricePerKg / 2 dan tidak boleh dihitung.
+   */
   unitPrice: PriceIDR;
   /**
-   * Hanya untuk unit "half-kg": harga per kg — satu-satunya angka yang benar-benar
-   * tersimpan di products.ts. `unitPrice` di atas SELALU turunan darinya (D-02).
+   * Menautkan dua varian yang merupakan dua UKURAN KEMASAN dari rasio yang
+   * sama, supaya V-06 bisa memeriksa pasangannya. Hanya untuk houseblend.
    */
-  pricePerKg?: PriceIDR;
+  groupId?: string;
   /** Jumlah kemasan 200 gr di dalam satu satuan pesan. 1 untuk pack, 3 untuk paket. */
   packsPerUnit?: number;
   /** Selalu 1 pada Fase 1. Disediakan agar konfigurator tidak menghardcode angka. */
@@ -707,14 +722,26 @@ export function priceFrom(product: Product): PriceIDR {
   return Math.min(...product.variants.map((v) => v.unitPrice));
 }
 
-/** Harga 0,5 kg SELALU turunan dari pricePerKg (D-02). */
-export function halfKgPrice(pricePerKg: PriceIDR): PriceIDR {
-  return pricePerKg / 2; // dijamin bulat oleh validator: pricePerKg % 1000 === 0
+/**
+ * DIHAPUS 9 September 2026. `halfKgPrice()` menghitung harga kemasan 0,5 kg
+ * dari harga per kg, dan aturan itu sudah dicabut (D-02 revisi kedua): kedua
+ * ukuran kemasan punya harga tersimpan sendiri. Penggantinya menghitung
+ * penghematan, bukan harga:
+ *
+ * Penghematan membeli satu kemasan 1 kg dibanding dua kemasan 0,5 kg.
+ * Kemasan kecil membawa margin sendiri, sehingga dua kemasan 0,5 kg selalu
+ * lebih mahal daripada satu kemasan 1 kg (BOLD 70:30 — 2 x Rp120.000 =
+ * Rp240.000 terhadap Rp215.000). Seperti bundleSaving(), angka ini WAJIB
+ * dihitung dan tidak pernah ditulis sebagai teks.
+ */
+export function packSaving(group: HouseblendSizeGroup): PriceIDR {
+  return group.halfKg.unitPrice * HALF_KG_PACKS_PER_KG - group.kg.unitPrice;
 }
 
 /**
  * Penghematan bundling 3 pack (BR-10). WAJIB dihitung, tidak boleh ditulis
- * sebagai angka di konten: Signature Rp25.000, Reguler Rp20.000.
+ * sebagai angka di konten: Signature Rp28.000, Reguler Rp23.000
+ * (nilai per 9 September 2026; sebelumnya Rp25.000 dan Rp20.000).
  */
 export function bundleSaving(product: Product): PriceIDR | null {
   const single = product.variants.find((v) => v.unit === "pack");
@@ -821,7 +848,7 @@ Daftar pemeriksaan yang wajib ada. Setiap pelanggaran melempar `Error` berbahasa
 | V-03 | Setiap produk punya ≥ 1 varian | BR-04, BRD 10.2 |
 | V-04 | `unitPrice` dan `pricePerKg` adalah bilangan bulat > 0 | BR-03, BR-04, FR-43 |
 | V-05 | `pricePerKg % 1000 === 0` untuk seluruh varian `half-kg` | D-02, ADR-05 |
-| V-06 | `unitPrice === pricePerKg / 2` untuk seluruh varian `half-kg` | D-02 |
+| V-06 | Setiap `groupId` houseblend berisi tepat satu varian `kg` dan satu `half-kg`, dan keduanya memenuhi `kg.unitPrice < halfKg.unitPrice * 2` serta `halfKg.unitPrice < kg.unitPrice` | D-02 direvisi (lihat blok REVISI pada ADR-05) |
 | V-07 | `tier` hanya boleh ada pada `category === "single-origin"` | BR-15 |
 | V-08 | `line` hanya boleh ada pada `category === "houseblend"` | BR-15 |
 | V-09 | `tier` bernilai salah satu dari `"signature" \| "reguler"` | FR-43 |
@@ -830,7 +857,7 @@ Daftar pemeriksaan yang wajib ada. Setiap pelanggaran melempar `Error` berbahasa
 | V-12 | `bundleSaving()` bernilai positif untuk setiap single origin | BR-10 |
 | V-13 | `id` varian unik dalam satu produk | FR-43 |
 | V-14 | Bila `image !== null`, `alt` tidak kosong dan bukan sekadar nama produk | NFR-07 |
-| V-15 | Jumlah produk yang tayang cocok dengan hitungan brand brief: 7 single origin dan 3 lini berisi total 9 varian houseblend | BRD Bagian 12 |
+| V-15 | Jumlah produk yang tayang cocok dengan hitungan katalog: **8** single origin (Sindoro masuk 9 September 2026) dan 3 lini houseblend, ditambah pagar jumlah varian houseblend. **Angka varian sengaja tidak ditulis di dokumen ini** — ia berubah mengikuti pemisahan dua ukuran kemasan; sumber yang berlaku adalah konstanta `EXPECTED_*` di `src/data/validate.ts` | BRD Bagian 12 |
 
 Pemeriksaan V-15 sengaja bersifat "pagar hitungan": bila owner tidak sengaja menghapus satu rasio BOLD, build gagal alih-alih menayangkan katalog yang diam-diam berkurang.
 
@@ -1625,7 +1652,9 @@ Catatan pengodean. `encodeURIComponent` sudah menangani baris baru menjadi `%0A`
 
 ### 7.4 Contoh keluaran
 
-**Keranjang berisi dua baris** (Abmisibil 3 pack; BOLD 60:40 sebanyak 5 kg — `halfKgUnits = 10`, `unitPrice = 100.000`):
+> **Harga pada seluruh contoh di bawah dimutakhirkan 9 September 2026.** Versi sebelumnya memakai harga lama dan, pada baris houseblend, memperlihatkan `unitPrice` sebagai setengah harga per kg (`5 kg × Rp200.000/kg = Rp1.000.000` dari `halfKgUnits 10 × Rp100.000`). Aturan itu sudah dicabut, jadi contoh lama bukan sekadar salah angka — ia memperagakan perilaku yang salah. Bentuk teks tetap dirakit `formatQuantity()` dan `unitPriceLabel()`; **bacalah `src/lib/format.ts` untuk kata persisnya**, jangan menyalin dari sini.
+
+**Keranjang berisi dua baris** (Abmisibil 3 pack; BOLD 60:40 satu kemasan 0,5 kg — `halfKgUnits = 1`, `unitPrice = 115.000`):
 
 ```
 Halo Titik Asal Kopi, saya ingin memesan:
@@ -1634,15 +1663,15 @@ Kode order: TAK-260907-4KP2
 
 1. Abmisibil (Single Origin, Signature)
    Varian: 3 pack (200 gr)
-   Jumlah: 1 paket x Rp350.000
-   Subtotal: Rp350.000
+   Jumlah: 1 paket x Rp392.000
+   Subtotal: Rp392.000
 
 2. Houseblend BOLD
-   Varian: 60% Arabica : 40% Robusta
-   Jumlah: 5 kg x Rp200.000/kg
-   Subtotal: Rp1.000.000
+   Varian: 60% Arabica : 40% Robusta — kemasan 0,5 kg
+   Jumlah: 0,5 kg x Rp115.000
+   Subtotal: Rp115.000
 
-Subtotal pesanan: Rp1.350.000
+Subtotal pesanan: Rp507.000
 (Belum termasuk ongkos kirim. Total akhir dikonfirmasi lewat chat.)
 
 Catatan: tolong digiling untuk V60, kirim ke Bandung.
@@ -1651,15 +1680,17 @@ Dikirim dari titikasalkopi.id
 https://titikasalkopi.id/keranjang
 ```
 
-Panjang mentah 434 karakter, panjang terkode 528 — jauh di bawah batas 1.500, `truncated: false`.
+Panjangnya masih jauh di bawah batas 1.500 dan `truncated: false`. Angka pasti panjang mentah dan terkode perlu diukur ulang setelah label ukuran kemasan final; angka lama (434 dan 528) diukur pada bentuk baris yang sudah berubah.
 
-**Pesanan 0,5 kg** (varian minimum baru menurut D-02; `halfKgUnits = 1`, `unitPrice = 87.500`):
+Contoh untuk jumlah **≥ 1 kg** sengaja tidak dituliskan di sini. Cara sebuah jumlah disusun dari dua ukuran kemasan masih terbuka pada FR-21, dan menuliskan satu contoh berarti memilihkan jawabannya diam-diam.
+
+**Pesanan 0,5 kg** (jumlah minimum menurut D-02; `halfKgUnits = 1`, `unitPrice = 100.000`):
 
 ```
 1. Houseblend Full Robusta
-   Varian: Full Robusta
-   Jumlah: 0,5 kg x Rp175.000/kg
-   Subtotal: Rp87.500
+   Varian: Full Robusta — kemasan 0,5 kg
+   Jumlah: 0,5 kg x Rp100.000
+   Subtotal: Rp100.000
 ```
 
 **Bentuk ringkas** (tingkat 2 tangga peringkasan, muncul saat keranjang panjang):
@@ -1669,12 +1700,12 @@ Halo Titik Asal Kopi, saya ingin memesan:
 
 Kode order: TAK-260907-9QT7
 
-1. Abmisibil — 3 pack (200 gr) — 1 paket x Rp350.000 = Rp350.000
-2. Sabin — 1 pack (200 gr) — 2 pack x Rp125.000 = Rp250.000
-3. Houseblend BOLD — 70% Arabica : 30% Robusta — 2,5 kg x Rp210.000/kg = Rp525.000
+1. Abmisibil — 3 pack (200 gr) — 1 paket x Rp392.000 = Rp392.000
+2. Sabin — 1 pack (200 gr) — 2 pack x Rp140.000 = Rp280.000
+3. Houseblend BOLD — 70% Arabica : 30% Robusta, kemasan 1 kg — 1 kemasan x Rp215.000 = Rp215.000
 ...
 
-Subtotal pesanan: Rp1.125.000
+Subtotal pesanan: Rp887.000
 (Belum termasuk ongkos kirim. Total akhir dikonfirmasi lewat chat.)
 
 Dikirim dari titikasalkopi.id
@@ -1684,7 +1715,7 @@ https://titikasalkopi.id/keranjang
 **"Tanya produk ini"** (FR-38, `buildAskMessage`):
 
 ```
-Halo Titik Asal Kopi, saya ingin bertanya tentang Abmisibil (Single Origin, Signature) — Rp125.000 / 1 pack.
+Halo Titik Asal Kopi, saya ingin bertanya tentang Abmisibil (Single Origin, Signature) — Rp140.000 / 1 pack.
 
 Dikirim dari titikasalkopi.id
 https://titikasalkopi.id/produk/abmisibil
@@ -2525,7 +2556,7 @@ Bagian ini memuat pertentangan yang saya temukan antara BRD dan apa yang masuk a
 
 **CA-07 — NFR-15 menyebut "menyertakan tautan keranjang" saat pesan diringkas, tetapi tautan itu tidak berguna bagi owner.** Keranjang hidup di `localStorage` perangkat pembeli; ketika owner membuka `titikasalkopi.id/keranjang` dari chat, ia melihat keranjangnya sendiri yang kosong. **Rekomendasi: pahami klausul itu sebagai penanda sumber, bukan sebagai mekanisme pemulihan pesanan**, dan pastikan tangga peringkasan (Bagian 7.3) selalu mempertahankan nama produk dan jumlah setiap baris. Bila kelak benar-benar dibutuhkan berbagi keranjang, mekanismenya adalah menyandikan isi keranjang ke dalam URL — bukan Fase 1.
 
-**CA-08 — BR-16 memerlukan pembeda yang tidak bisa ditegakkan kode.** Full Robusta dan BOLD 20:80 berharga sama persis Rp175.000/kg, sehingga pada kartu katalog keduanya menampilkan angka identik dan pembeli kedai akan bertanya mana yang lebih baik — persis masalah yang ingin dipecahkan proyek ini. Validator tidak bisa menolong karena tidak ada yang salah secara data. **Rekomendasi: jadikan penulisan paragraf pembeda untuk kedua produk sebagai butir konten yang wajib selesai sebelum rilis (tanggung jawab BA bersama owner)**, dan tampilkan kedua produk pada bagian katalog yang berbeda agar tidak bersebelahan.
+**CA-08 — BR-16 memerlukan pembeda yang tidak bisa ditegakkan kode.** Full Robusta dan BOLD 20:80 dulu berharga sama persis Rp175.000/kg, sehingga pada kartu katalog keduanya menampilkan angka identik dan pembeli kedai akan bertanya mana yang lebih baik — persis masalah yang ingin dipecahkan proyek ini. **Premis itu gugur 9 September 2026**: Full Robusta Rp180.000/kg dan BOLD 20:80 Rp185.000/kg. Catatan ini tetap berlaku karena selisih Rp5.000 per kg tidak menjelaskan apa pun kepada pembeli; yang berubah hanya bahwa pembedanya kini jelas tidak boleh dicari dari harga. Validator tidak bisa menolong karena tidak ada yang salah secara data. **Rekomendasi: jadikan penulisan paragraf pembeda untuk kedua produk sebagai butir konten yang wajib selesai sebelum rilis (tanggung jawab BA bersama owner)**, dan tampilkan kedua produk pada bagian katalog yang berbeda agar tidak bersebelahan.
 
 **CA-09 — NFR-08 menuntut deteksi gangguan ≤ 5 menit tetapi tidak ada FR yang membiayainya.** Vercel tidak mengirim pemberitahuan gangguan ke owner, dan dasbornya tidak dilihat siapa pun setiap lima menit. **Rekomendasi: pemasangan pemantau uptime gratis dijadikan butir eksplisit pada daftar periksa rilis dengan pemilik yang jelas (BE), bukan diasumsikan ada.** Biayanya nol dan waktunya sekitar sepuluh menit; tanpa itu NFR-08 tidak dapat dinyatakan lulus.
 

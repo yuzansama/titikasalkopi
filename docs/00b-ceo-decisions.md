@@ -5,28 +5,58 @@ Tanggal: 7 September 2026. Menutup OQ-01, OQ-02, OQ-07 pada `02-BRD.md`. Semua a
 ## D-01 — Paket 3 pack wajib satu origin (menutup OQ-01)
 Satu paket 3 pack berisi tiga kemasan 200 gr dari **origin yang sama**. Paket campur antar-origin **tidak ditawarkan** di website. Permintaan campur diarahkan ke percakapan WhatsApp sebagai penanganan manual.
 
-Konsekuensi: `BR-11` pada BRD dikonfirmasi apa adanya. UI produk tidak boleh menampilkan pemilih origin campur. Salinan teks pada kartu 3 pack menonjolkan penghematan (Signature hemat Rp25.000, Reguler hemat Rp20.000), bukan variasi.
+Konsekuensi: `BR-11` pada BRD dikonfirmasi apa adanya. UI produk tidak boleh menampilkan pemilih origin campur. Salinan teks pada kartu 3 pack menonjolkan penghematan, bukan variasi. Angkanya **dihitung dari harga resmi, tidak diketik**; sejak harga single origin 9 September 2026 nilainya menjadi Signature hemat Rp28.000 dan Reguler hemat Rp23.000 (sebelumnya Rp25.000 dan Rp20.000).
 
-## D-02 — Houseblend boleh kelipatan 0,5 kg (menutup OQ-02)
+## D-02 — Houseblend dijual dalam dua ukuran kemasan (menutup OQ-02)
+
 Minimum order houseblend **0,5 kg**, dengan kelipatan **0,5 kg** (0,5 / 1 / 1,5 / 2 ...). `BR-13` pada BRD **direvisi** dari "minimum 1 kg, kelipatan 1 kg".
 
-Aturan harga 0,5 kg: **tepat setengah harga per kg**. Tidak ada premium kemasan kecil dan tidak ada pembulatan sistem — seluruh harga katalog habis dibagi dua ke kelipatan Rp500:
+Keputusan ini sudah direvisi **dua kali**. Riwayatnya ditulis utuh di bawah, bukan ditimpa, karena versi pertamanya sempat masuk ke kode, ke rencana uji, dan ke dokumen turunan. Siapa pun yang membaca versi lama tanpa tahu bahwa ia sudah batal akan "memperbaiki" kode kembali ke perilaku yang salah — dan berkas ini menurut barisnya sendiri mengalahkan BRD, sehingga kesalahan itu akan menyebar, bukan tertahan.
 
-| Varian | per kg | per 0,5 kg |
+### Aturan semula — sebelum 7 September 2026
+
+`BR-13` versi awal: houseblend dijual **minimum 1 kg dengan kelipatan 1 kg**. Tidak ada kemasan di bawah satu kilogram sama sekali, sehingga tidak ada harga 0,5 kg yang perlu ditetapkan.
+
+### Revisi pertama — 7 September 2026: minimum turun ke 0,5 kg, harganya dihitung
+
+Minimum dan kelipatan turun ke **0,5 kg**. Harga 0,5 kg ditetapkan **tepat setengah harga per kg**: tidak ada premium kemasan kecil dan tidak ada pembulatan sistem, sehingga seluruh harga katalog saat itu habis dibagi dua ke kelipatan Rp500. Konsekuensi implementasinya ditulis tegas: harga per kg adalah **satu-satunya** angka yang boleh disimpan, harga 0,5 kg wajib dihitung dan **tidak boleh ditulis sebagai data terpisah**, karena dua angka yang bisa saling bertentangan berarti dua sumber kebenaran. Validator `V-06` menegakkan kesamaan `unitPrice === pricePerKg / 2`.
+
+**Aturan itu sekarang BATAL seluruhnya**, termasuk tabel harganya. Ia tidak boleh dipakai sebagai rujukan untuk apa pun selain membaca riwayat ini.
+
+### Revisi kedua — 9 September 2026: dua ukuran kemasan, dua harga tersimpan
+
+Sumber: lembar **"Product"** pada `assets/brand/Kopi from heart.xlsx`, dari owner.
+
+Houseblend tidak dijual dalam satu ukuran kemasan yang boleh dipesan berkelipatan. Ia dijual dalam **dua ukuran kemasan**, dan lembar itu menamai kolomnya secara harfiah: **"Main Packs (1kg)"** dan **"Mini Packs (500gr)"**. Keduanya punya harga sendiri yang ditetapkan owner.
+
+Alasan angkanya tidak sejalan: **kemasan mini membawa marginnya sendiri**. BOLD 70:30 dijual Rp215.000 per kg tetapi Rp120.000 per 0,5 kg — bukan Rp107.500. Selisih itu menutup biaya kemasan dan penanganan yang tidak ikut mengecil ketika isinya dibagi dua. Harga semacam itu **bukan turunan**, jadi ia tidak bisa dihitung; memaksanya tetap turunan berarti menayangkan harga yang tidak pernah owner tetapkan.
+
+Tabel harga yang berlaku:
+
+| Varian | per kg (Main Pack) | per 0,5 kg (Mini Pack) |
 |---|---|---|
-| BOLD 70:30 | Rp210.000 | Rp105.000 |
-| BOLD 60:40 | Rp200.000 | Rp100.000 |
-| BOLD 50:50 | Rp195.000 | Rp97.500 |
-| BOLD 40:60 | Rp190.000 | Rp95.000 |
-| BOLD 30:70 | Rp185.000 | Rp92.500 |
-| BOLD 20:80 | Rp175.000 | Rp87.500 |
-| BRIGHT Signature | Rp260.000 | Rp130.000 |
-| BRIGHT Reguler | Rp230.000 | Rp115.000 |
-| Full Robusta | Rp175.000 | Rp87.500 |
+| BOLD 70:30 | Rp215.000 | Rp120.000 |
+| BOLD 60:40 | Rp205.000 | Rp115.000 |
+| BOLD 50:50 | Rp200.000 | Rp110.000 |
+| BOLD 40:60 | Rp195.000 | Rp105.000 |
+| BOLD 30:70 | Rp190.000 | Rp100.000 |
+| BOLD 20:80 | Rp185.000 | Rp95.000 |
+| BRIGHT Signature | Rp280.000 | Rp150.000 |
+| BRIGHT Reguler | Rp240.000 | Rp130.000 |
+| Full Robusta | Rp180.000 | Rp100.000 |
 
-Implementasi: harga per kg tetap satu-satunya angka yang disimpan di `products.ts`. Harga 0,5 kg **dihitung**, jangan ditulis ulang sebagai data terpisah — hindari dua sumber kebenaran. Kuantitas disimpan sebagai bilangan bulat "jumlah setengah kilo" (`halfKgUnits`) supaya tidak ada aritmetika pecahan pada uang.
+Implementasi: **kedua** harga disimpan sebagai data. Kekhawatiran yang melahirkan larangan lama tetap sah — dua angka yang bisa saling bertentangan — dan jawabannya bukan menghapus salah satunya, melainkan memindahkan keduanya ke **satu permukaan sunting**: Google Sheet milik owner lewat `D-08`. Owner mengubah satu baris, keduanya ikut terbawa, dan tidak ada berkas kedua yang bisa lupa diperbarui.
 
-Konsekuensi: konfigurator FR-21 memakai stepper 0,5 kg. Minimum order B2B pada `BR-17` ikut turun ke 0,5 kg per varian.
+Kuantitas tetap disimpan sebagai bilangan bulat "jumlah setengah kilo" (`halfKgUnits`) supaya tidak ada aritmetika pecahan pada uang. Bagian itu tidak berubah.
+
+**`V-06` tidak lagi memeriksa kesamaan.** Ia sekarang memeriksa dua batas kewarasan pada setiap varian houseblend:
+
+1. **Dua kemasan 0,5 kg wajib lebih mahal daripada satu kemasan 1 kg** — harga 0,5 kg tidak boleh turun sampai setengah harga per kg. Kalau ia turun ke situ atau lebih rendah, kemasan 1 kg kehilangan alasan untuk ada dan pembeli yang menghitung akan selalu memesan dua kemasan kecil.
+2. **Satu kemasan 0,5 kg wajib lebih murah daripada kemasan 1 kg.** Sama atau di atas itu, halaman yang sama menawarkan kemasan lebih kecil dengan harga lebih tinggi, dan pembeli wajar menyimpulkan situsnya salah harga.
+
+Salah ketik satu nol tetap menggagalkan build. Yang hilang hanyalah asumsi bahwa satu angka bisa menyimpulkan angka yang lain.
+
+Konsekuensi: konfigurator FR-21 tetap memakai stepper 0,5 kg. Minimum order B2B pada `BR-17` tetap 0,5 kg per varian. Jumlah varian houseblend sedang berubah mengikuti pemisahan dua ukuran kemasan ini dan **tidak dituliskan sebagai angka di dokumen mana pun** — angka yang berlaku ada di `web/src/data/validate.ts`.
 
 ## D-03 — Jam balas WhatsApp: setiap hari 08.00–21.00 WIB (menutup OQ-07)
 Website menuliskan janji balas **setiap hari, 08.00–21.00 WIB**. Ditampilkan di halaman Kontak, blok checkout keranjang, dan footer.
@@ -34,7 +64,14 @@ Website menuliskan janji balas **setiap hari, 08.00–21.00 WIB**. Ditampilkan d
 Risiko yang diterima CEO: janji ini berat bila admin hanya satu orang. Mitigasi wajib diimplementasikan: di luar jam tersebut, UI menampilkan status "di luar jam balas — pesan tetap masuk, dibalas mulai pukul 08.00 WIB" berdasarkan waktu lokal pengunjung yang dikonversi ke WIB (UTC+7). Status ini dihitung di klien setelah hydration agar halaman statis tetap bisa di-cache.
 
 ## Catatan untuk QA
-Ketiga keputusan ini wajib punya test case sendiri: paket campur tidak boleh bisa dibentuk lewat UI, harga 0,5 kg harus tepat setengah untuk kesembilan varian, dan indikator jam balas harus benar di kedua sisi batas 08.00 dan 21.00 WIB.
+
+> **Diperbarui 9 September 2026.** Instruksi lama di tempat ini menyuruh QA memverifikasi bahwa harga 0,5 kg tepat setengah harga per kg. Instruksi itu **dicabut** — aturannya sudah dibatalkan oleh revisi kedua `D-02`, dan test case yang menegakkannya akan gagal pada katalog yang benar.
+
+Ketiga keputusan ini wajib punya test case sendiri:
+
+1. Paket campur antar-origin tidak boleh bisa dibentuk lewat UI (`D-01`).
+2. Harga 0,5 kg diambil dari data, **bukan dihitung**, dan setiap varian houseblend memenuhi dua batas `V-06`: harga 0,5 kg tidak lebih murah dari setengah harga per kg, dan tidak mencapai harga per kg penuh (`D-02` revisi kedua). Jumlah varian yang diuji diambil dari `web/src/data/validate.ts`, tidak ditulis sebagai angka tetap di rencana uji.
+3. Indikator jam balas benar di kedua sisi batas 08.00 dan 21.00 WIB (`D-03`).
 
 ## D-04 — NFR-03 direvisi dari 150 KB menjadi 185 KB (JS muat awal)
 
@@ -139,11 +176,11 @@ Pencatatan **tidak boleh menunda atau menggagalkan pembukaan WhatsApp**. Ia diki
 
 Tanggal: 8 September 2026. Dirujuk sebagai **KD-07** dari `02-BRD.md`. Membuka FR-52.
 
-Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping tujuh single origin 200 gram; keduanya tayang berdampingan dan tidak saling menggantikan. Ke-18 biji **bisa dipesan lewat keranjang**.
+Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping single origin 200 gram (delapan biji sejak Sindoro masuk, 9 September 2026); keduanya tayang berdampingan dan tidak saling menggantikan. Ke-18 biji **bisa dipesan lewat keranjang**.
 
 ### `BR-09` sengaja tidak berlaku di lini ini
 
-`BR-09` menetapkan harga single origin ditentukan **tier**, bukan biji — hanya dua angka untuk seluruh katalog: Signature Rp125.000 dan Reguler Rp110.000 per 200 gram. Lini baru memberi harga **per biji**, dari Rp65.000 sampai Rp270.000. Dua tier tidak mungkin menampung 18 harga berbeda.
+`BR-09` menetapkan harga single origin ditentukan **tier**, bukan biji — hanya dua angka per ukuran kemasan untuk seluruh katalog: sejak 9 September 2026, Signature Rp140.000 dan Reguler Rp125.000 per 200 gram. Lini baru memberi harga **per biji**, dari Rp65.000 sampai Rp270.000. Dua tier tidak mungkin menampung 18 harga berbeda.
 
 Karena itu lini ini tidak memakai `Tier`, dan `BR-09` tetap berlaku penuh untuk lini 200 gram. Bukan pengecualian yang dibiarkan, melainkan batas yang ditarik sengaja.
 
@@ -165,10 +202,11 @@ Keduanya tayang apa adanya. Tidak ada angka yang diselaraskan diam-diam, karena 
 
 | | Harga | Setara 100 gr |
 |---|---|---|
-| Single origin 200 gr, tier Reguler | Rp110.000 | Rp55.000 |
+| Single origin 200 gr, tier Reguler | Rp125.000 | Rp62.500 |
+| Single origin kemasan mini 100 gr, tier Reguler | Rp70.000 | Rp70.000 |
 | Katalog Kopi 100 gr | Rp85.000 | Rp85.000 |
 
-Selisih 55%. Entah dua lot berbeda, entah salah satunya keliru. Slug-nya dibedakan (`kerinci` versus `kerinci-100`) sehingga keduanya tidak pernah tertukar di keranjang, dan sebuah assertion menjaga pemisahan itu.
+Selisih 36% terhadap kemasan 200 gr, dan 21% terhadap kemasan mini 100 gr. Bentrokannya **bertambah tajam** sejak 9 September 2026: kemasan mini 100 gr pada lini single origin membuat kedua lini kini menjual Kerinci dalam ukuran yang persis sama dengan dua harga berbeda di satu situs. Entah dua lot berbeda, entah salah satunya keliru. Slug-nya dibedakan (`kerinci` versus `kerinci-100`) sehingga keduanya tidak pernah tertukar di keranjang, dan sebuah assertion menjaga pemisahan itu.
 
 **Gayo dan Pondok Baru bisa jadi kopi yang sama.** Pondok Baru berada di Bener Meriah, Aceh — dataran tinggi Gayo. Menayangkan keduanya sebagai produk terpisah berisiko membingungkan bila keduanya berasal dari lot yang sama.
 

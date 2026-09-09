@@ -262,23 +262,32 @@ src/data/products.ts   ← LAPIS PENULISAN. Disunting owner. Satu-satunya tempat
 src/data/catalog.ts    ← LAPIS TURUNAN. Dibaca seluruh aplikasi.
 ```
 
-Katalog Fase 1a: **10 produk** — 7 single origin (masing-masing 2 varian: 1 pack dan 3 pack) dan 3 lini houseblend (6 + 2 + 1 = 9 varian half-kg). Total 23 varian.
+Katalog Fase 1a: **11 produk** — 8 single origin dan 3 lini houseblend (6 + 2 + 1 = 9 varian half-kg). Tujuh single origin punya 3 varian (100 gr, 1 pack 200 gr, 3 pack); Sindoro punya 2, karena lembar `Product` bisnis plan tidak memberinya kemasan 100 gr. Total 32 varian.
 
-### 4.2 Aturan D-02 yang ditegakkan secara struktural
+### 4.2 Aturan D-02, direvisi 9 September 2026
 
-`pricePerKg` adalah **satu-satunya** angka harga houseblend yang tersimpan. Harga 0,5 kg tidak pernah ditulis sebagai data; ia dihitung `halfKgPrice(pricePerKg) = pricePerKg / 2` saat penyusunan varian. Kesembilan hasilnya sesuai tabel D-02:
+D-02 semula menyatakan harga 0,5 kg **selalu** setengah harga per kg, dan `pricePerKg` satu-satunya angka tersimpan. Lembar `Product` pada `assets/brand/Kopi from heart.xlsx` membatalkannya: kemasan 0,5 kg punya modal dan margin sendiri, sehingga harganya lebih tinggi daripada separuh kilogram.
 
-| Varian | per kg (tersimpan) | per 0,5 kg (dihitung) |
-|---|---|---|
-| BOLD 70:30 | 210.000 | 105.000 |
-| BOLD 60:40 | 200.000 | 100.000 |
-| BOLD 50:50 | 195.000 | 97.500 |
-| BOLD 40:60 | 190.000 | 95.000 |
-| BOLD 30:70 | 185.000 | 92.500 |
-| BOLD 20:80 | 175.000 | 87.500 |
-| BRIGHT Signature | 260.000 | 130.000 |
-| BRIGHT Reguler | 230.000 | 115.000 |
-| Full Robusta | 175.000 | 87.500 |
+Sekarang **kedua angka tersimpan**, dan yang ditegakkan adalah dua batas kewarasan, bukan kesamaan aritmetika:
+
+| Varian | per kg | per 0,5 kg | 2 × 0,5 kg |
+|---|---|---|---|
+| BOLD 70:30 | 215.000 | 120.000 | 240.000 |
+| BOLD 60:40 | 205.000 | 115.000 | 230.000 |
+| BOLD 50:50 | 200.000 | 110.000 | 220.000 |
+| BOLD 40:60 | 195.000 | 105.000 | 210.000 |
+| BOLD 30:70 | 190.000 | 100.000 | 200.000 |
+| BOLD 20:80 | 185.000 | 95.000 | 190.000 |
+| BRIGHT Signature | 280.000 | 150.000 | 300.000 |
+| BRIGHT Reguler | 240.000 | 130.000 | 260.000 |
+| Full Robusta | 180.000 | 100.000 | 200.000 |
+
+V-06 sekarang memeriksa dua hal, dan pelanggaran mana pun menggagalkan build:
+
+- **Batas bawah** — harga 0,5 kg tidak boleh di bawah setengah harga per kg. Kalau di bawah, pembeli memesan dua kemasan kecil dan membayar kurang dari satu kilogram utuh.
+- **Batas atas** — harga 0,5 kg wajib lebih murah daripada satu kilogram penuh. Kalau tidak, kemasan yang lebih besar tampil lebih murah di halaman yang sama.
+
+`perKgSaving(variant)` menghitung selisih kolom terakhir terhadap kolom pertama. Seperti `bundleSaving()`, angka itu **tidak pernah ditulis di konten**.
 
 Kuantitas houseblend disimpan sebagai bilangan bulat `halfKgUnits`. Konversi ke kilogram hanya terjadi saat menampilkan. Tidak ada aritmetika pecahan pada uang di mana pun di basis kode.
 
@@ -332,11 +341,11 @@ Data langsung dipulihkan dan build hijau kembali. QA dapat mengulang uji ini seb
 
 Semua perubahan dilakukan di **satu berkas**: `web/src/data/products.ts`.
 
-**Mengubah harga houseblend.** Cari baris `pricePerKg:` pada rasio atau varian yang dimaksud, ganti angkanya. Tulis angka polos tanpa "Rp" dan tanpa titik desimal; garis bawah sebagai pemisah ribuan boleh (`210_000` sama dengan `210000`). Harga per 0,5 kg ikut berubah sendiri — **jangan mencarinya, angka itu tidak ada di berkas mana pun**. Harga per kg wajib kelipatan Rp1.000; kalau tidak, build gagal dengan pesan V-05.
+**Mengubah harga houseblend.** Harga tidak lagi ditulis di `products.ts`; ia dibaca dari Google Sheet owner lewat `managed.generated.ts` (KD-08, lihat `docs/09-kelola-katalog.md`). Setiap varian punya **dua** kunci: yang polos untuk harga per kg, dan yang berakhiran `.half` untuk harga satu kemasan 0,5 kg. Keduanya wajib ada. Harga per kg wajib kelipatan Rp1.000 (V-05), dan harga 0,5 kg wajib berada di antara separuh harga per kg dan harga per kg penuh (V-06).
 
-**Mengubah harga single origin.** Harga ditentukan **tier**, bukan biji. Ubah di `singleOriginPricing`: `signature` atau `reguler`, medan `pack1` atau `pack3`. Satu perubahan berlaku untuk semua biji di tier itu. Harga `pack3` wajib lebih murah dari 3 × `pack1`, kalau tidak build gagal dengan pesan V-12.
+**Mengubah harga single origin.** Harga ditentukan **tier**, bukan biji. Kuncinya `single.<tier>.pack1`, `single.<tier>.pack3`, dan `single.<tier>.mini1` untuk kemasan 100 gr. Satu perubahan berlaku untuk semua biji di tier itu. Harga `pack3` wajib lebih murah dari 3 × `pack1` (V-12), dan `mini1` wajib lebih murah dari `pack1` (V-10).
 
-**Menambah single origin baru.** Salin satu blok di `singleOriginBeans`, lalu isi: `id` dan `slug` (huruf kecil dan tanda hubung saja), `name`, `tier`, `origin` (desa/lokasi atau `null`), `region` (tanpa provinsi), `province`, `process`, `altitudeMasl`, `varietals`, `tastingNotes`, `image: null`, `status: "available"`, `searchTerms`. **Isi `null` untuk apa pun yang tidak Anda ketahui pasti — jangan menebak** (FR-07). Lalu naikkan `EXPECTED_SINGLE_ORIGIN_COUNT` di `src/data/validate.ts` dari 7 ke 8, kalau tidak build gagal dengan pesan V-15. Pagar itu memang disengaja: ia menangkap penghapusan produk yang tidak sengaja.
+**Menambah single origin baru.** Salin satu blok di `singleOriginBeans`, lalu isi: `id` dan `slug` (huruf kecil dan tanda hubung saja), `name`, `tier`, `origin` (desa/lokasi atau `null`), `region` (tanpa provinsi), `province`, `process`, `altitudeMasl`, `varietals`, `tastingNotes`, `image: null`, `hasMiniPack` (apakah biji ini juga dijual dalam kemasan 100 gr), `status: "available"`, `searchTerms`. **Isi `null` untuk apa pun yang tidak Anda ketahui pasti — jangan menebak** (FR-07). Lalu naikkan `EXPECTED_SINGLE_ORIGIN_COUNT` di `src/data/validate.ts`, kalau tidak build gagal dengan pesan V-15. Tambahkan juga slug-nya ke tab `stok` di sheet dan ke `REQUIRED_STOCK_SLUGS` pada `scripts/sync-katalog.mjs`. Pagar itu memang disengaja: ia menangkap penghapusan produk yang tidak sengaja.
 
 **Menonaktifkan produk.** Ubah `status: "available"` menjadi `status: "out-of-stock"`. Penanda visualnya baru tayang di Fase 1b (FR-14), tetapi medannya sudah aman diisi sekarang.
 

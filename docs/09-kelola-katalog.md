@@ -12,9 +12,9 @@ Semua yang berupa **angka dan status** — yaitu hampir semua suntingan rutin:
 
 | Bisa Anda ubah sendiri | Tetap lewat developer |
 |---|---|
-| Harga 1 pack dan 3 pack, tier Signature dan Reguler | Asal desa, wilayah, provinsi |
-| Kesembilan harga houseblend per kg | Proses, ketinggian, varietas |
-| Status jual 10 produk (ada / kosong) | Catatan rasa |
+| Harga 100 gr, 1 pack, dan 3 pack, tier Signature dan Reguler | Asal desa, wilayah, provinsi |
+| Kesembilan harga houseblend, per kg maupun per 0,5 kg | Proses, ketinggian, varietas |
+| Status jual 11 produk (ada / kosong) | Catatan rasa |
 | Seluruh lini 100 gram: tambah, hapus, ubah nama dan harga | Foto produk |
 
 Batasnya bukan teknis. Kolom di sebelah kanan adalah **klaim tentang produk**, bukan angka, dan situs ini dibayar di muka lewat transfer — klaim yang salah merusak kepercayaan pada seluruh katalog, termasuk yang benar.
@@ -31,25 +31,43 @@ Dua kolom. `kunci` tidak boleh diubah — itu nama yang dikenali kode. Yang Anda
 
 | kunci | keterangan | harga |
 |---|---|---|
-| single.signature.pack1 | Signature, 1 pack 200 gr | 125000 |
-| single.signature.pack3 | Signature, 3 pack | 350000 |
-| single.reguler.pack1 | Reguler, 1 pack 200 gr | 110000 |
-| single.reguler.pack3 | Reguler, 3 pack | 310000 |
-| houseblend.bold-70-30 | BOLD 70:30 per kg | 210000 |
-| houseblend.bold-60-40 | BOLD 60:40 per kg | 200000 |
-| houseblend.bold-50-50 | BOLD 50:50 per kg | 195000 |
-| houseblend.bold-40-60 | BOLD 40:60 per kg | 190000 |
-| houseblend.bold-30-70 | BOLD 30:70 per kg | 185000 |
-| houseblend.bold-20-80 | BOLD 20:80 per kg | 175000 |
-| houseblend.bright-signature | BRIGHT Signature per kg | 260000 |
-| houseblend.bright-reguler | BRIGHT Reguler per kg | 230000 |
-| houseblend.full-robusta | Full Robusta per kg | 175000 |
+| single.signature.pack1 | Signature, 1 pack 200 gr | 140000 |
+| single.signature.pack3 | Signature, 3 pack | 392000 |
+| single.signature.mini1 | Signature, 1 kemasan 100 gr | 85000 |
+| single.reguler.pack1 | Reguler, 1 pack 200 gr | 125000 |
+| single.reguler.pack3 | Reguler, 3 pack | 352000 |
+| single.reguler.mini1 | Reguler, 1 kemasan 100 gr | 70000 |
+| houseblend.bold-70-30 | BOLD 70:30 per kg | 215000 |
+| houseblend.bold-70-30.half | BOLD 70:30 per 0,5 kg | 120000 |
+| houseblend.bold-60-40 | BOLD 60:40 per kg | 205000 |
+| houseblend.bold-60-40.half | BOLD 60:40 per 0,5 kg | 115000 |
+| houseblend.bold-50-50 | BOLD 50:50 per kg | 200000 |
+| houseblend.bold-50-50.half | BOLD 50:50 per 0,5 kg | 110000 |
+| houseblend.bold-40-60 | BOLD 40:60 per kg | 195000 |
+| houseblend.bold-40-60.half | BOLD 40:60 per 0,5 kg | 105000 |
+| houseblend.bold-30-70 | BOLD 30:70 per kg | 190000 |
+| houseblend.bold-30-70.half | BOLD 30:70 per 0,5 kg | 100000 |
+| houseblend.bold-20-80 | BOLD 20:80 per kg | 185000 |
+| houseblend.bold-20-80.half | BOLD 20:80 per 0,5 kg | 95000 |
+| houseblend.bright-signature | BRIGHT Signature per kg | 280000 |
+| houseblend.bright-signature.half | BRIGHT Signature per 0,5 kg | 150000 |
+| houseblend.bright-reguler | BRIGHT Reguler per kg | 240000 |
+| houseblend.bright-reguler.half | BRIGHT Reguler per 0,5 kg | 130000 |
+| houseblend.full-robusta | Full Robusta per kg | 180000 |
+| houseblend.full-robusta.half | Full Robusta per 0,5 kg | 100000 |
 
-Kolom `keterangan` untuk Anda sendiri; isinya diabaikan sistem. Ketiga belas baris **wajib ada** — satu saja hilang, sinkronisasi membatalkan diri.
+Kolom `keterangan` untuk Anda sendiri; isinya diabaikan sistem. Kedua puluh empat baris **wajib ada** — satu saja hilang, sinkronisasi membatalkan diri.
 
 Harga boleh ditulis `125000`, `125.000`, atau `Rp125.000`. Ketiganya dibaca sama.
 
-Harga **0,5 kg tidak ditulis di sini** — ia selalu tepat setengah harga per kg dan dihitung sistem (KD-02). Menuliskannya berarti dua sumber kebenaran untuk satu angka.
+**Harga 0,5 kg sekarang ditulis sendiri**, pada kunci berakhiran `.half`. Sebelumnya ia dihitung sebagai setengah harga per kg; bisnis plan "Kopi from heart" membatalkan itu, karena kemasan kecil membawa marginnya sendiri (BOLD 70:30 dijual Rp120.000 per 0,5 kg, bukan Rp107.500).
+
+Dua batas dijaga sistem, dan melanggarnya menggagalkan build:
+
+- Dua kemasan 0,5 kg **wajib lebih mahal** daripada satu kilogram. Kalau tidak, pembeli memesan dua kemasan kecil dan membayar kurang dari satu kilogram utuh.
+- Satu kemasan 0,5 kg **wajib lebih murah** daripada satu kilogram penuh. Kalau tidak, kemasan yang lebih besar tampil lebih murah di halaman yang sama.
+
+Begitu pula kemasan 100 gr: ia wajib lebih murah daripada kemasan 200 gr.
 
 ### Tab `stok`
 
@@ -62,11 +80,12 @@ Harga **0,5 kg tidak ditulis di sini** — ia selalu tepat setengah harga per kg
 | palimping | available |
 | kerinci | available |
 | pondok-baru | available |
+| sindoro | available |
 | bold | available |
 | bright | available |
 | full-robusta | available |
 
-Hanya dua nilai yang diterima: `available` dan `out-of-stock`. Kesepuluh baris wajib ada.
+Hanya dua nilai yang diterima: `available` dan `out-of-stock`. Kesebelas baris wajib ada.
 
 ### Tab `katalog100`
 

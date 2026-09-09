@@ -3,6 +3,32 @@
 
 ---
 
+> # ⚠️ JANGAN DIJALANKAN APA ADANYA — DOKUMEN INI SUDAH KEDALUWARSA
+>
+> **Ditempel Business Analyst, 9 September 2026.**
+>
+> Rencana uji ini bertanggal **7 September 2026** dan menguji katalog yang sudah tidak ada lagi. Menjalankannya pada situs hari ini akan menghasilkan **daftar kegagalan palsu** — atau, yang jauh lebih merugikan, mendorong seseorang "memperbaiki" kode kembali ke perilaku yang sudah dibatalkan CEO.
+>
+> **Yang sudah berubah dan tidak tercermin di sini:**
+>
+> | Hal | Yang ditulis dokumen ini | Yang berlaku sekarang |
+> |---|---|---|
+> | Harga 0,5 kg houseblend | Tepat setengah harga per kg, dihitung, tidak boleh disimpan | **Dua ukuran kemasan** (1 kg dan 0,5 kg), masing-masing dengan **harga tersimpan sendiri** (`D-02` revisi kedua, 9 September 2026) |
+> | Seluruh harga houseblend | BOLD Rp210.000–175.000/kg, BRIGHT Rp260.000 dan Rp230.000, Full Robusta Rp175.000 | Naik seluruhnya; lihat `00b-ceo-decisions.md` D-02 dan `02-BRD.md` BR-14, BR-15, BR-16 |
+> | Harga single origin | Signature Rp125.000 / Rp350.000, Reguler Rp110.000 / Rp310.000 | Signature Rp140.000 / Rp392.000, Reguler Rp125.000 / Rp352.000, ditambah **kemasan mini 100 gr** Rp85.000 dan Rp70.000 (`BR-08`, `BR-09`) |
+> | Penghematan 3 pack | Rp25.000 dan Rp20.000 | **Rp28.000** dan **Rp23.000** (`BR-10`) |
+> | Jumlah single origin | Tujuh | **Delapan** — **Sindoro** masuk 9 September 2026, dan ia satu-satunya biji **tanpa** kemasan mini 100 gr |
+> | Anggaran JS (NFR-03) | 150 KB | **190 KB ter-gzip** pada rute mana pun (`KD-04`) |
+> | Lighthouse Performance (NFR-04) | ≥ 90 | **≥ 88** (`KD-04`) |
+>
+> **`Modul E` adalah bagian yang paling berbahaya.** Seluruh assertion harganya menegakkan aturan "harga 0,5 kg tepat setengah harga per kg", dan aturan itu **sudah dicabut**. Modul E yang gagal hari ini adalah tanda katalognya benar, bukan tanda ada cacat.
+>
+> Dokumen ini juga tidak menyebut sama sekali: **Sindoro**, kemasan mini 100 gr, lini **Katalog Kopi 100 gram** (`KD-07`), pengelolaan katalog lewat spreadsheet (`KD-08`), maupun halaman **lacak pesanan** (`KD-05`, `KD-06`).
+>
+> **Yang harus dilakukan sementara ini:** perlakukan dokumen ini sebagai **arsip** — catatan atas apa yang tayang pada 7 September 2026, bukan instruksi kerja. Untuk angka yang berlaku, baca `00b-ceo-decisions.md` lalu `02-BRD.md` v1.5; untuk hitungan katalog, baca konstanta `EXPECTED_*` di `web/src/data/validate.ts`. **Penggantinya sedang ditulis pada Sprint 2, butir 2.1 `11-timeline-rilis.md`**; sampai itu selesai, jangan menulis defek baru berdasarkan berkas ini.
+
+---
+
 ## 0. Kendali Dokumen
 
 | Atribut | Isi |
