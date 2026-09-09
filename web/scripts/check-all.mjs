@@ -18,6 +18,11 @@
  *   Ditambahkan 9 September 2026: plafonnya disepakati sejak awal, tetapi
  *   tidak pernah ada yang mengukur ulang setelah tiga fitur bertambah.
  *   Sama seperti check-build-output, ia butuh folder build.
+ * - `check-copy-budget.mjs` menjaga plafon kata terlihat per rute (D-11).
+ *   Dipasang SEBELUM pemangkasannya dikerjakan, jadi ia memang merah saat
+ *   ditambahkan — itu satu-satunya bukti bahwa ia bekerja. Menghijaukannya
+ *   dilakukan dengan memangkas halaman, bukan dengan menaikkan plafon di
+ *   skripnya; plafon hanya boleh naik lewat docs/13-diet-tampilan.md D-11.
  */
 
 import { spawnSync } from "node:child_process";
@@ -32,6 +37,7 @@ const SCRIPTS = [
   "scripts/check-order-tracker-gs.mjs",
   "scripts/check-build-output.mjs",
   "scripts/check-bundle-size.mjs",
+  "scripts/check-copy-budget.mjs",
 ];
 
 let failed = 0;

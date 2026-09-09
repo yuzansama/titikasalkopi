@@ -46,9 +46,7 @@ export default function HouseblendIndexPage() {
           Houseblend
         </h1>
         <p className="mt-3 max-w-2xl text-olive">
-          Tiga lini blend untuk kedai dan rumah. Setiap rasio tersedia dalam dua
-          ukuran kemasan, 1 kg dan 0,5 kg. Kemasan 1 kg lebih hemat per gramnya;
-          harga keduanya tertulis apa adanya di tabel di bawah.
+          Tiga lini blend untuk kedai dan rumah, dalam kemasan 1 kg dan 0,5 kg.
         </p>
 
         {/* FR-27 — karakter dan komposisi tiap lini */}
@@ -76,10 +74,12 @@ export default function HouseblendIndexPage() {
                     ))}
                   </ul>
                 ) : null}
-                <p className="mt-3 flex-1 text-[0.95rem] text-olive">
-                  {line.description}
-                </p>
-                <p className="mt-4">
+                {/* D-11 — deskripsi panjang tiap lini TIDAK diulang di kartu
+                    ini. Ia utuh di halaman lininya, dan kartu ini cukup
+                    menyebut komposisi lalu mengantar ke sana; mengulangnya di
+                    sini menghabiskan seperempat anggaran kata halaman untuk
+                    kalimat yang sudah punya rumah. */}
+                <p className="mt-auto pt-4">
                   <Link
                     href={productHref(line)}
                     className={buttonClass("outline", "md", "w-full")}
@@ -165,9 +165,8 @@ export default function HouseblendIndexPage() {
             Untuk kedai
           </h2>
           <p className="mt-2 max-w-2xl text-cream/80">
-            Butuh bantuan memilih rasio yang cocok dengan mesin dan menu Anda?
-            Ceritakan kebutuhannya lewat WhatsApp — kami bantu bandingkan lini
-            dan rasionya.
+            Ceritakan mesin dan menu Anda lewat WhatsApp; kami bantu memilih
+            rasionya.
           </p>
           <p className="mt-5">
             <a

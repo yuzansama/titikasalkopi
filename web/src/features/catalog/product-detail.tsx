@@ -31,6 +31,13 @@ import type { VariantOption } from "./variant-option";
  * FR-07 ditegakkan secara struktural: daftar fakta di bawah hanya merender
  * medan yang BUKAN `null`. Tidak ada atribut origin yang dikarang, dan tidak
  * ada kalimat pemasaran yang menyiratkan atribut yang tidak ada di brand brief.
+ *
+ * D-12 memindahkan pil catatan rasa dan penghematan 3 pack keluar dari kartu
+ * produk, sehingga halaman INI satu-satunya tempat keduanya masih tayang.
+ * Jangan hapus salah satu pun saat memangkas kata: penghematan wajib tetap
+ * menempel pada opsi variannya (syarat Business Analyst), dan angkanya wajib
+ * datang dari `bundleSaving()` — tidak pernah diketik, tidak pernah dihitung
+ * ulang di Client Component.
  */
 
 function toVariantOption(variant: Product["variants"][number]): VariantOption {
@@ -216,17 +223,20 @@ export function ProductDetail({ product }: { product: Product }) {
                   </div>
                 ))}
               </dl>
-              <p className="mt-2 text-sm text-olive">
-                Hanya keterangan yang kami ketahui yang ditampilkan. Detail lain
-                dapat ditanyakan lewat WhatsApp.
-              </p>
+              {/* D-12 — kalimat "Hanya keterangan yang kami ketahui yang
+                  ditampilkan…" dihapus: ia mengumumkan kebijakan editorial
+                  kepada pembeli yang tidak menanyakannya. Aturannya sendiri
+                  tidak ikut hilang — FR-07 ditegakkan `originFacts()` di atas,
+                  yang memang hanya merender medan non-null. */}
             </section>
           ) : null}
 
           {saving !== null ? (
+            /* D-12 — dipendekkan, tidak dihapus. Isi satu paket sudah dijelaskan
+               `qtyHint()` di panel pesan tepat di bawah, jadi mengulangnya di
+               sini hanya menambah kata. Angkanya tetap `bundleSaving()`. */
             <p className="mt-6 rounded-md bg-coffee px-4 py-3 text-[0.95rem] text-cream">
-              Paket 3 pack berisi tiga kemasan 200 gr dari origin yang sama dan
-              hemat {formatIDR(saving)} dibanding membeli tiga pack satuan.
+              Paket 3 pack hemat {formatIDR(saving)} dibanding tiga pack satuan.
             </p>
           ) : null}
 
@@ -261,6 +271,15 @@ export function ProductDetail({ product }: { product: Product }) {
               />
             </div>
 
+            {/* D-13 menyatakan kalimat ini hidup di /kontak DAN di panel pesan
+                halaman produk. Bagian keduanya ternyata tidak pernah ada:
+                sampai footer dipendekkan, satu-satunya alasan halaman produk
+                memuatnya adalah footer yang mengulanginya di setiap rute. Ini
+                yang menepatinya, di titik pembeli benar-benar menekan tombol. */}
+            <p className="mt-3 text-sm text-olive">
+              Pembayaran tidak dilakukan di website ini.
+            </p>
+
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <AskAboutProductButton
                 productId={product.slug}
@@ -277,14 +296,13 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
+      {/* D-12 — `lead` dilepas: judul seksinya sudah menyatakan isi grid, dan
+          kalimat pengantarnya mengulang apa yang terlihat di kartu. Prop-nya
+          tetap opsional di `RelatedProducts`, jadi tidak ada yang perlu diubah
+          di sana. */}
       <RelatedProducts
         id="produk-lain"
         title={isHouseblend ? "Lini houseblend lainnya" : "Origin lainnya"}
-        lead={
-          isHouseblend
-            ? "Dua lini sisanya, sama-sama dijual per kilogram dengan pemesanan mulai 0,5 kg."
-            : "Origin lain dalam kemasan 200 gr, tersedia satuan maupun paket 3 pack."
-        }
         products={related}
       />
     </Container>
