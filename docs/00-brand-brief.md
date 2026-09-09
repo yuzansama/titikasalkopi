@@ -38,12 +38,24 @@ Tipografi (dari aset): heading sans-serif tebal condensed + serif display untuk 
 >    0,5 kg BUKAN setengah harga kilogram — ia membawa marginnya sendiri.
 >    Ini merevisi D-02; lihat `docs/03-architecture.md`.
 > 2. **Single origin punya kemasan mini 100 gr**, harganya per tier seperti
->    kemasan 200 gr. Berbeda dari lini Katalog Kopi 100 gram (KD-07), yang
->    berisi biji lain dan berharga per biji.
+>    kemasan 200 gr.
 >
 > Angka yang tayang tetap dibaca dari Google Sheet owner lewat
 > `web/src/data/managed.generated.ts` (KD-08); tabel di sini adalah rujukan
 > manusia, bukan sumber build.
+
+> **Diperbarui 9 September 2026 — katalog di bawah ini LENGKAP.** Sejak KD-09,
+> seluruh produk situs berasal dari lembar `Product` saja: **11 produk**,
+> **41 varian jual**. Lini **"Katalog Kopi 100 gram"** dari poster cetak owner
+> (KD-07) — Bali Kintamani, Gayo, Panama, Kenya, Luwak, dan seterusnya — sudah
+> **dihapus seluruhnya** dan tidak boleh dituliskan kembali di sini.
+>
+> Yang tetap ada adalah **kemasan mini 100 gr** pada single origin, yang
+> berharga per tier dan ada di tabel Single Origin di bawah. Keduanya sama-sama
+> 100 gram dan karena itu wajib dibedakan setiap kali disebut.
+>
+> Kolom **"Tier 2"** pada lembar itu masih berisi catatan tanpa satu pun nama
+> biji dan tanpa harga, jadi tidak ada apa pun yang tayang atas namanya.
 
 ### Houseblend — BOLD (Arabica Natural & Fine Robusta Natural; notes: choco, almond, caramel)
 | Rasio | Harga / kg | Harga / 0,5 kg |

@@ -8,10 +8,10 @@
 | Atribut | Isi |
 |---|---|
 | Judul dokumen | Rencana Uji dan Laporan Eksekusi QA — Website titikasalkopi.id Fase 1a |
-| Versi | **2.0** |
+| Versi | **2.1** |
 | Tanggal | **9 September 2026** (versi awal 7 September 2026) |
 | Penulis | QA Engineer |
-| Dokumen sumber | `docs/00-brand-brief.md`, `docs/00b-ceo-decisions.md` (KD-01 sampai KD-08), `docs/02-BRD.md` **v1.5**, `docs/03-architecture.md`, `docs/04-frontend.md`, `docs/05-backend.md`, `docs/08-lacak-pesanan.md`, `docs/09-kelola-katalog.md`, `docs/11-timeline-rilis.md` |
+| Dokumen sumber | `docs/00-brand-brief.md`, `docs/00b-ceo-decisions.md` (KD-01 sampai KD-09), `docs/02-BRD.md` **v1.6**, `docs/03-architecture.md`, `docs/04-frontend.md`, `docs/05-backend.md`, `docs/08-lacak-pesanan.md`, `docs/09-kelola-katalog.md`, `docs/11-timeline-rilis.md` |
 | Objek uji | Kode pada `web/`, cabang `main` |
 | Sifat dokumen | Rencana uji **dan** ledger defek. Kolom **Cakupan** menyatakan apakah sebuah butir sudah dijaga mesin atau menuntut manusia; tidak ada butir yang dibiarkan ambigu |
 | Sumber angka katalog | `web/src/data/validate.ts` (`EXPECTED_*`) dan `web/src/data/managed.generated.ts`. **Dokumen ini tidak menuliskan satu pun harga sebagai angka** |
@@ -24,6 +24,7 @@
 | 1.0 | 7 September 2026 | QA Engineer | Rencana uji dan laporan eksekusi pertama: 208 test case (TC-001…TC-208), 118 assertion otomatis, 14 defek tercatat, verdikt GO bersyarat atas pratinjau GitHub Pages |
 | 1.1 | 8 September 2026 | QA Engineer | Rekapitulasi defek 8 September ditambahkan sebagai Bagian 8.2 tanpa mengubah potret eksekusi 7 September; assertion otomatis naik 118 → 122 |
 | **2.0** | **9 September 2026** | **QA Engineer** | **Penulisan ulang penuh (butir 2.1 `11-timeline-rilis.md`).** Rencana v1.x menguji katalog 10 produk / 23 varian dengan harga 0,5 kg houseblend sebagai turunan setengah harga per kg — model itu dicabut `KD-02` revisi kedua. Modul E lama menegakkan aturan yang sudah batal dan menghasilkan kegagalan palsu. Versi ini menguji katalog yang benar-benar ada (8 single origin termasuk **Sindoro**, kemasan mini **100 gr**, houseblend **dua ukuran kemasan**), menambahkan cakupan **lacak pesanan** (`KD-05`, `KD-06`), **sinkronisasi katalog dari sheet** (`KD-08`), **lini Katalog Kopi 100 gram** (`KD-07`), dan **status stok** (FR-14). Penomoran test case dimulai ulang dari **TC-301** agar rujukan lama ke TC-001…TC-208 tetap menunjuk arsip v1.x, bukan tertukar. Prinsip pengujian uang diubah dari nilai literal menjadi **invarian** setelah cacat 9 September 2026 |
+| **2.1** | **9 September 2026** | **QA Engineer** | **Mencabut seluruh kasus lini Katalog Kopi 100 gram** setelah `KD-09` menghapus lini itu: TC-313, TC-314, TC-403, dan TC-404 ditandai **dicabut**, bukan dihapus, mengikuti perlakuan yang sama pada Modul E lama. `check-picks.mjs` tidak ada lagi, sehingga barisnya keluar dari peta cakupan. **DEF-17 tertutup** — pencabutannya kini tercatat sebagai keputusan. Angka assertion diselaraskan dengan keluaran nyata `check-all.mjs`. **Kemasan mini 100 gr pada single origin tidak ikut dicabut**; TC-307 dan TC-308 tetap berlaku |
 
 ### 0.2 Kedudukan dokumen ini
 
@@ -36,11 +37,13 @@ Dokumen ini **bukan** laporan eksekusi. Situs belum pernah diuji di peramban, di
 | Ukuran | Angka |
 |---|---|
 | Test case tertulis | **98** (TC-301 sampai TC-437) |
-| Sepenuhnya dijaga pemeriksaan otomatis | **44** |
-| Menuntut manusia | **54** — di antaranya **9 campuran**, yaitu aritmetikanya dijaga mesin sementara pengalamannya tidak |
-| Assertion otomatis pada `web/scripts/` | **200** pada 9 berkas (angka berjalan; yang berlaku adalah keluaran `node scripts/check-all.mjs`, bukan dokumen ini) |
+| **Dicabut KD-09** | **4** — TC-313, TC-314, TC-403, TC-404. Nomornya tidak dipakai ulang |
+| **Berlaku** | **94** |
+| Sepenuhnya dijaga pemeriksaan otomatis | **42** |
+| Menuntut manusia | **52** — di antaranya **8 campuran**, yaitu aritmetikanya dijaga mesin sementara pengalamannya tidak |
+| Assertion otomatis pada `web/scripts/` | **191** pada 9 berkas (angka berjalan; yang berlaku adalah keluaran `node scripts/check-all.mjs`, bukan dokumen ini) |
 | Defek diwariskan dari v1.x | 14 — 12 tertutup, **2 terbuka** |
-| Defek baru pada v2.0 | **3** — DEF-15 (Major), DEF-16 (Major), DEF-17 (Minor) |
+| Defek baru pada v2.0 | **3** — DEF-15 (Major, **tertutup**), DEF-16 (Major, **tertutup**), DEF-17 (Minor, **tertutup** oleh KD-09) |
 
 ---
 
@@ -80,8 +83,8 @@ Konsekuensinya mengikat seluruh dokumen ini:
 | Tingkat | Objek | Cara | Otomatis |
 |---|---|---|---|
 | **L1 — Statis** | Tipe, lint, aturan ketergantungan | `npx next typegen`, `npx tsc --noEmit`, `npx eslint .` | Ya |
-| **L2 — Unit murni** | Keranjang, generator pesan, jam balas, format, lacak, lini 100 gram | `check-cart`, `check-whatsapp`, `check-reply-hours`, `check-format`, `check-picks`, `check-tracking` | Ya |
-| **L3 — Gerbang data** | Validator katalog FR-43 (V-01…V-20) dan `validateCatalogPayload()` | `check-sync-katalog.mjs` untuk payload sheet; perusakan data sengaja lalu build untuk V-06, V-10b, V-11 | Sebagian |
+| **L2 — Unit murni** | Keranjang, generator pesan, jam balas, format, lacak | `check-cart`, `check-whatsapp`, `check-reply-hours`, `check-format`, `check-tracking` | Ya |
+| **L3 — Gerbang data** | Validator katalog FR-43 (V-01…V-15 termasuk V-10b, sesuai `src/data/validate.ts`; `assertPicksValid` dihapus bersama KD-09) dan `validateCatalogPayload()` | `check-sync-katalog.mjs` untuk payload sheet; perusakan data sengaja lalu build untuk V-06, V-10b, V-11 | Sebagian |
 | **L4 — Keluaran build** | HTML, sitemap, robots, JSON-LD, metadata, kelas warna, penanda stok | `check-build-output.mjs` | Ya |
 | **L5 — Kontrak Apps Script** | Daftar putih kolom, pagar tulis, kuota, netralisasi rumus | `check-order-tracker-gs.mjs` (menjalankan `ops/order-tracker.gs` di atas sheet tiruan) | Ya |
 | **L6 — Manual peramban** | Interaksi, papan ketik, pembaca layar, tata letak | Penelusuran manual | Tidak |
@@ -91,7 +94,7 @@ L1 sampai L5 sudah berjalan dan menjadi gerbang penerbitan pada `.github/workflo
 
 ### 1.3 Cakupan yang diuji
 
-Seluruh FR Fase 1a termasuk FR-51 (lacak pesanan), FR-52 (lini 100 gram), dan FR-53 (katalog lewat sheet); NFR-01 sampai NFR-16 sejauh dapat diukur — dengan NFR-03 dan NFR-04 memakai angka hasil revisi `KD-04` (**≤ 190 KB ter-gzip**, **Lighthouse Performance ≥ 88**), bukan angka BRD v1.0; seluruh BR-01 sampai BR-20 dengan BR-13 dan BR-14 dibaca menurut `KD-02` revisi kedua; dan kedelapan keputusan CEO KD-01 sampai KD-08.
+Seluruh FR Fase 1a termasuk FR-51 (lacak pesanan) dan FR-53 (katalog lewat sheet). **FR-52 tidak lagi diuji: ia dicabut `KD-09`** dan kasusnya ikut dicabut (Bagian 4.10); NFR-01 sampai NFR-16 sejauh dapat diukur — dengan NFR-03 dan NFR-04 memakai angka hasil revisi `KD-04` (**≤ 190 KB ter-gzip**, **Lighthouse Performance ≥ 88**), bukan angka BRD v1.0; seluruh BR-01 sampai BR-20 dengan BR-13 dan BR-14 dibaca menurut `KD-02` revisi kedua; dan kesembilan keputusan CEO KD-01 sampai KD-09.
 
 **Kedua target build diuji terpisah**: target Vercel (`npm run build`) dan ekspor statis GitHub Pages (`STATIC_EXPORT=1 BASE_PATH=/titikasalkopi`). Keduanya menghasilkan HTML yang berbeda dan pernah berbeda pula perilakunya (DEF-03).
 
@@ -169,15 +172,15 @@ Bagian ini ditulis lebih dulu supaya test case manual pada Bagian 4 dapat dibata
 
 | Berkas | Assertion | Yang dijaganya |
 |---|---|---|
-| `check-cart.mjs` | 27 | Hitungan varian houseblend per rasio; satu harga per varian; kewajaran kedua ukuran kemasan; pita harga per gram; BR-10; kemasan mini 100 gr pada tujuh biji dan bukan Sindoro; FR-14 status sampai ke produk; reducer, storage, kedaluwarsa, data rusak, PRUNE; **invarian `qty × harga satuan == subtotal baris` dan `Σ baris == subtotal pesanan`**; tidak ada harga kedua pada baris keranjang |
+| `check-cart.mjs` | 32 | Hitungan varian houseblend per rasio; satu harga per varian; kewajaran kedua ukuran kemasan; pita harga per gram; BR-10; kemasan mini 100 gr pada tujuh biji dan bukan Sindoro; **KD-09: seluruh produk berasal dari lembar "Product", tidak lebih dan tidak kurang, disalin ulang dengan tangan**; FR-14 status sampai ke produk; reducer, storage, kedaluwarsa, data rusak, PRUNE; **invarian `qty × harga satuan == subtotal baris` dan `Σ baris == subtotal pesanan`**; tidak ada harga kedua pada baris keranjang |
 | `check-whatsapp.mjs` | 24 | Kode order; pembersih catatan; **pesan bisa dijumlahkan sendiri untuk setiap jenis kemasan**; lima blok wajib; penanda sumber di badan pesan; houseblend menyebut kemasan bukan berat; batas 1.500 terkode; tangga peringkasan sebagai sifat; pengodean URL |
 | `check-reply-hours.mjs` | 12 | KD-03 pada kedua sisi kedua batas, 13 jam, zona waktu lain, tujuh hari |
 | `check-format.mjs` | 13 | BR-02 sampai ke titik kode, tanpa normalisasi; koma desimal Indonesia; label satuan menyebut kemasan yang dihargai; BR-02 hulu ke hilir sampai pesan WhatsApp |
-| `check-picks.mjs` | 11 | KD-07: seluruh baris poster tayang dengan nama dan harga persis, urutan poster dipertahankan, slug unik dan tidak bertabrakan dengan produk 200 gr, tidak ada kopi yang dijual di kedua lini sekaligus |
-| `check-sync-katalog.mjs` | 14 | KD-08: penolakan tab hilang, harga hilang, kunci salah ketik, harga pecahan/nol/negatif, salah ketik jumlah nol di kedua arah, status stok hilang, slug 100 gram bentrok, `katalog100` kosong; setiap `managedPrice()` punya kuncinya |
+| `check-sync-katalog.mjs` | 11 | KD-08: penolakan tab hilang, harga hilang, kunci salah ketik, harga pecahan/nol/negatif, salah ketik jumlah nol di kedua arah, status stok hilang atau tak dikenal; setiap `managedPrice()` punya kuncinya. Sejak KD-09 hanya dua tab yang dibaca, `harga` dan `stok` |
 | `check-tracking.mjs` | 28 | FR-51: normalisasi kode, penolakan sebelum jaringan, penguraian jawaban, `found:false`, jawaban rusak, status di luar kosakata, ambang basi tepat di batas, `not-configured`; KD-06: perakitan baris, netralisasi rumus, batas panjang, `last4` tidak sah |
 | `check-order-tracker-gs.mjs` | 14 | Kontrak `ops/order-tracker.gs` di atas sheet tiruan: baris lengkap, kode tidak pernah ditimpa, kuota harian, netralisasi rumus, gagal tertutup tanpa kolom `sumber`, daftar putih kolom, **kode salah dan `last4` salah menjawab byte yang sama** |
-| `check-build-output.mjs` | 57 | HTML hasil build kedua target: rute, judul dan deskripsi unik, kanonis, `noindex` pada `/keranjang` dan `/lacak`, OG, JSON-LD sah dan lengkap, satuan pada Offer houseblend, BR-02 di seluruh HTML, harga sampai ke halamannya, **penanda stok kosong dan penolakan tombol pesan**, Sindoro tanpa kemasan mini, penghematan bundling dihitung, KD-01, jam balas, aksesibilitas struktural, sitemap dan robots, KD-07 |
+| `check-build-output.mjs` | 55 | HTML hasil build kedua target: rute, judul dan deskripsi unik, kanonis, `noindex` pada `/keranjang` dan `/lacak`, OG, JSON-LD sah dan lengkap, satuan pada Offer houseblend, BR-02 di seluruh HTML, harga sampai ke halamannya, **penanda stok kosong dan penolakan tombol pesan**, Sindoro tanpa kemasan mini, penghematan bundling dihitung, KD-01, jam balas, aksesibilitas struktural, sitemap dan robots |
+| `check-bundle-size.mjs` | 2 | NFR-03 / KD-04: setiap rute terukur, dan tidak ada rute melewati 190 KB ter-gzip. Menutup DEF-16; gerbangnya diuji dengan sengaja dilanggar, bukan sekadar dibaca |
 
 **Yang TIDAK dijaga mesin, dan karena itu menjadi seluruh isi kelompok manual Bagian 5:** apa pun yang menuntut mesin tata letak, DOM hidup, aplikasi WhatsApp sungguhan, endpoint Apps Script yang benar-benar ter-deploy, akun Google owner, atau jam dinding.
 
@@ -205,8 +208,8 @@ Bagian ini ditulis lebih dulu supaya test case manual pada Bagian 4 dapat dibata
 | **TC-310** | Penghematan 3 pack **dihitung dari harga**, tidak diketik manual | Build selesai | Sisir HTML halaman produk; bandingkan angka hemat yang tayang terhadap `3 × harga 1 pack − harga 3 pack` yang tayang di halaman yang sama | Kedua angka menutup persis. Tidak ada angka hemat yang ditulis sebagai teks tetap | Tinggi | OTOMATIS — `check-build-output.mjs` |
 | **TC-311** | Hubungan hemat itu benar **di mata pembeli**, bukan hanya di HTML | Peramban | Buka satu halaman Signature dan satu Reguler; baca ketiga angka di layar (1 pack, 3 pack, hemat); kalikan dan kurangkan sendiri | `3 × harga 1 pack − harga 3 pack` = angka hemat yang tayang, apa pun harga yang sedang berlaku | Tinggi | MANUAL — M-1 |
 | **TC-312** | BR-02: tidak pernah ada spasi antara `Rp` dan angka, di permukaan mana pun | Build selesai | Sisir seluruh HTML kedua target dengan pola `Rp` diikuti spasi, NBSP, `&nbsp;`, `&#160;`, `%C2%A0`; periksa titik kode hasil `formatIDR()` | Nol kemunculan; karakter setelah `Rp` selalu digit | Kritis | OTOMATIS — `check-format.mjs`, `check-build-output.mjs` |
-| **TC-313** | KD-07: lini Katalog Kopi 100 gram tayang lengkap, dalam **urutan poster owner** | Build selesai | Bandingkan daftar yang tayang terhadap daftar poster yang diketik ulang secara terpisah di dalam skrip | Seluruh baris tayang dengan nama dan harga persis, urut sesuai poster, bukan diurutkan menurut harga atau abjad | Tinggi | OTOMATIS — `check-picks.mjs` |
-| **TC-314** | Tidak ada kopi yang dijual di **dua lini sekaligus** dalam ukuran yang sama | Build selesai | Bandingkan nama pada lini 100 gram terhadap nama produk 200 gr yang punya kemasan mini | Nol tumpang tindih. Kerinci dikeluarkan dari lini 100 gram pada 9 September 2026 atas keputusan owner; alasannya tertulis di kepala `check-picks.mjs` — tetapi belum masuk `00b-ceo-decisions.md`, lihat DEF-17 | Tinggi | OTOMATIS — `check-picks.mjs` |
+| ~~**TC-313**~~ | ~~KD-07: lini Katalog Kopi 100 gram tayang lengkap, dalam urutan poster owner~~ | — | — | **DICABUT KD-09** — lihat Bagian 4.10 | — | — |
+| ~~**TC-314**~~ | ~~Tidak ada kopi yang dijual di dua lini sekaligus dalam ukuran yang sama~~ | — | — | **DICABUT KD-09** — lihat Bagian 4.10 | — | — |
 | **TC-315** | Tidak ada harga yang ditulis langsung di komponen tampilan | Kode sumber | Sisir `src/components` dan `src/features` mencari literal rupiah; periksa berkas `"use client"` tidak mengimpor `@/data/*` | Seluruh harga berasal dari katalog lewat props; nol pelanggaran aturan ketergantungan | Tinggi | MANUAL — M-0 |
 | **TC-316** | Harga varian yang sama identik di seluruh permukaan | Peramban | Untuk satu varian, catat harga pada kartu `/katalog`, halaman produk, baris keranjang, dan pesan WhatsApp | Keempatnya angka yang sama. Tester tidak perlu tahu angkanya; yang diuji adalah kesamaannya | Kritis | MANUAL — M-1 |
 
@@ -225,7 +228,7 @@ Bagian ini ditulis lebih dulu supaya test case manual pada Bagian 4 dapat dibata
 | **TC-328** | **Invarian uang keranjang**: `qty × harga satuan = subtotal baris`, dan `Σ subtotal baris = subtotal pesanan` | Selector dimuat | Untuk setiap varian katalog, resolve satu keranjang dan periksa kedua persamaan | Keduanya berlaku pada setiap varian, apa pun harganya. **Ini pengganti seluruh assertion nilai literal yang gagal menangkap cacat 9 September** | Kritis | OTOMATIS — `check-cart.mjs` |
 | **TC-329** | Keranjang bertahan setelah peramban ditutup dan dibuka kembali | Peramban | Isi dua item; tutup peramban; buka kembali `/keranjang` | Isi keranjang utuh, subtotal sama | Tinggi | MANUAL — M-1 |
 | **TC-330** | Indikator jumlah item terbarui seketika di seluruh halaman | Peramban | Tambah dan hapus item sambil berpindah halaman | Angka pada header berubah tanpa muat ulang, konsisten di setiap rute | Tinggi | MANUAL — M-1 |
-| **TC-331** | Baris yang produknya hilang dari katalog dibuang **dan pengunjung diberi tahu satu kali** | Peramban + satu kali sinkronisasi | Tambahkan satu biji 100 gram; owner menandainya `out-of-stock` di tab `katalog100`; terbitkan; buka `/keranjang` | Baris hilang tanpa galat; muncul pemberitahuan baris terbuang; subtotal ikut turun | Tinggi | OTOMATIS sebagian — `check-cart.mjs` (PRUNE) · **MANUAL — M-4** |
+| **TC-331** | Baris yang produknya hilang dari katalog dibuang **dan pengunjung diberi tahu satu kali** | Peramban + satu kali sinkronisasi | Tambahkan satu varian ke keranjang; hapus varian itu dari `managed.generated.ts` pada cadangan lokal (atau terbitkan katalog tanpa varian itu); buka `/keranjang`. **Langkah lama memakai tab `katalog100`, yang tidak ada lagi sejak KD-09** | Baris hilang tanpa galat; muncul pemberitahuan baris terbuang; subtotal ikut turun | Tinggi | OTOMATIS sebagian — `check-cart.mjs` (PRUNE) · **MANUAL — M-4** |
 | **TC-332** | Keranjang tidak pernah dikirim ke server, kecuali satu beacon buku order yang disengaja | Kode sumber | Sisir seluruh kode mencari `fetch`, Server Action, dan endpoint pada jalur keranjang | Satu-satunya pengiriman keluar adalah `sendBeacon` KD-06 ke endpoint buku order; tidak ada yang lain, dan kegagalannya tidak pernah menahan pembukaan WhatsApp | Kritis | MANUAL — M-0 |
 
 ### 4.3 Modul C — Pesan WhatsApp
@@ -277,10 +280,10 @@ Assertion yang ada seluruhnya berjalan di atas **fixture**. Endpoint hidup belum
 
 | ID | Yang diverifikasi | Prasyarat | Langkah | Hasil yang diharapkan | Prio | Cakupan |
 |---|---|---|---|---|---|---|
-| **TC-390** | `validateCatalogPayload()` menolak setiap bentuk data sheet yang meragukan | Modul dimuat | Umpankan: tab hilang satu per satu; `katalog100` kosong; jawaban rusak total; harga hilang; salah ketik jumlah nol di kedua arah; harga pecahan, nol, dan negatif; kunci salah ketik; status stok hilang atau tak dikenal; slug 100 gram bentrok atau ganda; baris tanpa nama | Setiap kasus **ditolak dengan pesan sendiri**, dan **tidak ada berkas yang disentuh**. Gagal tertutup, bukan diterbitkan sebagai kosong atau nol | Kritis | OTOMATIS — `check-sync-katalog.mjs` |
+| **TC-390** | `validateCatalogPayload()` menolak setiap bentuk data sheet yang meragukan | Modul dimuat | Umpankan: tab `harga` atau `stok` hilang; jawaban rusak total; harga hilang; salah ketik jumlah nol di kedua arah; harga pecahan, nol, dan negatif; kunci salah ketik; slug stok tak dikenal; status stok hilang atau tak dikenal. **Kasus `katalog100` kosong dan slug 100 gram bentrok dicabut bersama KD-09** | Setiap kasus **ditolak dengan pesan sendiri**, dan **tidak ada berkas yang disentuh**. Gagal tertutup, bukan diterbitkan sebagai kosong atau nol | Kritis | OTOMATIS — `check-sync-katalog.mjs` |
 | **TC-391** | Setiap `managedPrice()` di `products.ts` punya kunci yang benar-benar ada | Modul dimuat | Bandingkan seluruh pemanggilan `managedPrice()` terhadap kunci pada tab `harga` | Nol kunci hilang. Kunci hilang **melempar**, bukan mengembalikan 0 — nol akan tayang sebagai "Rp0" dan ikut ke pesan WhatsApp sebagai penawaran sungguhan | Kritis | OTOMATIS — `check-sync-katalog.mjs` |
 | **TC-392** | Berkas hasil sinkronisasi menyatakan dirinya tidak boleh disunting tangan | Modul dimuat | Baca kepala `managed.generated.ts` | Peringatan tertulis; suntingan tangan hilang pada sinkronisasi berikutnya | Sedang | OTOMATIS — `check-sync-katalog.mjs` |
-| **TC-393** | Endpoint hidup benar-benar melayani `?katalog=1` dengan ketiga tab | Apps Script versi terbaru ter-deploy + tiga tab terisi | Panggil `GET <endpoint>?katalog=1` | Mengembalikan `harga`, `stok`, dan `katalog100` yang terisi. **Keadaan yang diketahui per 9 September 2026: masih menjawab `{"found":false}`, sehingga cron sinkronisasi gagal setiap malam** — butir 1.1 `11-timeline-rilis.md` | Kritis | MANUAL — M-4 |
+| **TC-393** | Endpoint hidup benar-benar melayani `?katalog=1` dengan **kedua** tab | Apps Script versi terbaru ter-deploy + dua tab terisi (`harga`, `stok`) | Panggil `GET <endpoint>?katalog=1` | Mengembalikan `harga` dan `stok` yang terisi. Tab `katalog100` tidak lagi dibaca sejak KD-09; bila ia masih ada di spreadsheet, jawabannya tetap sah. **Keadaan yang diketahui per 9 September 2026: masih menjawab `{"found":false}`, sehingga cron sinkronisasi gagal setiap malam** — butir 1.1 `11-timeline-rilis.md` | Kritis | MANUAL — M-4 |
 | **TC-394** | **Owner mengubah satu harga sendiri, tanpa dibantu, dalam ≤ 15 menit** (NFR-13, G-10) | Owner hadir + akun Google + stopwatch | Owner membuka sheet, mengubah satu harga, menjalankan workflow, menunggu situs terbit; QA mendampingi tanpa memberi petunjuk | Selesai ≤ 15 menit; **harga baru yang sama tayang di kartu katalog, halaman produk, keranjang, dan pesan WhatsApp** — keempatnya berubah bersama. Bila gagal, NFR-13 tidak boleh diklaim | Kritis | MANUAL — M-4 |
 | **TC-395** | Sinkronisasi yang gagal **tidak merusak situs**: katalog terakhir yang benar tetap tayang | Akses GitHub Actions | Ketik satu kunci yang salah di tab `harga`; jalankan workflow | Run merah dengan pesan berbahasa manusia; `managed.generated.ts` tidak berubah; situs tetap menayangkan katalog sebelumnya | Kritis | MANUAL — M-4 |
 | **TC-396** | Cron 01.00 WIB berjalan hijau tiga malam berturut-turut | Cron aktif | Amati tiga run terjadwal berikutnya | Tiga hijau berturut-turut; ini butir gerbang rilis pada `11-timeline-rilis.md` | Tinggi | MANUAL — M-5 |
@@ -293,9 +296,11 @@ Assertion yang ada seluruhnya berjalan di atas **fixture**. Endpoint hidup belum
 |---|---|---|---|---|---|---|
 | **TC-400** | Setiap produk membawa status yang dikenal, dan status dari sheet **sampai ke produk**, tidak berhenti di data | Katalog tersusun | Bandingkan `managedStatus(slug)` terhadap `Product.status` untuk seluruh produk | Nilai sama untuk seluruhnya; nilai di luar `available` dan `out-of-stock` menggagalkan build | Kritis | OTOMATIS — `check-cart.mjs`, `validate.ts` V-03 |
 | **TC-401** | Produk yang ditandai kosong **berhenti bisa dipesan** dari halaman dan kartunya | Build selesai dengan satu produk `out-of-stock` | Periksa HTML kartu katalog dan halaman produk | Penanda stok kosong tayang di keduanya, dan kontrol tambah ke keranjang **menolak**, bukan sekadar diberi label | Kritis | OTOMATIS — `check-build-output.mjs` |
-| **TC-402** | **Produk yang sudah berada di keranjang lalu ditandai kosong tidak boleh tetap dipesan** | Peramban + satu kali sinkronisasi | Tambahkan satu produk ke keranjang; owner menandai produk itu `out-of-stock` di tab `stok`; terbitkan; muat ulang `/keranjang`; tekan "Pesan via WhatsApp" | Baris ditandai kosong dan **tidak ikut** subtotal maupun pesan WhatsApp, atau checkout ditahan sampai pembeli mengeluarkannya. **Keadaan sekarang: GAGAL — lihat DEF-15.** `cartCatalogIndex` tidak membawa `status`, sehingga baris lama resolve normal dan ikut ke pesan serta ke baris otomatis buku order | Kritis | MANUAL — M-1 · **DEF-15 terbuka** |
-| **TC-403** | Biji 100 gram yang ditandai kosong **hilang** dari situs, dan keranjang yang memuatnya membuang barisnya dengan pemberitahuan | Sama | Tandai satu baris `katalog100` sebagai `out-of-stock`; terbitkan; periksa `/katalog` dan keranjang yang sudah memuatnya | Baris hilang dari daftar tanpa dihapus dari sheet; keranjang lama membuang barisnya lewat PRUNE dan memberi tahu pengunjung satu kali | Tinggi | OTOMATIS sebagian — `check-cart.mjs` · **MANUAL — M-4** |
-| **TC-404** | Kedua lini memperlakukan "kosong" secara berbeda, dan perbedaan itu **disengaja serta terdokumentasi** | Dokumen + build | Bandingkan perilaku produk 200 gr (penanda tayang, halaman tetap ada) terhadap biji 100 gram (baris disembunyikan) dengan `09-kelola-katalog.md` Bagian 2 | Perbedaan sesuai dokumen owner: produk punya halaman ber-URL permanen yang tidak boleh menghilang, biji 100 gram hanya baris daftar. Bila dokumen dan perilaku berbeda, salah satunya salah — dan tidak boleh dibiarkan | Sedang | MANUAL — M-0 |
+| **TC-402** | **Produk yang sudah berada di keranjang lalu ditandai kosong tidak boleh tetap dipesan** | Peramban + satu kali sinkronisasi | Tambahkan satu produk ke keranjang; owner menandai produk itu `out-of-stock` di tab `stok`; terbitkan; muat ulang `/keranjang`; tekan "Pesan via WhatsApp" | Baris ditandai kosong dan **tidak ikut** subtotal maupun pesan WhatsApp, atau checkout ditahan sampai pembeli mengeluarkannya. **Keadaan sekarang: LULUS sejak 9 September 2026** (DEF-15 ditutup). Perilaku ini kini dijaga tiga pemeriksaan regresi di `check-cart.mjs` yang berjalan di atas indeks buatan, sehingga ia benar berapa pun isi tab `stok` hari ini | Kritis | OTOMATIS — `check-cart.mjs`, ditambah satu kali penelusuran manual M-1 untuk tampilannya |
+| ~~**TC-403**~~ | ~~Biji 100 gram yang ditandai kosong hilang dari situs~~ | — | — | **DICABUT KD-09** — lihat Bagian 4.10 | — | — |
+| ~~**TC-404**~~ | ~~Kedua lini memperlakukan "kosong" secara berbeda~~ | — | — | **DICABUT KD-09** — lihat Bagian 4.10 | — | — |
+
+> Sesudah pencabutan, **hanya ada satu perlakuan "kosong"** di situs: produk yang ditandai `out-of-stock` tetap punya halaman ber-URL permanen dan menayangkan penanda, dan kontrol pesannya menolak. Tidak ada lagi baris daftar yang disembunyikan.
 
 ### 4.7 Modul G — SEO dan metadata
 
@@ -328,11 +333,28 @@ Assertion yang ada seluruhnya berjalan di atas **fixture**. Endpoint hidup belum
 | **TC-430** | Lighthouse mobile pada lima halaman, memakai angka hasil revisi KD-04 | Chrome + URL ter-deploy | Tiga kali jalan, ambil median, pada beranda, katalog, satu halaman produk, satu houseblend, dan keranjang | Performance ≥ **88**, Accessibility ≥ 95, Best Practices ≥ 95, SEO ≥ 95 | Kritis | MANUAL — M-2 |
 | **TC-431** | LCP, INP, dan TTFB pada profil lambat | Chrome + throttling Slow 4G, CPU 4× | Ukur pada beranda, katalog, dan halaman produk | LCP ≤ 2,5 detik; INP ≤ 200 ms; TTFB ≤ 600 ms | Kritis | MANUAL — M-2 |
 | **TC-432** | CLS dengan pemuatan gambar diperlambat | Chrome | Ukur seluruh halaman | CLS ≤ 0,05 | Tinggi | MANUAL — M-2 |
-| **TC-433** | Anggaran JavaScript diukur pada **rute terberat**, bukan pada rute yang kebetulan diukur lebih dulu | Ekspor statis selesai | `gzip -9` setiap chunk yang dirujuk setiap rute; jumlahkan per rute; ambil yang terbesar | Rute terberat ≤ **190 KB ter-gzip** (NFR-03 setelah KD-04). Marginnya tipis dan tiga fitur ditambahkan sejak pengukuran terakhir; **belum ada gerbang di CI** — lihat DEF-16 | Kritis | MANUAL — M-0 |
+| **TC-433** | Anggaran JavaScript diukur pada **rute terberat**, bukan pada rute yang kebetulan diukur lebih dulu | Ekspor statis selesai | `gzip -9` setiap chunk yang dirujuk setiap rute; jumlahkan per rute; ambil yang terbesar | Rute terberat ≤ **190 KB ter-gzip** (NFR-03 setelah KD-04). Marginnya tipis, jadi yang dijaga bukan angkanya melainkan gerbangnya | Kritis | OTOMATIS — `check-bundle-size.mjs`, dan ia menggagalkan `check-all.mjs` bila dilanggar |
 | **TC-434** | Situs berfungsi penuh pada perangkat fisik | Android kelas menengah + Safari iOS | Telusuri alur beli lengkap pada keduanya | Berfungsi penuh; tata letak utuh; tombol terjangkau ibu jari | Kritis | MANUAL — M-3 |
 | **TC-435** | Situs berfungsi pada peramban desktop arus utama | Chrome, Edge, dan Firefox dua versi terakhir | Telusuri alur beli lengkap | Berfungsi penuh pada ketiganya | Tinggi | MANUAL — M-1 |
 | **TC-436** | HTTPS, pengalihan dari HTTP, dan ketiadaan konten campuran pada domain final | Domain diarahkan | Ambil `http://` dan `https://`; periksa sertifikat dan konsol | HTTPS aktif, sertifikat sah, pengalihan otomatis, nol konten campuran | Kritis | MANUAL — M-2 |
 | **TC-437** | Pemantauan uptime memberi tahu owner | Layanan pemantauan terpasang | Pasang monitor; picu gangguan uji | Pemberitahuan sampai ke owner dalam ≤ 5 menit | Tinggi | MANUAL — M-4 |
+
+---
+
+### 4.10 Kasus yang dicabut — lini Katalog Kopi 100 gram (KD-09)
+
+Empat kasus di bawah **dicabut pada 9 September 2026**, bukan dihapus. Perlakuannya sama dengan Modul E lama pada Bagian 6.1: nomornya tidak dipakai ulang, dan siapa pun yang menemukan rujukan lama mendarat pada penjelasan, bukan pada ruang kosong.
+
+Sebabnya bukan kasusnya salah tulis. `KD-09` menetapkan seluruh produk situs berasal dari satu sumber — lembar "Product" pada `assets/brand/Kopi from heart.xlsx` — dan lini "Katalog Kopi 100 gram" dari poster cetak owner tidak ada di sana. Lini itu dihapus seluruhnya bersama `src/data/picks.ts`, `src/features/catalog/pick-list.tsx`, `scripts/check-picks.mjs`, validator `assertPicksValid` (V-20), dan medan `picks` pada berkas hasil sinkronisasi. **Objek yang diuji keempat kasus ini tidak ada lagi.**
+
+| ID | Yang dulu diverifikasi | Status | Penggantinya |
+|---|---|---|---|
+| **TC-313** | Lini Katalog Kopi 100 gram tayang lengkap dalam urutan poster owner | **Dicabut** | Tidak ada. Lini itu tidak tayang lagi |
+| **TC-314** | Tidak ada kopi yang dijual di dua lini sekaligus dalam ukuran yang sama | **Dicabut** | **TC-301**. Setelah lini kedua hilang, risikonya bukan lagi tumpang tindih antar-lini melainkan katalog yang menyimpang dari lembar "Product" — dan itulah yang dijaga salinan ketik-ulang di `check-cart.mjs` |
+| **TC-403** | Biji 100 gram yang ditandai kosong hilang dari situs, keranjangnya membuang barisnya | **Dicabut** | **TC-331** untuk bagian PRUNE-nya, yang tidak bergantung pada lini mana pun |
+| **TC-404** | Kedua lini memperlakukan "kosong" secara berbeda, dan perbedaan itu disengaja | **Dicabut** | Tidak ada, dan tidak dibutuhkan: hanya ada satu perlakuan "kosong" sekarang. Kasus ini gugur karena premisnya — adanya dua lini — hilang |
+
+**Yang TIDAK ikut dicabut, dan wajib tetap dijalankan:** TC-307 dan TC-308, keduanya tentang **kemasan mini 100 gr pada single origin**. Kemasan itu berasal dari lembar "Product", berharga per tier, dan tetap dijual. Satuan pesan `gram-100` juga tetap ada — TC-341 masih menyapunya. Dua hal berbeda pernah sama-sama disebut "100 gram"; hanya lini posternya yang hilang.
 
 ---
 
@@ -349,9 +371,9 @@ Enam kelompok, diurutkan dari yang **paling murah dibereskan**. M-0 dan M-1 tida
 | **M-4 — Akun Google owner** | Owner hadir; spreadsheet buku order; Apps Script ter-deploy versi terbaru; akses GitHub Actions; properti GA4; Search Console; stopwatch | TC-327, TC-331, TC-370, TC-371, TC-372, TC-373, TC-374, TC-375, TC-376, TC-377, TC-378, TC-393, TC-394, TC-395, TC-403, TC-416, TC-417, TC-437 | 18 | **1,5 hari kerja QA**, tersebar karena menunggu owner |
 | **M-5 — Waktu berjalan** | Kalender, bukan usaha | TC-396 | 1 | 3 hari kalender, hampir nol jam kerja |
 
-Jumlah baris kelompok 55 sementara test case manualnya 54, karena TC-351 muncul di dua kelompok: bagian kodenya dikerjakan di M-0, bagian perangkatnya di M-3.
+Jumlah baris kelompok 53 sementara test case manualnya 52, karena TC-351 muncul di dua kelompok: bagian kodenya dikerjakan di M-0, bagian perangkatnya di M-3.
 
-**Urutan yang saya sarankan ke CEO.** Kerjakan M-0 dan M-1 sekarang — keduanya tidak menunggu apa pun dan bersama-sama menutup **26 dari 54** test case manual dengan **dua hari kerja**. Keduanya juga memuat butir yang paling mungkin menemukan cacat: TC-402 (stok kosong pada keranjang yang sudah terisi), TC-398 (suite tidak boleh merah hanya karena harga berubah), dan TC-422 (alur beli dengan papan ketik saja). M-2 menyusul begitu staging berdiri. M-3 dan M-4 bergantung pada hal di luar kode dan sudah menjadi butir Sprint 1; menjadwalkannya belakangan berarti menemukan masalahnya belakangan.
+**Urutan yang saya sarankan ke CEO.** Kerjakan M-0 dan M-1 sekarang — keduanya tidak menunggu apa pun dan bersama-sama menutup **26 dari 52** test case manual dengan **dua hari kerja**. Keduanya juga memuat butir yang paling mungkin menemukan cacat: TC-402 (stok kosong pada keranjang yang sudah terisi), TC-398 (suite tidak boleh merah hanya karena harga berubah), dan TC-422 (alur beli dengan papan ketik saja). M-2 menyusul begitu staging berdiri. M-3 dan M-4 bergantung pada hal di luar kode dan sudah menjadi butir Sprint 1; menjadwalkannya belakangan berarti menemukan masalahnya belakangan.
 
 **Yang tidak boleh ditukar dengan bukti lain.** TC-349 (kiriman WhatsApp nyata) menutup R-04 dan NFR-15, dan **tidak dapat digantikan pembuktian aritmetika**: yang sudah terbukti adalah panjang dan struktur teksnya, bukan bahwa WhatsApp menampilkannya utuh dan rapi. Dua pernyataan yang berbeda. Hal yang sama berlaku untuk TC-394: seluruh gerbang teknisnya bisa hijau sementara owner tetap tidak bisa mengubah harga sendiri.
 
@@ -373,7 +395,8 @@ Jumlah baris kelompok 55 sementara test case manualnya 54, karena TC-351 muncul 
 | FR-44 sampai FR-49, NFR-10 | TC-410 sampai TC-415 |
 | FR-47, G-01, G-03, G-04 | TC-417 |
 | **FR-51, KD-05, KD-06** | TC-360 sampai TC-379 |
-| **FR-52, KD-07** | TC-313, TC-314, TC-403 |
+| ~~**FR-52, KD-07**~~ | **Dicabut KD-09.** TC-313, TC-314, TC-403, TC-404 ikut dicabut — Bagian 4.10 |
+| **KD-09** | TC-301, TC-308, `check-cart.mjs` (salinan lembar "Product") |
 | **FR-53, KD-08, G-10** | TC-327, TC-331, TC-390 sampai TC-398 |
 | NFR-03, NFR-04 (angka **KD-04**) | TC-430, TC-433 |
 | NFR-01, NFR-02, NFR-05, NFR-06 | TC-424, TC-425, TC-431, TC-432, TC-434, TC-435 |
@@ -393,6 +416,7 @@ Rujukan ke rencana v1.x yang masih hidup di dokumen lain:
 | TC-194 | **TC-430** | Lighthouse pada lima halaman |
 | TC-206 | **TC-394** | Owner mengubah harga sendiri dalam ≤ 15 menit |
 | TC-039…TC-056 (Modul E lama) | **dicabut** | Menegakkan aturan "harga 0,5 kg tepat setengah harga per kg" yang dibatalkan `KD-02` revisi kedua. Penggantinya TC-302, TC-305, dan TC-306 |
+| TC-313, TC-314, TC-403, TC-404 | **dicabut** | Menguji lini Katalog Kopi 100 gram, yang dihapus `KD-09` pada 9 September 2026. Rinciannya di Bagian 4.10 |
 
 ---
 
@@ -418,19 +442,21 @@ Severitas: **Blocker** menghentikan rilis atau penerbitan · **Major** melanggar
 | **DEF-12** | Minor | Janji jam balas pada `/keranjang` hanya hadir lewat footer | BR-19, FR-26 | FE | **Ditutup.** Dijaga assertion yang **menghitung kemunculan**, bukan sekadar mencari satu (`check-build-output.mjs`) |
 | **DEF-13** | Minor | `05-backend.md` Bagian 11 butir 4 menyebut pengecualian lint yang sudah dihapus | Higiene dokumen | BE | **Ditutup.** Ditulis ulang menjadi catatan sejarah |
 | **DEF-14** | — | `robots.txt` pratinjau berbunyi `Disallow: /`, sempat dicurigai sebagai deindeksasi tak sengaja | FR-45 | — | **Bukan defek, dan tugas turunannya kini selesai.** Diverifikasi hari ini: penjaganya **sudah tidak terikat vendor** — `src/app/robots.ts` dan `next.config.ts` membaca `SITE_ENV`, bukan `VERCEL_ENV`, tepat karena host produksi pindah ke Pages. Butir 6 pada daftar tugas v1.x **ditutup** |
-| **DEF-15** | **Major** | **Produk yang ditandai kosong oleh owner tetap bisa dipesan bila sudah berada di keranjang pembeli.** `cartCatalogIndex` (`src/data/catalog.ts`) tidak membawa medan `status`, dan `resolveCart()` (`src/features/cart/cart-selectors.ts`) hanya membuang baris yang slug atau variannya **hilang** dari katalog. Produk yang berubah `out-of-stock` tetap ada di indeks, jadi barisnya resolve normal, ikut subtotal, ikut pesan WhatsApp, dan ikut baris otomatis buku order. Keranjang bertahan tujuh hari, jadi jendelanya nyata. Halaman produk dan kartu katalog sudah menolak penambahan baru — yang bocor adalah keranjang yang sudah terisi lebih dulu | FR-14, KD-08, `09-kelola-katalog.md` Bagian 1 | **FE** | **TERBUKA.** Ditemukan saat menulis v2.0. Reproduksi: TC-402. Perbaikan yang saya sarankan: bawa `status` ke `CartCatalogEntry`, tandai barisnya di `/keranjang`, keluarkan dari subtotal dan dari payload pesan, dan tahan tombol pesan sampai pembeli mengeluarkannya. Owner menandai kosong lalu tetap menerima pesanan adalah persis kegagalan yang ingin dicegah butir 0.6 `11-timeline-rilis.md` |
-| **DEF-16** | **Major** | **Tidak ada gerbang ukuran bundle di CI.** `KD-04` menyisakan margin sekitar 4,6 KB di atas rute terberat dan menutup dirinya dengan kalimat "ini bukan izin untuk menambah berat". Sejak pengukuran itu situs bertambah lacak pesanan, pencatatan buku order, dan lini 100 gram. Tidak ada satu pun assertion pada `web/scripts/` yang mengukur ukuran bundle, dan `pages.yml` tidak memeriksanya | NFR-03, KD-04 | **Dev/Arsitek** | **TERBUKA.** Anggarannya bisa jebol tanpa suara, dan tidak akan ada yang tahu sampai seseorang mengukurnya dengan tangan (TC-433). Butir 2.6 `11-timeline-rilis.md` |
-| **DEF-17** | Minor | **Pencabutan Kerinci dari lini 100 gram tidak tercatat sebagai keputusan.** Alasannya tertulis rapi di kepala `check-picks.mjs` ("atas keputusan owner, 9 September 2026") dan perilakunya benar, tetapi `00b-ceo-decisions.md` D-07 masih menulis "18 kopi" dan `09-kelola-katalog.md` belum menyebut pencabutannya. Pembaca berikutnya akan mengira satu baris hilang karena cacat, lalu mengembalikannya | KD-07, higiene keputusan | **BA/CEO** | **TERBUKA.** Butuh satu paragraf pada `00b-ceo-decisions.md`, bukan perubahan kode. Diperiksa lewat TC-314 |
+| **DEF-15** | **Major** | **Produk yang ditandai kosong oleh owner tetap bisa dipesan bila sudah berada di keranjang pembeli.** `cartCatalogIndex` (`src/data/catalog.ts`) tidak membawa medan `status`, dan `resolveCart()` (`src/features/cart/cart-selectors.ts`) hanya membuang baris yang slug atau variannya **hilang** dari katalog. Produk yang berubah `out-of-stock` tetap ada di indeks, jadi barisnya resolve normal, ikut subtotal, ikut pesan WhatsApp, dan ikut baris otomatis buku order. Keranjang bertahan tujuh hari, jadi jendelanya nyata. Halaman produk dan kartu katalog sudah menolak penambahan baru — yang bocor adalah keranjang yang sudah terisi lebih dulu | FR-14, KD-08, `09-kelola-katalog.md` Bagian 1 | **FE** | **TERTUTUP 9 September 2026.** Ditemukan saat menulis v2.0, direproduksi lebih dulu — keranjang berisi Sindoro yang ditandai kosong menghasilkan pesan pesanan utuh tanpa satu pun tanda ada yang salah. Perbaikannya persis yang disarankan: `status` dibawa ke `CartCatalogEntry`, baris kosong ditandai dan harganya dicoret, dikeluarkan dari `orderableLines`, subtotal, jumlah item, dan payload pesan. Keranjang yang isinya kosong semua membuat daftar kirim kosong, dan tombol pesan memang sudah menonaktifkan diri pada keadaan itu — checkout tertahan tanpa cabang khusus. Dikunci tiga pemeriksaan regresi yang memakai indeks buatan, bukan katalog sungguhan |
+| **DEF-16** | **Major** | **Tidak ada gerbang ukuran bundle di CI.** `KD-04` menyisakan margin sekitar 4,6 KB di atas rute terberat dan menutup dirinya dengan kalimat "ini bukan izin untuk menambah berat". Sejak pengukuran itu situs bertambah lacak pesanan, pencatatan buku order, dan lini 100 gram. Tidak ada satu pun assertion pada `web/scripts/` yang mengukur ukuran bundle, dan `pages.yml` tidak memeriksanya | NFR-03, KD-04 | **Dev/Arsitek** | **TERTUTUP 9 September 2026, dibuktikan dengan menggagalkannya.** `check-bundle-size.mjs` ada, dijalankan `check-all.mjs`, dan `check-all.mjs` dijalankan `pages.yml` baris 99 serta `preview.yml` baris 66. Bahwa ia benar-benar **gerbang** diuji dengan menurunkan plafon ke 100 KB: 18 rute gagal, `check-all.mjs` keluar dengan kode 1, langkah CI-nya merah; plafon dikembalikan ke 190 KB dan kode kembali 0. Pengukuran saat ini: rute terberat `/houseblend/bold` 186,2 KB, sisa margin 3,8 KB. BA benar menolak menutupnya lewat pembacaan dokumen (Bagian 8.4) — penutupan ini berdiri di atas pengukuran |
+| **DEF-17** | Minor | **Pencabutan Kerinci dari lini 100 gram tidak tercatat sebagai keputusan.** Alasannya tertulis rapi di kepala `check-picks.mjs` ("atas keputusan owner, 9 September 2026") dan perilakunya benar, tetapi `00b-ceo-decisions.md` D-07 masih menulis "18 kopi" dan `09-kelola-katalog.md` belum menyebut pencabutannya. Pembaca berikutnya akan mengira satu baris hilang karena cacat, lalu mengembalikannya | KD-07, higiene keputusan | **BA/CEO** | **DITUTUP 9 September 2026.** Ditutup bukan dengan mencatat pencabutan satu nama, melainkan dengan `KD-09` yang menghapus seluruh lini itu: `D-07` kini ditandai dicabut, `09-kelola-katalog.md` menyebutnya, dan `D-09` menuliskan alasannya. TC-314 yang dulu memeriksanya ikut dicabut (Bagian 4.10) |
 
 ### 7.1 Rekapitulasi defek — 9 September 2026
 
 | Severitas | Jumlah | Ditutup | Terbuka |
 |---|---|---|---|
 | Blocker | 2 | 2 | 0 |
-| Major | 6 | 4 | **2** (DEF-15, DEF-16) |
-| Minor | 8 | 5 | **3** (DEF-08 sebagian, DEF-11, DEF-17) |
+| Major | 6 | 6 | **0** |
+| Minor | 8 | 6 | **2** (DEF-08 sebagian, DEF-11) |
 | Alarm palsu | 1 | — | — |
-| **Total** | **17** | **11** | **5** |
+| **Total** | **17** | **12** | **4** |
+
+DEF-15, DEF-16, dan DEF-17 seluruhnya ditutup pada 9 September 2026. DEF-15 lewat perbaikan kode beserta tiga pemeriksaan regresi, DEF-16 lewat gerbang yang diuji dengan sengaja dilanggar, DEF-17 oleh `KD-09`.
 
 ---
 
@@ -442,14 +468,14 @@ Gerbang otomatis hijau: `typegen` → `tsc` → `eslint` → build kedua target 
 
 ### 8.2 Yang belum dapat dibuktikan siapa pun
 
-**Situs ini belum pernah dibuka di peramban, belum pernah dilihat di perangkat, dan belum pernah berbicara dengan Apps Script yang sungguhan.** Lima puluh empat test case pada dokumen ini berstatus belum dieksekusi. Tidak satu pun boleh dianggap lulus, dan menandainya lulus tanpa mengukurnya adalah bentuk kebohongan yang paling merugikan dalam laporan QA — ia menutup butir yang sebenarnya masih terbuka.
+**Situs ini belum pernah dibuka di peramban, belum pernah dilihat di perangkat, dan belum pernah berbicara dengan Apps Script yang sungguhan.** Lima puluh dua test case pada dokumen ini berstatus belum dieksekusi. Tidak satu pun boleh dianggap lulus, dan menandainya lulus tanpa mengukurnya adalah bentuk kebohongan yang paling merugikan dalam laporan QA — ia menutup butir yang sebenarnya masih terbuka.
 
 ### 8.3 Verdikt: **belum siap membuka pesanan; siap dilanjutkan ke Sprint 2**
 
 Tiga syarat yang mengikat, seluruhnya sudah menjadi butir gerbang rilis pada `11-timeline-rilis.md`:
 
 1. **DEF-15 wajib ditutup sebelum owner diminta memercayai saklar stoknya.** Sekarang owner bisa menandai kosong, memercayainya, dan tetap menerima pesanan dari keranjang yang sudah terisi. Ini kegagalan kepercayaan, bukan kosmetik.
-2. **DEF-16 wajib ditutup dengan gerbang, bukan dengan pengukuran sekali jalan.** Anggaran yang hanya diukur manusia akan jebol lagi, dan itu persis pola yang melahirkan Prinsip 1.
+2. **DEF-16 ditutup dengan gerbang, bukan dengan pengukuran sekali jalan.** Anggaran yang hanya diukur manusia akan jebol lagi, dan itu persis pola yang melahirkan Prinsip 1. Gerbangnya sudah diverifikasi dengan cara satu-satunya yang sah: diturunkan plafonnya sampai gagal, dipastikan CI merah, lalu dikembalikan.
 3. **Kelompok M-0, M-1, dan M-3 wajib dieksekusi sebelum rilis produksi**, khususnya TC-349, TC-398, TC-402, dan TC-422. Rilis tanpa keempatnya berarti menyatakan lulus atas hal yang belum pernah dilihat siapa pun.
 
 ### 8.4 Satu catatan tentang cara suite ini boleh berubah
@@ -462,16 +488,16 @@ Pemeriksaan pada `web/scripts/` sekarang menjadi satu-satunya hal yang berdiri a
 
 | # | Tugas | Pemilik | Sebelum |
 |---|---|---|---|
-| 1 | Tutup DEF-15: bawa `status` ke indeks keranjang, keluarkan baris kosong dari subtotal dan dari pesan, tahan checkout | **FE** | Rilis produksi |
+| 1 | ~~Tutup DEF-15~~ — **selesai 9 September 2026**, beserta tiga pemeriksaan regresinya | **FE** | ~~Rilis produksi~~ |
 | 2 | Tutup DEF-16: pasang gerbang ukuran bundle pada `pages.yml` sehingga anggaran NFR-03 tidak bisa jebol diam-diam | **Dev/Arsitek** | Rilis produksi |
-| 3 | Tutup DEF-17: catat pencabutan Kerinci dari lini 100 gram pada `00b-ceo-decisions.md` D-07 dan `09-kelola-katalog.md` | **BA/CEO** | Sprint 3 |
+| 3 | ~~Tutup DEF-17~~ — **selesai 9 September 2026.** `KD-09` mencabut seluruh lini 100 gram; `D-07` ditandai dicabut, `D-09` menuliskan alasannya, `09-kelola-katalog.md` menyebutnya | ~~BA/CEO~~ | **Selesai** |
 | 4 | Konfirmasi provinsi Palimping (DEF-11) dan lengkapi atribut asal Sindoro | **Owner** | Rilis produksi |
 | 5 | Sediakan foto untuk enam produk yang masih placeholder, atau terima placeholder secara tertulis (DEF-08) | **Owner** | Rilis produksi |
-| 6 | Deploy ulang Apps Script versi terbaru dan isi ketiga tab sheet; tanpa ini seluruh Modul E dan sebagian Modul D tidak dapat dieksekusi (TC-393) | **CEO** | Sprint 1 |
+| 6 | Deploy ulang Apps Script versi terbaru dan isi **kedua** tab sheet — `harga` (24 baris) dan `stok` (11 baris); tanpa ini seluruh Modul E dan sebagian Modul D tidak dapat dieksekusi (TC-393). Tab `katalog100` tidak lagi diperlukan | **CEO** | Sprint 1 |
 | 7 | Bangun environment staging; tanpa URL yang bisa dibuka, kelompok M-2 tidak dapat dijalankan | **Dev** | Sprint 2 |
 | 8 | Sediakan `NEXT_PUBLIC_GA_ID`, properti GA4, dan verifikasi Search Console di origin final (TC-416, TC-417) | **CEO** lalu Dev | Rilis produksi |
 | 9 | Putuskan host produksi secara tertulis; `/lacak` menyuntikkan konten eksternal ke DOM sementara Pages tidak dapat menyetel header sama sekali | **CEO** | Rilis produksi |
-| 10 | Eksekusi 54 test case manual menurut kelompok Bagian 5 dan laporkan hasilnya di bawah dokumen ini | **QA** | Rilis produksi |
+| 10 | Eksekusi 52 test case manual menurut kelompok Bagian 5 dan laporkan hasilnya di bawah dokumen ini | **QA** | Rilis produksi |
 
 ---
 

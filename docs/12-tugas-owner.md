@@ -11,7 +11,7 @@ terbuka begitu ia selesai**. Kerjakan dari atas.
 
 ---
 
-## 1. Deploy ulang Apps Script dan isi tiga tab sheet · ~1 jam
+## 1. Deploy ulang Apps Script dan isi dua tab sheet · ~1 jam
 
 **Menahan:** sinkronisasi katalog (gagal setiap malam jam 01.00 WIB sekarang),
 pengujian lacak pesanan ujung ke ujung, dan latihan Anda mengubah harga
@@ -30,9 +30,23 @@ harga yang dijanjikan `docs/09-kelola-katalog.md`.
    Deploy.** Ini langkah yang paling sering terlewat. Membuat *deployment*
    baru akan mengubah URL-nya dan justru merusak `/lacak`; yang dibutuhkan
    adalah *versi* baru pada deployment yang sudah ada.
-5. Buat tiga tab, nama persis huruf kecil: `harga`, `stok`, `katalog100`.
-   Isinya lengkap ada di `docs/09-kelola-katalog.md` bagian 2 — 24 baris harga,
-   11 baris stok, 17 baris katalog 100 gram.
+5. Buat **dua** tab, nama persis huruf kecil: `harga` dan `stok`. Isinya
+   lengkap ada di `docs/09-kelola-katalog.md` bagian 2 — 24 baris harga dan
+   11 baris stok.
+
+> **Berubah 9 September 2026: dulu tiga tab, sekarang dua.** Tab ketiga
+> `katalog100` melayani lini "Katalog Kopi 100 gram" dari poster cetak Anda.
+> Lini itu **sudah dihapus dari situs**: seluruh produk kini berasal dari satu
+> sumber, lembar `Product` pada `assets/brand/Kopi from heart.xlsx`, dan
+> kopi-kopi poster tidak ada di sana. Alasan lengkapnya di
+> `docs/00b-ceo-decisions.md` keputusan D-09.
+>
+> **Kalau Anda terlanjur membuat tab `katalog100`, biarkan saja.** Sistem tidak
+> membacanya lagi, sinkronisasi tetap hijau, dan tidak ada yang perlu dihapus.
+>
+> Yang **tetap dijual** adalah kemasan **mini 100 gr** pada single origin —
+> Signature Rp85.000, Reguler Rp70.000 — dan harganya Anda atur dari tab
+> `harga`, bukan dari tab yang dihapus itu.
 
 **Cara tahu berhasil:** buka Actions → "Sync katalog dari Google Sheet" → Run
 workflow. Ia harus hijau dan melaporkan jumlah baris yang terbaca.

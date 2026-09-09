@@ -8,6 +8,24 @@ sudah masuk ke katalog dan apa yang belum. Harga dari lembar `Product` tidak
 diulang di sini — ia sudah menjadi tabel resmi di `docs/00-brand-brief.md` dan
 angka yang tayang dibaca dari sheet owner lewat `managed.generated.ts` (KD-08).
 
+> **Aturan satu sumber, 9 September 2026 (KD-09).** Seluruh produk yang dijual
+> situs berasal dari lembar **`Product`** pada berkas ini — tidak ada daftar
+> kedua, tidak ada lini tambahan, tidak ada baris yang masuk dari tempat lain.
+>
+> Yang dihapus karenanya: lini **"Katalog Kopi 100 gram"** dari poster cetak
+> owner (KD-07), berisi 17–18 kopi dengan harga per biji. Ia sempat tayang
+> berdampingan dengan single origin sejak 8 September 2026. Ia tidak ada di
+> lembar `Product`, jadi ia tidak ada lagi di situs.
+>
+> Yang **tetap** ada: **kemasan mini 100 gr** pada single origin, dari kolom
+> "Single Origin - Mini Packs" lembar `Product`, berharga per tier. Dua hal
+> berbeda ini sama-sama pernah disebut "100 gram"; hanya lini posternya yang
+> hilang.
+>
+> Katalog yang berlaku: **11 produk, 41 varian jual.** Delapan single origin
+> (tujuh di antaranya dengan kemasan mini; Sindoro tidak) dan tiga lini
+> houseblend, masing-masing rasio dalam dua ukuran kemasan.
+
 ---
 
 ## 1. Target segmen
@@ -37,7 +55,7 @@ Lembar `bisnis Plan` menetapkan kerangka ukuran:
 
 | Ukuran | Catatan lembar | Status |
 |---|---|---|
-| 100 gr | ">70rb" | **Tayang.** Signature Rp85.000, Reguler Rp70.000 — keduanya di atas Rp70.000. |
+| 100 gr | ">70rb" | **Tayang sebagai kemasan mini single origin.** Signature Rp85.000, Reguler Rp70.000 — keduanya di atas Rp70.000. Tujuh dari delapan biji; Sindoro tidak didaftarkan lembar `Product` pada kolom ini. |
 | 200 gr / 250 gr | — | **Tayang pada 200 gr.** Lembar `Product` memakai 200 gr; 250 gr tidak muncul di sana dan tidak dibuatkan. |
 | 500 gr | — | **Tayang sebagai kemasan houseblend 0,5 kg.** Single origin tidak punya ukuran ini di lembar `Product`. |
 | 1 kg | — | **Tayang sebagai harga per kg houseblend.** |
@@ -116,3 +134,10 @@ diambil owner.
   `docs/11-timeline-rilis.md`.
 - **Lembar `Timeline` kosong diisi dari sisi kami**, 9 September 2026. Hasilnya
   ada di `docs/11-timeline-rilis.md`.
+- **Satu sumber untuk seluruh produk: lembar `Product`**, 9 September 2026
+  (KD-09, `docs/00b-ceo-decisions.md` D-09). Lini "Katalog Kopi 100 gram" dari
+  poster cetak dicabut seluruhnya. Alasannya bukan lini itu buruk, melainkan
+  bahwa dua daftar produk berarti setiap aturan katalog ditulis dua kali — dan
+  bentrokan harga Kerinci pada 9 September memperlihatkan apa yang terjadi
+  ketika salah satunya lupa ditulis. Yang bertahan: satuan pesan `gram-100` dan
+  kemasan mini 100 gr single origin.

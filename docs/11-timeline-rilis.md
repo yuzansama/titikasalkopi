@@ -9,7 +9,7 @@
 
 ## 0. Ringkasan untuk yang hanya membaca satu halaman
 
-Situs ini **jauh lebih jadi daripada yang terlihat**. Sebelas halaman produk, keranjang, checkout WhatsApp, lacak pesanan, dan katalog yang bisa diurus owner sendiri lewat Google Sheet — semuanya sudah berjalan, dengan 201 pemeriksaan otomatis yang lulus dan menjaga setiap penerbitan.
+Situs ini **jauh lebih jadi daripada yang terlihat**. Sebelas halaman produk, keranjang, checkout WhatsApp, lacak pesanan, dan katalog yang bisa diurus owner sendiri lewat Google Sheet — semuanya sudah berjalan, dengan 191 pemeriksaan otomatis yang lulus dan menjaga setiap penerbitan.
 
 Yang menahan bukan fitur. Yang menahan empat hal:
 
@@ -25,7 +25,9 @@ Empat minggu. Bukan karena pekerjaannya banyak, tapi karena tiga di antaranya me
 ## 1. Keadaan hari ini, jujur
 
 ### Yang sudah berjalan
-Katalog 11 produk (8 single origin, 3 lini houseblend) dan lini terpisah 18 kopi 100 gram · keranjang yang menghitung ulang harga dari katalog saat render, bukan menyimpannya · checkout WhatsApp dengan kode order dan tangga peringkasan pesan · lacak pesanan · penulisan otomatis ke buku order · metadata SEO lengkap dengan JSON-LD · 201 pemeriksaan otomatis sebagai gerbang penerbitan.
+Katalog 11 produk — 8 single origin (tujuh dengan kemasan mini 100 gr) dan 3 lini houseblend, 41 varian jual, seluruhnya dari lembar `Product` · keranjang yang menghitung ulang harga dari katalog saat render, bukan menyimpannya · checkout WhatsApp dengan kode order dan tangga peringkasan pesan · lacak pesanan · penulisan otomatis ke buku order · metadata SEO lengkap dengan JSON-LD · 191 pemeriksaan otomatis sebagai gerbang penerbitan.
+
+> **Diperbarui 9 September 2026.** Baris ini sebelumnya menyebut "lini terpisah 18 kopi 100 gram". Lini itu dicabut KD-09; seluruh produk kini berasal dari satu sumber. Kemasan mini 100 gr pada single origin tetap ada — itu hal yang berbeda.
 
 ### Yang tidak berjalan, dan belum pernah berjalan
 Tidak ada environment staging — **setiap merge ke `main` langsung ke situs produksi**. Tidak ada satu pun pengukuran Lighthouse, LCP, atau axe. Tidak ada satu pun pesan WhatsApp sungguhan yang pernah dikirim dari perangkat sungguhan. Tidak ada gerbang ukuran bundle, padahal anggarannya tinggal 4,5 KB dan sejak diukur situs sudah bertambah tiga fitur. Analitik dan Search Console belum menyala.
@@ -59,8 +61,8 @@ Pemeriksaan otomatis tidak menangkapnya karena **saya memperbarui pemeriksaannya
 | 0.1 | **Houseblend jadi dua ukuran kemasan.** Tiap rasio punya dua varian: 1 kg dan 0,5 kg. Sembilan rasio jadi 18 varian jual. Konfigurator stepper 0,5 kg diganti pemilih ukuran + jumlah. Label harga di keranjang dan pesan WhatsApp mengutip harga kemasan, dan tarif `/kg` hanya muncul pada varian 1 kg — di situ ia benar. | Dev | 1 hari |
 | 0.2 | **Perbaiki pemeriksaan yang mengesahkan kesalahan.** Tambah asersi invarian, bukan literal: untuk setiap baris keranjang, `qty x harga satuan == subtotal baris`, dan angka yang tampil di pesan wajib merekonstruksi subtotalnya. Asersi ini menangkap seluruh kelas bug ini, bukan satu instansnya. | Dev + QA | 0,5 hari |
 | 0.3 | **Bereskan dokumen yang berbohong.** `docs/00b-ceo-decisions.md` D-02 masih menulis "harga 0,5 kg tepat setengah harga per kg" beserta tabel harga lama, dan berkas itu menurut barisnya sendiri **mengalahkan BRD**. Siapa pun yang membacanya akan "memperbaiki" kode kembali ke perilaku yang salah. Sama untuk `docs/02-BRD.md` BR-03, BR-08, BR-09, BR-10, BR-13, BR-14, BR-16, FR-01, FR-07, FR-11, FR-21, FR-28 dan komentar di `types.ts`. | BA | 0,5 hari |
-| 0.4 | **Selesaikan konflik CI vs sheet.** `sync-katalog.yml` menjalankan `check-cart.mjs` dan `check-picks.mjs`, yang mengunci harga sebagai literal. Artinya setiap perubahan harga yang owner buat di sheet — satu-satunya hal yang KD-08 ada untuk memungkinkan — membuat sinkronisasi merah dan tidak menerbitkan apa pun. Ganti literal harga dengan invarian; sisakan literal hanya untuk hal yang memang tidak boleh berubah tanpa keputusan. | Dev | 0,5 hari |
-| 0.5 | **Kerinci berharga dua kali.** Rp125.000/200 gr (setara Rp62.500/100 gr) di lini utama, dan Rp85.000/100 gr di lini poster. Keduanya tayang di halaman `/katalog` yang sama, selisih 36%. Pada toko bayar-di-muka ini terbaca sebagai kesalahan atau itikad buruk. Pisahkan namanya, atau samakan harganya. | CEO + BA | keputusan |
+| 0.4 | **Selesaikan konflik CI vs sheet.** `sync-katalog.yml` menjalankan `check-cart.mjs` dan (waktu itu) `check-picks.mjs`, yang mengunci harga sebagai literal. Artinya setiap perubahan harga yang owner buat di sheet — satu-satunya hal yang KD-08 ada untuk memungkinkan — membuat sinkronisasi merah dan tidak menerbitkan apa pun. Ganti literal harga dengan invarian; sisakan literal hanya untuk hal yang memang tidak boleh berubah tanpa keputusan. | Dev | 0,5 hari |
+| 0.5 | ~~**Kerinci berharga dua kali.**~~ **Selesai 9 September 2026, dengan cara yang lebih luas daripada yang diminta.** Bunyi aslinya: Rp125.000/200 gr (setara Rp62.500/100 gr) di lini utama dan Rp85.000/100 gr di lini poster, keduanya tayang di `/katalog` yang sama dengan selisih 36%; pilihannya "pisahkan namanya, atau samakan harganya". Pilihan pertama sempat diambil, lalu **KD-09 menghapus lini posternya sama sekali**: selama ada dua daftar produk, nama berikutnya akan bentrok lagi. Kerinci sekarang punya satu harga karena hanya ada satu lini. | CEO + BA | **Selesai** |
 | 0.6 | **Saklar stok owner tidak melakukan apa-apa.** `docs/09-kelola-katalog.md` menjanjikan owner bisa menandai produk kosong; nilainya mengalir sampai `Product.status` lalu berhenti — tidak ada komponen yang membacanya. Owner akan menandai kosong, memercayainya, dan tetap menerima pesanan. Tampilkan badge dan tolak penambahan ke keranjang, atau cabut janji itu dari dokumen. | Dev | 0,5 hari |
 
 **Gerbang keluar Sprint 0:** suite hijau *karena benar*, bukan karena disesuaikan. Commit dan deploy harga 9 September. Sejak titik ini situs menjual dengan harga yang benar.
@@ -72,7 +74,7 @@ Pemeriksaan otomatis tidak menangkapnya karena **saya memperbarui pemeriksaannya
 
 | # | Pekerjaan | Pemilik | Est. |
 |---|---|---|---|
-| 1.1 | **Deploy ulang Apps Script + buat tiga tab sheet.** `GET ?katalog=1` pada endpoint yang hidup mengembalikan `{"found":false}` — versi yang ter-deploy masih mendahului KD-08. Akibatnya cron sinkronisasi **gagal setiap malam jam 01.00 WIB**. Tempel ulang `ops/order-tracker.gs`, jalankan `selfCheck`, lalu **Deploy > Manage deployments > Edit > New version**. Isi tab `harga` (24 baris), `stok` (11 baris), `katalog100` (18 baris). | **CEO** | 1 jam |
+| 1.1 | **Deploy ulang Apps Script + buat dua tab sheet.** `GET ?katalog=1` pada endpoint yang hidup mengembalikan `{"found":false}` — versi yang ter-deploy masih mendahului KD-08. Akibatnya cron sinkronisasi **gagal setiap malam jam 01.00 WIB**. Tempel ulang `ops/order-tracker.gs`, jalankan `selfCheck`, lalu **Deploy > Manage deployments > Edit > New version**. Isi **dua** tab: `harga` (24 baris) dan `stok` (11 baris). Tab `katalog100` **tidak diperlukan lagi** sejak KD-09; kalau terlanjur dibuat, ia diabaikan dan tidak menggagalkan apa pun. | **CEO** | 1 jam |
 | 1.2 | **Beli `titikasalkopi.id` dan arahkan DNS.** Sekarang seluruh canonical, sitemap, dan OG menunjuk `yuzansama.github.io/titikasalkopi`. Menunda ini setelah terindeks berarti membuang start SEO. | **CEO** | 1 hari (propagasi) |
 | 1.3 | **Putuskan host: GitHub Pages atau Vercel.** Di Pages, CSP dan seluruh security header **mati** — `next.config.ts` membuangnya pada `output: "export"` — padahal `/lacak` menyuntik konten eksternal ke DOM. Dokumen `08-lacak-pesanan.md` menandai ini sebagai keputusan yang "jangan digantung". Kalau tetap Pages, risikonya saya terima **tertulis**. | **CEO** | keputusan |
 | 1.4 | **Buat properti GA4, serahkan `G-XXXXXXXXXX`.** Tanpa ini enam dari sepuluh KPI tidak terukur sejak hari pertama. Sepuluh menit kerja, dan tidak bisa dikejar mundur — data yang tidak dikumpulkan hari pertama hilang selamanya. | **CEO** | 10 menit |
@@ -142,8 +144,19 @@ Pemeriksaan otomatis tidak menangkapnya karena **saya memperbarui pemeriksaannya
 
 ## 3b. Status pengerjaan, 9 September 2026
 
-Sprint 0 **selesai**, termasuk 0.5 (Kerinci dihapus dari lini poster atas
-keputusan owner) dan 0.6 (saklar stok kini benar-benar menolak pesanan).
+Sprint 0 **selesai**, termasuk 0.5 dan 0.6 (saklar stok kini benar-benar
+menolak pesanan).
+
+Butir 0.5 ditutup dua kali. Mula-mula Kerinci dikeluarkan dari lini poster atas
+keputusan owner. Lalu, masih pada 9 September 2026, owner memutuskan lebih
+jauh: **seluruh produk situs wajib berasal dari satu sumber**, lembar `Product`
+pada `assets/brand/Kopi from heart.xlsx`, sehingga lini poster dicabut
+seluruhnya (KD-09, `docs/00b-ceo-decisions.md` D-09). Mengeluarkan satu nama
+hanya menutup gejalanya; yang salah adalah adanya daftar kedua.
+
+Katalog sekarang: **11 produk, 41 varian jual.** Kemasan mini 100 gr pada
+single origin tetap dijual — ia berasal dari lembar `Product` dan bukan bagian
+dari lini poster.
 
 Dari sprint berikutnya, yang sudah dikerjakan lebih awal karena tidak menunggu
 siapa pun:

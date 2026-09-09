@@ -172,9 +172,36 @@ Endpoint ini terbuka untuk siapa pun, dan itu tidak bisa dihindari karena peramb
 Pencatatan **tidak boleh menunda atau menggagalkan pembukaan WhatsApp**. Ia dikirim sekali jalan lewat `sendBeacon`, tanpa ditunggu, dan kegagalannya diabaikan. Bila endpoint mati, pembeli tetap memesan dan owner tetap menerima chatnya persis seperti sebelum fitur ini ada. Pesanan lebih penting daripada pembukuannya.
 
 
-## D-07 — Katalog Kopi 100 gram sebagai lini kedua
+## D-07 — Katalog Kopi 100 gram sebagai lini kedua — **DICABUT 9 September 2026**
 
 Tanggal: 8 September 2026. Dirujuk sebagai **KD-07** dari `02-BRD.md`. Membuka FR-52.
+
+> **STATUS: DICABUT SELURUHNYA pada 9 September 2026 oleh `D-09`.** Lini "Katalog
+> Kopi 100 gram" — daftar 17–18 kopi dari poster cetak owner — **tidak ada lagi**,
+> tidak di situs, tidak di data, tidak di sheet. Alasannya satu kalimat: seluruh
+> produk situs kini wajib berasal dari **satu sumber**, lembar `Product` pada
+> `assets/brand/Kopi from heart.xlsx`, dan lini poster tidak ada di sana.
+>
+> Bagian ini **tidak dihapus** karena lini itu sempat tayang, sempat masuk kode,
+> rencana uji, dan dokumen owner. Siapa pun yang menemukan sisa-sisanya harus bisa
+> membaca di sini mengapa ia pernah ada dan mengapa ia berhenti ada — bukan
+> menyimpulkan bahwa ia hilang karena cacat, lalu mengembalikannya.
+>
+> **Yang BERTAHAN dari keputusan ini, dan tidak boleh ikut dibuang:**
+>
+> 1. **Satuan pesan `gram-100`.** Ia lahir untuk lini poster, tetapi sekarang
+>    melayani **kemasan mini 100 gr pada single origin** (`BR-08`). Satuan itu
+>    tetap hidup di keranjang, pesan WhatsApp, dan format harga.
+> 2. **Gagasan kemasan 100 gram itu sendiri** — sebagai kemasan mini single
+>    origin dari lembar `Product`, berharga **per tier** (Signature Rp85.000,
+>    Reguler Rp70.000), bukan per biji.
+>
+> **Jangan pernah menyamakan keduanya.** Ada dua hal berbeda yang sama-sama
+> pernah disebut "100 gram": **kemasan mini** single origin, yang TETAP ADA dan
+> merupakan bagian normal katalog; dan **lini "Katalog Kopi 100 gram"** dari
+> poster, yang SUDAH TIDAK ADA. Dokumen mana pun yang mencampur keduanya salah.
+
+### Isi keputusan aslinya, disimpan sebagai riwayat
 
 Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping single origin 200 gram (delapan biji sejak Sindoro masuk, 9 September 2026); keduanya tayang berdampingan dan tidak saling menggantikan. Seluruh biji lini ini **bisa dipesan lewat keranjang**.
 
@@ -208,7 +235,15 @@ Konsekuensi yang diterima: tidak ada halaman produk per biji, jadi tidak ada hal
 
 Bentuknya daftar padat, bukan kartu seperti lini 200 gram. Kartu menjanjikan foto dan catatan rasa; belasan kartu berisi nama dan harga saja akan terbaca sebagai katalog yang rusak.
 
-### Dua bentrokan yang MASIH menunggu jawaban owner
+### Dua bentrokan yang dulu menunggu jawaban owner — keduanya SELESAI 9 September 2026
+
+> Keduanya lahir dari keberadaan lini poster, dan keduanya hilang bersamanya.
+> **Kerinci** kini hanya punya satu harga karena hanya ada satu lini: single
+> origin, kemasan mini 100 gr Rp70.000 (tier Reguler). Slug `kerinci-100` tidak
+> ada lagi. **Gayo** hanya pernah ada di lini poster, jadi tidak ada lagi yang
+> bisa tertukar dengan **Pondok Baru**; Pondok Baru tetap tayang sebagai single
+> origin. Paragraf di bawah disimpan sebagai riwayat, bukan sebagai pekerjaan
+> yang tersisa.
 
 Keduanya tayang apa adanya. Tidak ada angka yang diselaraskan diam-diam, karena menyelaraskan berarti memilihkan jawaban yang belum owner berikan.
 
@@ -237,7 +272,14 @@ Tanggal: 8 September 2026. Dirujuk sebagai **KD-08** dari `02-BRD.md`. Membuka F
 
 Owner meminta katalog mudah dikelola. Sebelum ini, mengubah satu harga menuntut menyunting berkas TypeScript, commit, dan push — alur kerja developer, bukan alur kerja pemilik toko.
 
-**Keputusan.** Harga, status stok, dan seluruh lini 100 gram pindah ke tiga tab pada spreadsheet yang sudah dipakai untuk buku order. Owner menyunting di sana, menekan satu tombol di GitHub Actions, dan situs terbit ulang. Ada pula jadwal harian pukul 01.00 WIB.
+**Keputusan.** Harga dan status stok pindah ke tab pada spreadsheet yang sudah dipakai untuk buku order. Owner menyunting di sana, menekan satu tombol di GitHub Actions, dan situs terbit ulang. Ada pula jadwal harian pukul 01.00 WIB.
+
+> **Diperbarui 9 September 2026.** Keputusan ini semula memindahkan **tiga** tab:
+> `harga`, `stok`, dan `katalog100`. Tab ketiga melayani lini poster yang dicabut
+> `D-09`, jadi ia **tidak dibaca lagi sama sekali**. Yang dibutuhkan sekarang
+> **dua tab**: `harga` (24 baris) dan `stok` (11 baris). Tab `katalog100` yang
+> terlanjur dibuat owner boleh ditinggalkan begitu saja — ia diabaikan dan tidak
+> menggagalkan apa pun.
 
 **Yang TIDAK ikut pindah**: asal, proses, ketinggian, varietas, catatan rasa, dan foto. Batasnya bukan teknis — semuanya klaim tentang produk, bukan angka, pada toko yang dibayar di muka lewat transfer. Klaim yang salah merusak kepercayaan pada seluruh katalog, termasuk bagian yang benar.
 
@@ -247,19 +289,66 @@ Harga TIDAK diambil saat pengunjung membuka halaman. Sinkronisasi menulis ulang 
 
 Alasannya: mengambil harga saat halaman dibuka berarti sheet yang mati atau lambat menjadi halaman produk tanpa harga, dan seluruh situs berhenti bisa di-cache. Harga adalah data paling kritis di sini — ia harus statis, tervalidasi, dan punya riwayat. Cara ini memberi ketiganya sekaligus: setiap perubahan harga masuk riwayat git dengan tanggal dan isinya.
 
-Berkas hasil itu **satu-satunya** sumber harga, stok, dan lini 100 gram. Tidak ada nilai cadangan di berkas lain, karena dua sumber kebenaran untuk harga berarti suatu hari situs menayangkan angka yang tidak seorang pun merasa menuliskannya.
+Berkas hasil itu **satu-satunya** sumber harga dan stok. Tidak ada nilai cadangan di berkas lain, karena dua sumber kebenaran untuk harga berarti suatu hari situs menayangkan angka yang tidak seorang pun merasa menuliskannya.
 
 ### Gagal tertutup, di empat lapis
 
 Menerbitkan harga yang salah jauh lebih merugikan daripada menerbitkan harga kemarin. Karena itu setiap keraguan menghentikan penerbitan, dan katalog yang sudah ter-commit tetap tayang:
 
 1. Apps Script membedakan tab yang **tidak ada** (`null`) dari tab yang **kosong**. Yang pertama berarti salah nama tab, yang kedua berarti owner mengosongkan isinya; keduanya ditolak dengan pesan berbeda.
-2. `validateCatalogPayload()` menolak tab hilang, harga hilang, kunci tak dikenal, slug bentrok, dan daftar 100 gram kosong — tanpa menyentuh berkas apa pun.
+2. `validateCatalogPayload()` menolak tab hilang, harga hilang, harga di luar batas wajar, kunci tak dikenal, dan status stok tak dikenal — tanpa menyentuh berkas apa pun.
 3. Validator katalog berjalan saat modul dievaluasi, sehingga data rusak menggagalkan build alih-alih tayang.
-4. Workflow menjalankan `tsc` dan tiga skrip pemeriksaan sebelum commit.
+4. Workflow menjalankan `tsc` dan dua skrip pemeriksaan sebelum commit — `check-cart.mjs` dan `check-sync-katalog.mjs`. Yang pertama menyimpan salinan ketik-ulang daftar produk lembar `Product`, sehingga katalog yang diam-diam bertambah atau berkurang satu produk, atau kemasan mini yang muncul pada biji yang tidak punya barisnya, langsung merah.
 
 Ditambah satu hal kecil yang menentukan: `managedPrice()` **melempar** bila kuncinya hilang, bukan mengembalikan 0. Nol akan tampil sebagai "Rp0" di halaman produk dan ikut ke pesan WhatsApp sebagai penawaran sungguhan.
 
 ### Batas kewarasan harga Rp10.000 sampai Rp5.000.000
 
 Bukan aturan bisnis, melainkan jaring pengaman terhadap salah ketik. Satu nol kelebihan mengubah Rp125.000 menjadi Rp1.250.000; satu nol kurang menjadikannya Rp12.500. Keduanya bilangan bulat positif yang sah, jadi pemeriksaan tipe saja tidak akan pernah melihatnya. Bila katalog suatu saat sungguh memuat harga di luar rentang itu, ubah batasnya secara sadar — jangan hapus pemeriksaannya.
+
+
+## D-09 — Satu sumber untuk seluruh produk: lembar `Product`
+
+Tanggal: 9 September 2026. Dirujuk sebagai **KD-09** dari `02-BRD.md`. Mencabut `D-07` seluruhnya dan menutup FR-52. Menutup pula DEF-17 pada `06-qa-test-plan.md` dan butir 0.5 pada `11-timeline-rilis.md` — bukan dengan menjawab pertanyaannya, melainkan dengan menghapus keadaan yang melahirkannya.
+
+**Keputusan.** Setiap produk yang dijual situs wajib berasal dari **satu** sumber: lembar **"Product"** pada `assets/brand/Kopi from heart.xlsx`. Tidak ada lini kedua, tidak ada daftar tambahan, tidak ada baris yang masuk dari tempat lain.
+
+Konsekuensi langsungnya: lini **"Katalog Kopi 100 gram"** — daftar dari poster cetak owner, yang `D-07` jadikan lini kedua — **dihapus seluruhnya**. Ia tidak ada di lembar itu.
+
+### Mengapa
+
+`D-07` sudah menuliskan sendiri harga yang ia bayar: lini itu tidak memakai `Tier`, tidak memakai tipe `Product`, tidak punya halaman produk, dan punya bentuk datanya sendiri. Setiap aturan katalog karena itu harus ditulis dua kali, dan setiap kali salah satunya lupa ditulis, situs menayangkan dua perlakuan berbeda untuk hal yang sama.
+
+Bentrokan Kerinci adalah wujud pertamanya, dan penyelesaiannya waktu itu — mengeluarkan satu nama dari satu daftar — hanya menutup gejalanya. Selama ada dua daftar, nama berikutnya akan bentrok lagi, dan yang berikutnya lagi. **Yang salah bukan namanya, melainkan adanya daftar kedua.**
+
+Pada toko yang dibayar di muka lewat transfer, satu daftar yang bisa dibaca ulang terhadap dokumen owner lebih berharga daripada belasan baris katalog tambahan yang tidak punya data asal, tidak punya halaman, dan tidak bisa diperiksa terhadap apa pun.
+
+### Katalog yang berlaku, dan tidak ada yang lain
+
+- **8 single origin**: Oelbiteno, Sabin, Abmisibil, Pyramid, Palimping, Kerinci, Pondok Baru, Sindoro.
+- **Tujuh di antaranya juga menjual kemasan mini 100 gr**, berharga **per tier** (`BR-09`): Signature Rp85.000, Reguler Rp70.000. Lembar itu **melewatkan Sindoro** pada kolom kemasan mini, jadi Sindoro tidak punya kemasan mini. Ketiadaan itu **sah dan disengaja** (`BR-08`); ia tidak boleh "dilengkapi" sendiri.
+- **3 lini houseblend**, setiap rasio dalam **dua ukuran kemasan** (1 kg dan 0,5 kg), harganya masing-masing tersimpan (`D-02` revisi kedua).
+- Totalnya **11 produk** dan **41 varian jual**.
+- Kolom **"Tier 2"** pada lembar itu masih berisi catatan saja, tanpa satu pun nama biji dan tanpa harga. Selama masih begitu, **tidak ada apa pun yang boleh tayang atas namanya**.
+
+### Yang bertahan dari `D-07`
+
+Satuan pesan **`gram-100` tetap ada** — ia sekarang melayani kemasan mini single origin. Begitu pula gagasan kemasan 100 gram itu sendiri. Yang hilang hanyalah lini poster: nama, harga per biji, bentuk datanya, dan halaman daftarnya.
+
+Dua hal berbeda pernah sama-sama disebut "100 gram". **Kemasan mini** single origin TETAP ADA. **Lini "Katalog Kopi 100 gram"** dari poster SUDAH TIDAK ADA. Keduanya tidak boleh ditulis seolah satu hal.
+
+### Yang hilang dari kode, supaya tidak ada yang mencarinya
+
+`src/data/picks.ts`, `src/features/catalog/pick-list.tsx`, dan `scripts/check-picks.mjs` dihapus. Medan `picks` hilang dari `managed.generated.ts`, dari skrip sinkronisasi, dan dari `ops/order-tracker.gs`. Validator `assertPicksValid` (`V-20`) hilang bersama datanya. Halaman `/katalog` tidak lagi punya bagian kedua.
+
+Tab **`katalog100` tidak dibaca lagi sama sekali**; sheet owner cukup dua tab, `harga` dan `stok` (`D-08`). Tab lama yang terlanjur ada diabaikan dan tidak berbahaya.
+
+### Pagar penggantinya
+
+Pemeriksaan lama menjaga agar tidak ada nama yang muncul di **dua** lini. Karena lini kedua tidak ada, pagar itu kehilangan pekerjaannya — dan digantikan pagar yang menjaga hal yang sekarang benar-benar berisiko: **katalog menyimpang dari lembar `Product`**.
+
+`check-cart.mjs` menyimpan **salinan daftar produk yang diketik ulang dengan tangan** dari lembar itu, dan gagal bila katalog bertambah produk, kehilangan produk, atau menumbuhkan kemasan mini pada biji yang tidak punya barisnya. Salinannya sengaja diketik ulang, bukan diimpor: pemeriksaan yang membandingkan data dengan dirinya sendiri selalu lulus.
+
+### Catatan untuk QA
+
+Test case yang menguji lini poster **dicabut, bukan dihapus** — TC-313, TC-314, TC-403, dan TC-404, dirinci pada Bagian 4.10 `06-qa-test-plan.md`. Menghapusnya diam-diam membuat rujukan lama menunjuk ke ruang kosong; mencabutnya membuat pembaca tahu bahwa kasusnya pernah ada dan mengapa ia tidak dijalankan lagi.
