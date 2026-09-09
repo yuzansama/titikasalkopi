@@ -15,6 +15,7 @@ const reducer = await loadTs("src/features/cart/cart-reducer.ts");
 const storage = await loadTs("src/features/cart/cart-storage.ts");
 const selectors = await loadTs("src/features/cart/cart-selectors.ts");
 const catalog = await loadTs("src/data/catalog.ts");
+const { managedCatalog } = await loadTs("src/data/managed.generated.ts");
 
 const { cartReducer, EMPTY_CART, lineKey, MAX_NOTE_LENGTH, MAX_QTY_PER_LINE } =
   reducer;
@@ -24,54 +25,174 @@ const { resolveCart, catalogValidKeys } = selectors;
 console.log("Pemeriksaan keranjang — reducer, penyimpanan, resolusi harga\n");
 
 /* ---------------------------------------------------------------- */
-/* D-02 — harga 0,5 kg tepat setengah untuk kesembilan varian        */
+/* Harga: INVARIAN, bukan nilai                                       */
+/*                                                                    */
+/* Berkas ini dijalankan workflow sinkronisasi katalog SEBELUM ia      */
+/* meng-commit harga baru dari sheet owner. Karena itu ia TIDAK BOLEH  */
+/* memuat satu pun harga sebagai angka harfiah: owner mengubah harga   */
+/* di sheet, pemeriksaan menolak, dan fitur "owner urus harga sendiri" */
+/* memblokir dirinya sendiri.                                         */
+/*                                                                    */
+/* Yang dijaga di sini adalah hubungan antar angka, yang tetap benar   */
+/* berapa pun harganya. Ini juga pelajaran 9 September 2026: cacat     */
+/* harga hari itu lolos justru karena pemeriksaannya berisi nilai      */
+/* harfiah, lalu nilai itu diperbarui agar cocok dengan keluaran yang  */
+/* salah. Invarian tidak bisa "diperbarui agar cocok".                 */
 /* ---------------------------------------------------------------- */
-
-const EXPECTED_HALF_KG = [
-  ["bold-70-30", 210_000, 105_000],
-  ["bold-60-40", 200_000, 100_000],
-  ["bold-50-50", 195_000, 97_500],
-  ["bold-40-60", 190_000, 95_000],
-  ["bold-30-70", 185_000, 92_500],
-  ["bold-20-80", 175_000, 87_500],
-  ["bright-signature", 260_000, 130_000],
-  ["bright-reguler", 230_000, 115_000],
-  ["full-robusta", 175_000, 87_500],
-];
 
 const houseblendVariants = catalog.houseblendProducts.flatMap((p) => p.variants);
 
-check("katalog memuat tepat sembilan varian houseblend", () => {
-  assert.equal(houseblendVariants.length, 9);
+check("katalog memuat 18 varian houseblend: 9 rasio x 2 ukuran kemasan", () => {
+  assert.equal(houseblendVariants.length, 18);
+  const kg = houseblendVariants.filter((v) => v.unit === "kg");
+  const half = houseblendVariants.filter((v) => v.unit === "half-kg");
+  assert.equal(kg.length, 9);
+  assert.equal(half.length, 9);
 });
 
-for (const [id, perKg, perHalfKg] of EXPECTED_HALF_KG) {
-  check(`${id}: ${perKg} per kg -> ${perHalfKg} per 0,5 kg (tepat setengah)`, () => {
-    const variant = houseblendVariants.find((v) => v.id === id);
-    assert.ok(variant, `varian ${id} tidak ditemukan di katalog`);
-    assert.equal(variant.unit, "half-kg");
-    assert.equal(variant.pricePerKg, perKg);
-    assert.equal(variant.unitPrice, perHalfKg);
-    assert.equal(variant.unitPrice * 2, variant.pricePerKg);
-    assert.ok(Number.isInteger(variant.unitPrice), "harga wajib bilangan bulat");
-  });
-}
-
-check("contoh FR-21: BOLD 60:40 sebanyak 5 kg = Rp1.000.000", () => {
-  const variant = houseblendVariants.find((v) => v.id === "bold-60-40");
-  assert.equal(10 * variant.unitPrice, 1_000_000);
+check("setiap varian houseblend punya TEPAT SATU harga", () => {
+  // Medan `pricePerKg` dihapus 9 September 2026. Selama ia ada, antarmuka
+  // menampilkan satu angka dan menagih angka lain. Pemeriksaan ini menahannya
+  // agar tidak pernah kembali lewat pintu belakang.
+  for (const variant of houseblendVariants) {
+    assert.equal(
+      variant.pricePerKg,
+      undefined,
+      `${variant.id} membawa harga kedua; satu varian hanya boleh punya satu harga`,
+    );
+    assert.ok(Number.isInteger(variant.unitPrice) && variant.unitPrice > 0);
+  }
 });
 
-check("contoh FR-21: BOLD 50:50 sebanyak 1,5 kg = Rp292.500", () => {
-  const variant = houseblendVariants.find((v) => v.id === "bold-50-50");
-  assert.equal(3 * variant.unitPrice, 292_500);
+check("kedua ukuran kemasan setiap rasio saling masuk akal", () => {
+  for (const product of catalog.houseblendProducts) {
+    const groups = catalog.houseblendSizeGroups(product);
+    assert.ok(groups.length > 0, `${product.slug} tidak punya kelompok ukuran`);
+    for (const group of groups) {
+      // Kemasan kecil lebih murah daripada kemasan besar...
+      assert.ok(
+        group.halfKg.unitPrice < group.kg.unitPrice,
+        `${group.id}: kemasan 0,5 kg tidak lebih murah daripada kemasan 1 kg`,
+      );
+      // ...tetapi dua kemasan kecil lebih mahal daripada satu kemasan besar,
+      // kalau tidak kemasan 1 kg kehilangan alasan untuk ada.
+      assert.ok(
+        group.halfKg.unitPrice * 2 > group.kg.unitPrice,
+        `${group.id}: dua kemasan 0,5 kg tidak lebih mahal daripada satu kemasan 1 kg`,
+      );
+      assert.ok(catalog.packSaving(group) > 0);
+    }
+  }
 });
 
-check("BR-10: penghematan bundling Signature Rp25.000, Reguler Rp20.000", () => {
-  const signature = catalog.productsByTier("signature")[0];
-  const reguler = catalog.productsByTier("reguler")[0];
-  assert.equal(catalog.bundleSaving(signature), 25_000);
-  assert.equal(catalog.bundleSaving(reguler), 20_000);
+/**
+ * Batas kewajaran harga PER GRAM, per jenis kemasan.
+ *
+ * Ini bukan aturan bisnis dan bukan daftar harga: ia jaring pengaman terhadap
+ * salah ketik nol, yang tetap bekerja ketika owner mengubah harga. Satu nol
+ * kelebihan menggeser harga per gram sepuluh kali lipat dan pasti keluar dari
+ * pitanya; kenaikan harga yang wajar tidak.
+ *
+ * Pitanya dibedakan per jenis kemasan karena harga per gram memang berbeda
+ * jauh antar lini: houseblend robusta curah Rp180/gram, sementara Panama pada
+ * lini 100 gram Rp2.700/gram. Satu pita untuk semuanya akan terlalu longgar
+ * untuk menangkap apa pun.
+ *
+ * TINJAU ULANG bila lini produk baru masuk dengan struktur harga yang berbeda.
+ */
+const GRAMS_PER_UNIT = {
+  pack: 200,
+  paket: 600,
+  kg: 1000,
+  "half-kg": 500,
+  "gram-100": 100,
+};
+const PRICE_PER_GRAM_BAND = {
+  pack: [400, 1200],
+  paket: [400, 1200],
+  kg: [120, 400],
+  "half-kg": [150, 500],
+  "gram-100": [400, 3500],
+};
+
+check("harga per gram setiap varian berada di pita wajar jenis kemasannya", () => {
+  for (const entry of Object.values(catalog.cartCatalogIndex)) {
+    for (const variant of entry.variants) {
+      const grams = GRAMS_PER_UNIT[variant.unit];
+      const [min, max] = PRICE_PER_GRAM_BAND[variant.unit];
+      assert.ok(grams, `satuan "${variant.unit}" belum punya berat`);
+      const perGram = variant.unitPrice / grams;
+      assert.ok(
+        perGram >= min && perGram <= max,
+        `${entry.slug}/${variant.id}: Rp${variant.unitPrice} untuk ${grams} gram ` +
+          `= Rp${perGram.toFixed(0)}/gram, di luar pita Rp${min}-Rp${max}. ` +
+          `Periksa jumlah nolnya.`,
+      );
+    }
+  }
+});
+
+check("BR-10: paket 3 pack selalu lebih murah daripada 3 x harga satuan", () => {
+  for (const product of catalog.singleOriginProducts) {
+    const saving = catalog.bundleSaving(product);
+    assert.ok(saving !== null, `${product.slug} tidak punya paket 3 pack`);
+    assert.ok(saving > 0, `${product.slug}: penghematan paket ${saving}`);
+  }
+});
+
+check("kemasan mini 100 gr: tujuh biji punya, Sindoro tidak", () => {
+  const withMini = catalog.singleOriginProducts.filter((product) =>
+    product.variants.some((variant) => variant.unit === "gram-100"),
+  );
+  assert.equal(withMini.length, 7);
+  assert.equal(
+    catalog
+      .findSingleOriginBySlug("sindoro")
+      .variants.some((variant) => variant.unit === "gram-100"),
+    false,
+  );
+  // Kemasan kecil lebih mahal per gram, tetapi lebih murah per kemasan (BR-09
+  // tetap berlaku: harga ditentukan tier, bukan biji).
+  for (const product of withMini) {
+    const mini = product.variants.find((v) => v.unit === "gram-100");
+    const pack = product.variants.find((v) => v.unit === "pack");
+    assert.ok(mini.unitPrice < pack.unitPrice, `${product.slug}: mini >= 200 gr`);
+    assert.ok(mini.unitPrice * 2 > pack.unitPrice, `${product.slug}: mini terlalu murah`);
+  }
+});
+
+/* ---------------------------------------------------------------- */
+/* FR-14 — status stok yang benar-benar berpengaruh                   */
+/* ---------------------------------------------------------------- */
+
+check("FR-14: setiap produk membawa status yang dikenal", () => {
+  for (const product of catalog.products) {
+    assert.ok(
+      product.status === "available" || product.status === "out-of-stock",
+      `${product.slug} berstatus "${product.status}"`,
+    );
+  }
+});
+
+check("FR-14: status owner sampai ke produk, bukan berhenti di data", () => {
+  // Sampai 9 September 2026 `status` mengalir ke `Product` lalu tidak dibaca
+  // satu komponen pun: owner menandai kosong di sheet, memercayainya, dan situs
+  // tetap menerima pesanan. Pemeriksaan ini menjaga rantainya tetap tersambung
+  // dari sheet sampai ke tipe yang dipakai UI.
+  const managed = catalog.products.map((product) => product.slug);
+  for (const slug of Object.keys(managedCatalog.stok)) {
+    assert.ok(
+      managed.includes(slug),
+      `slug "${slug}" ada di tab stok tetapi bukan produk mana pun`,
+    );
+  }
+  for (const product of catalog.products) {
+    assert.equal(
+      product.status,
+      managedCatalog.stok[product.slug] ?? "available",
+      `${product.slug}: status di katalog tidak sama dengan tab stok`,
+    );
+  }
 });
 
 /* ---------------------------------------------------------------- */
@@ -263,7 +384,7 @@ check("ADR-04: slug tidak dikenal dibuang tanpa melempar", () => {
   });
   assert.equal(resolved.lines.length, 1);
   assert.equal(resolved.droppedCount, 1);
-  assert.equal(resolved.subtotal, 350_000);
+  assert.equal(resolved.subtotal, resolved.lines[0].lineTotal);
 });
 
 check("varianId tidak dikenal pada produk yang ada juga dibuang", () => {
@@ -284,19 +405,64 @@ check("keranjang kosong menghasilkan subtotal 0 tanpa melempar", () => {
   assert.equal(resolved.droppedCount, 0);
 });
 
-check("subtotal contoh Bagian 7.4: 3 pack Abmisibil + 5 kg BOLD = Rp1.350.000", () => {
-  const resolved = resolveCart(
-    [
-      { slug: "abmisibil", variantId: "abmisibil-pack3", qty: 1 },
-      { slug: "bold", variantId: "bold-60-40", qty: 10 },
-    ],
-    "",
-    index,
+/**
+ * INVARIAN UANG — pemeriksaan yang seharusnya ada sejak awal.
+ *
+ * Cacat 9 September 2026 lolos karena setiap pemeriksaan menegaskan sebuah
+ * NILAI ("subtotal 1.150.000"), dan nilai itu diperbarui agar cocok dengan
+ * keluaran yang sudah salah. Yang berikut ini menegaskan HUBUNGANNYA: berapa
+ * pun harganya, jumlah kemasan dikalikan harga satu kemasan wajib sama dengan
+ * subtotal baris, dan jumlah seluruh baris wajib sama dengan subtotal pesanan.
+ *
+ * Dijalankan atas keranjang campuran yang memuat setiap jenis kemasan yang
+ * dijual situs, karena di situlah satuan bisa tertukar diam-diam.
+ */
+check("qty x harga satuan == subtotal baris, dan jumlah baris == subtotal pesanan", () => {
+  const oneOfEachUnit = [];
+  const seenUnits = new Set();
+  for (const entry of Object.values(index)) {
+    for (const variant of entry.variants) {
+      if (seenUnits.has(variant.unit)) continue;
+      seenUnits.add(variant.unit);
+      oneOfEachUnit.push({ slug: entry.slug, variantId: variant.id, qty: 3 });
+    }
+  }
+  assert.equal(seenUnits.size, 5, "belum semua jenis kemasan terwakili");
+
+  const resolved = resolveCart(oneOfEachUnit, "", index);
+  assert.equal(resolved.lines.length, oneOfEachUnit.length);
+
+  let expected = 0;
+  for (const line of resolved.lines) {
+    assert.equal(
+      line.lineTotal,
+      line.qty * line.unitPrice,
+      `${line.slug}/${line.variantId}: subtotal baris tidak sama dengan qty x harga satuan`,
+    );
+    assert.ok(Number.isInteger(line.lineTotal));
+    expected += line.lineTotal;
+  }
+  assert.equal(resolved.subtotal, expected);
+  assert.equal(
+    resolved.itemCount,
+    oneOfEachUnit.reduce((total, item) => total + item.qty, 0),
   );
-  assert.equal(resolved.subtotal, 1_350_000);
-  assert.equal(resolved.itemCount, 11);
-  assert.equal(resolved.lines[1].pricePerKg, 200_000);
-  assert.ok(Number.isInteger(resolved.subtotal));
+});
+
+check("tidak ada baris keranjang yang membawa harga kedua", () => {
+  // `pricePerKg` dihapus dari `ResolvedCartLine` 9 September 2026. Selama ia
+  // ada, keranjang menampilkan tarif di sebelah total yang dihitung dari harga
+  // lain, dan pembeli yang mengalikan mendapat angka yang bukan tagihannya.
+  const all = Object.values(index).flatMap((entry) =>
+    entry.variants.map((variant) => ({
+      slug: entry.slug,
+      variantId: variant.id,
+      qty: 2,
+    })),
+  );
+  for (const line of resolveCart(all, "", index).lines) {
+    assert.equal(line.pricePerKg, undefined, `${line.variantId} membawa harga kedua`);
+  }
 });
 
 /**
@@ -304,10 +470,12 @@ check("subtotal contoh Bagian 7.4: 3 pack Abmisibil + 5 kg BOLD = Rp1.350.000", 
  * dihitung dari data yang sedang diuji, katalog yang menyusut diam-diam akan
  * tetap lulus.
  *
- *   23 varian produk 200 gr dan houseblend
+ *   41 varian produk single origin dan houseblend
+ *     (7 biji x 3 kemasan + Sindoro tanpa mini x 2 = 23,
+ *      ditambah 9 rasio houseblend x 2 ukuran kemasan = 18)
  * + 18 varian lini Katalog Kopi 100 gram (KD-07)
  */
-const EXPECTED_PRODUCT_VARIANTS = 23;
+const EXPECTED_PRODUCT_VARIANTS = 41;
 const EXPECTED_PICK_VARIANTS = 18;
 const EXPECTED_VARIANT_COUNT = EXPECTED_PRODUCT_VARIANTS + EXPECTED_PICK_VARIANTS;
 

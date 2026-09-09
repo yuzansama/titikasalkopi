@@ -44,11 +44,18 @@ function toUrl(text: string): string {
   return `${whatsapp.link}?text=${encodeURIComponent(text)}`;
 }
 
-/** Harga satuan siap tampil. Houseblend memakai harga per kg agar mudah dicek pembeli. */
+/**
+ * Harga satuan siap tampil — SELALU harga satu kemasan.
+ *
+ * Sebelum 9 September 2026 houseblend menampilkan tarif per kg di sini,
+ * sementara subtotalnya dihitung dari harga kemasan 0,5 kg. Begitu kedua angka
+ * itu berhenti berhubungan, pesan yang diterima pembeli tidak lagi bisa
+ * dijumlahkan sendiri: "5 kg x Rp205.000/kg" di atas "Subtotal Rp1.150.000".
+ * Sekarang satu-satunya angka satuan yang boleh muncul adalah yang dikalikan
+ * dengan jumlah kemasan untuk menghasilkan subtotal di baris berikutnya.
+ */
 function unitPriceLabel(line: ResolvedCartLine): string {
-  return line.unit === "half-kg" && line.pricePerKg
-    ? `${formatIDR(line.pricePerKg)}/kg`
-    : formatIDR(line.unitPrice);
+  return formatIDR(line.unitPrice);
 }
 
 /** Bentuk penuh sesuai BRD 11.2. */
@@ -148,10 +155,7 @@ export function buildOrderMessage(payload: OrderInquiryPayload): WhatsAppMessage
 
 /** FR-38 — "Tanya produk ini". Tanpa kode order, karena belum ada pesanan. */
 export function buildAskMessage(payload: AskInquiryPayload): WhatsAppMessage {
-  const price =
-    payload.unit === "half-kg" && payload.pricePerKg
-      ? `${formatIDR(payload.pricePerKg)}/kg`
-      : `${formatIDR(payload.unitPrice)} / ${payload.variantLabel}`;
+  const price = `${formatIDR(payload.unitPrice)} / ${payload.variantLabel}`;
 
   const text = [
     `Halo ${site.name}, saya ingin bertanya tentang ${payload.productName} (${payload.categoryLabel}) — ${payload.variantLabel}, ${price}.`,

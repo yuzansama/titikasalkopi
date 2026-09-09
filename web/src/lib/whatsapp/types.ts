@@ -31,9 +31,8 @@ export type AskInquiryPayload = {
   categoryLabel: string;
   variantLabel: string;
   unit: OrderUnit;
+  /** Harga satu kemasan. Tidak ada harga kedua: lihat catatan pada `Variant`. */
   unitPrice: PriceIDR;
-  /** Hanya houseblend; dipakai agar harga yang disebut sama dengan yang dibaca. */
-  pricePerKg?: PriceIDR;
   sourceUrl: string;
 };
 

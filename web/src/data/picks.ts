@@ -1,8 +1,15 @@
 /**
  * Katalog Kopi 100 gram (KD-07).
  *
- * Lini KEDUA, berdiri sendiri di samping tujuh single origin 200 gram. Kedua
- * lini hidup berdampingan dan tidak saling menggantikan.
+ * Lini KEDUA, berdiri sendiri di samping delapan single origin. Kedua lini
+ * hidup berdampingan dan tidak saling menggantikan.
+ *
+ * PERHATIAN: sejak 9 September 2026 single origin juga punya kemasan mini
+ * 100 gram, dan ia BUKAN lini ini. Kemasan mini berharga per tier (Signature
+ * Rp85.000, Reguler Rp70.000) dan menempel pada halaman produknya; lini ini
+ * berharga per biji dan berisi kopi yang tidak punya halaman produk. Kerinci
+ * ada di keduanya dengan harga berbeda — lihat butir 0.5 pada
+ * docs/11-timeline-rilis.md.
  *
  * ATURAN HARGA BERBEDA DARI LINI 200 GRAM. `BR-09` menetapkan harga single
  * origin ditentukan TIER, bukan biji — hanya dua angka untuk seluruh katalog.

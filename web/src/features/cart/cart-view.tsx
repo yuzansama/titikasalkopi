@@ -18,9 +18,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QtyStepper } from "@/components/ui/qty-stepper";
 import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
-import { formatIDR, formatKgFromHalfUnits, formatPricePerKg } from "@/lib/format";
+import { formatIDR, formatTotalWeight } from "@/lib/format";
 import { trackViewCart } from "@/lib/analytics";
-import { parseKgToHalfUnits } from "@/features/catalog/kg-configurator";
 import { ReplyHoursStatus } from "@/features/contact/reply-hours-status";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { WhatsAppOrderButton } from "@/features/whatsapp/whatsapp-order-button";
@@ -216,7 +215,7 @@ function CartLineRow({
   onQty: (qty: number) => void;
   onRemove: () => void;
 }) {
-  const isHalfKg = line.unit === "half-kg";
+  const weight = formatTotalWeight(line.qty, line.unit);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -229,11 +228,15 @@ function CartLineRow({
             {line.productName}
           </Link>
         </h3>
+        {/* Harga yang tampil di sini adalah harga SATU kemasan, dan
+            `line.qty` adalah jumlah kemasan — sehingga perkalian keduanya
+            selalu sama dengan total di sebelah kanan. Sebelum 9 September 2026
+            baris ini menampilkan tarif per kg untuk houseblend, dan begitu
+            tarif itu berhenti sama dengan setengah harga kemasan, pembeli yang
+            mengalikan mendapat angka yang bukan tagihannya. */}
         <p className="mt-1 text-sm text-olive">
-          {line.variantLabel} &middot;{" "}
-          {line.pricePerKg
-            ? formatPricePerKg(line.pricePerKg)
-            : formatIDR(line.unitPrice)}
+          {line.variantLabel} &middot; {formatIDR(line.unitPrice)}
+          {weight ? ` · total ${weight}` : ""}
         </p>
 
         <div className="mt-4">
@@ -244,11 +247,8 @@ function CartLineRow({
             max={MAX_QTY_PER_LINE}
             onChange={onQty}
             label={`Jumlah ${line.productName}, ${line.variantLabel}`}
-            formatValue={(value) =>
-              isHalfKg ? formatKgFromHalfUnits(value) : String(value)
-            }
+            formatValue={(value) => String(value)}
             parseValue={(raw) => {
-              if (isHalfKg) return parseKgToHalfUnits(raw);
               const parsed = Number.parseInt(raw.replace(/\D/g, ""), 10);
               return Number.isFinite(parsed) ? parsed : null;
             }}

@@ -41,6 +41,14 @@ export function ProductCard({
     <article className={`group relative flex flex-col overflow-hidden ${CARD}`}>
       <ProductMedia product={product} sizes={sizes} priority={priority} />
 
+      {/* FR-14 — penanda stok kosong dari sheet owner. Ditumpuk di atas foto
+          supaya terbaca sebelum pembeli menimbang harganya. */}
+      {product.status === "out-of-stock" ? (
+        <p className="absolute left-3 top-3 z-10 rounded-full bg-coffee px-3 py-1 font-heading text-xs font-semibold uppercase tracking-[0.12em] text-cream">
+          Stok kosong
+        </p>
+      ) : null}
+
       <div className="flex flex-1 flex-col p-4">
         <p className="font-heading text-xs font-semibold uppercase tracking-[0.15em] text-rust">
           {categoryLabel(product)}

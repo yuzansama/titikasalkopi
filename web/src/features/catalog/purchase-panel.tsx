@@ -19,30 +19,50 @@
 
 import { useMemo, useState } from "react";
 import { QtyStepper } from "@/components/ui/qty-stepper";
-import { formatIDR, formatQuantity } from "@/lib/format";
+import { formatIDR, formatQuantity, formatTotalWeight, unitLabel } from "@/lib/format";
 import { trackSelectVariant } from "@/lib/analytics";
 import { AddToCartButton } from "./add-to-cart-button";
-import { KgConfigurator } from "./kg-configurator";
-import { RatioTable } from "./ratio-table";
+import { RatioTable, type RatioRow } from "./ratio-table";
 import { VariantPicker } from "./variant-picker";
 import type { VariantOption } from "./variant-option";
 
-/** Jumlah awal houseblend = 1 kg = 2 satuan 0,5 kg (FR-21). */
-const DEFAULT_HALF_KG_UNITS = 2;
 const MAX_QTY = 99;
+
+/** Petunjuk singkat di bawah stepper, sesuai satuan kemasan yang dipilih. */
+function qtyHint(unit: VariantOption["unit"]): string {
+  switch (unit) {
+    case "paket":
+      return "Satu paket berisi tiga kemasan 200 gr dari origin yang sama.";
+    case "pack":
+      return "Satu pack berisi 200 gr.";
+    case "kg":
+      return "Dihitung per kemasan 1 kg.";
+    case "half-kg":
+      return "Dihitung per kemasan 0,5 kg.";
+    case "gram-100":
+      return "Satu kemasan berisi 100 gr.";
+  }
+}
 
 export function PurchasePanel({
   slug,
   productName,
   variants,
-  useRatioTable,
+  ratioRows,
   variantNotes,
+  soldOut = false,
 }: {
   slug: string;
   productName: string;
   variants: readonly VariantOption[];
-  /** true untuk lini BOLD: enam rasio lebih terbaca sebagai tabel (FR-28, FR-29). */
-  useRatioTable: boolean;
+  /** true bila owner menandai produk ini kosong di sheet (FR-14, KD-08). */
+  soldOut?: boolean;
+  /**
+   * Baris tabel rasio, sudah dikelompokkan per ukuran kemasan oleh Server
+   * Component. Diisi hanya untuk lini BOLD, yang enam rasionya lebih terbaca
+   * sebagai tabel (FR-28, FR-29); lini lain memakai pemilih varian biasa.
+   */
+  ratioRows?: readonly RatioRow[];
   /** Keterangan per varian dari Server Component, mis. penghematan 3 pack. */
   variantNotes?: Readonly<Record<string, string>>;
 }) {
@@ -52,8 +72,7 @@ export function PurchasePanel({
     [variants, variantId],
   );
 
-  const isHalfKg = selected?.unit === "half-kg";
-  const [qty, setQty] = useState(isHalfKg ? DEFAULT_HALF_KG_UNITS : 1);
+  const [qty, setQty] = useState(1);
 
   if (!selected) return null;
 
@@ -64,16 +83,17 @@ export function PurchasePanel({
   };
 
   const lineTotal = qty * selected.unitPrice;
+  const weight = formatTotalWeight(qty, selected.unit);
 
   return (
     <div className="space-y-6">
       {variants.length > 1 ? (
-        useRatioTable ? (
+        ratioRows && ratioRows.length > 0 ? (
           <RatioTable
-            variants={variants}
+            rows={ratioRows}
             selectedId={selected.id}
             onSelect={handleSelect}
-            caption="Pilih rasio, lalu atur jumlahnya di bawah tabel."
+            caption="Pilih rasio dan ukuran kemasannya, lalu atur jumlahnya di bawah tabel."
           />
         ) : (
           <VariantPicker
@@ -86,53 +106,40 @@ export function PurchasePanel({
         )
       ) : null}
 
-      {isHalfKg ? (
-        <KgConfigurator
-          halfKgUnits={qty}
-          onChange={setQty}
-          min={selected.minQty}
-          step={selected.step}
-          max={MAX_QTY}
-          productName={productName}
-        />
-      ) : (
-        <QtyStepper
-          value={qty}
-          min={selected.minQty}
-          step={selected.step}
-          max={MAX_QTY}
-          onChange={setQty}
-          label={`Jumlah ${productName}`}
-          formatValue={(value) => String(value)}
-          parseValue={(raw) => {
-            const parsed = Number.parseInt(raw.replace(/\D/g, ""), 10);
-            return Number.isFinite(parsed) ? parsed : null;
-          }}
-          hint={
-            selected.unit === "paket"
-              ? "Satu paket berisi tiga kemasan 200 gr dari origin yang sama."
-              : "Satu pack berisi 200 gr."
-          }
-        />
-      )}
+      <QtyStepper
+        value={qty}
+        min={selected.minQty}
+        step={selected.step}
+        max={MAX_QTY}
+        onChange={setQty}
+        label={`Jumlah ${productName}`}
+        formatValue={(value) => String(value)}
+        parseValue={(raw) => {
+          const parsed = Number.parseInt(raw.replace(/\D/g, ""), 10);
+          return Number.isFinite(parsed) ? parsed : null;
+        }}
+        hint={qtyHint(selected.unit)}
+      />
 
-      {/* SATU pernyataan harga.
-          Sebelumnya blok ini mengulang harga satuan yang sudah tertulis pada
-          tombol varian, lalu menuliskan total di bawahnya — harga yang sama
-          tampil tiga kali dalam satu layar. Yang tersisa sekarang: APA yang
-          dibeli (jumlah + satuan, tanpa angka rupiah) dan BERAPA totalnya.
-          Label varian hanya diulang untuk houseblend, karena di sana label itu
-          menyebut rasio/lini — informasi yang tidak terkandung dalam jumlah.
-          Harga satuan muncul di sini HANYA saat jumlahnya lebih dari satu, yaitu
-          saat total tidak lagi sama dengan harga satuan: di situ ia menjelaskan
-          perkalian, bukan mengulanginya. Houseblend tidak memakainya karena
-          harga satuannya (per 0,5 kg) bukan satuan harga resmi — harga per kg
-          sudah tertulis pada tombol varian/tabel rasio (BR-01). */}
+      {/* SATU pernyataan harga, dan ia WAJIB bisa dijumlahkan sendiri oleh
+          pembaca: jumlah kemasan, harga satu kemasan, lalu totalnya. Harga
+          satuan muncul hanya saat jumlahnya lebih dari satu — di situ ia
+          menjelaskan perkaliannya, bukan mengulanginya.
+
+          Tidak ada lagi angka kedua di baris ini. Sebelum 9 September 2026
+          houseblend menampilkan tarif per kg di sebelah total yang dihitung
+          dari harga kemasan 0,5 kg, dan begitu keduanya berhenti berhubungan,
+          layar ini menunjukkan dua angka yang tidak mungkin sama-sama benar.
+
+          Berat total ditulis terpisah dan tanpa rupiah, supaya ia tidak pernah
+          terbaca sebagai faktor pengali. */}
       <div className="rounded-md bg-base px-4 py-3" aria-live="polite">
         <p className="text-sm text-olive">
-          Total {formatQuantity(qty, selected.unit)}
-          {isHalfKg ? ` · ${selected.label}` : ""}
-          {!isHalfKg && qty > 1 ? ` × ${formatIDR(selected.unitPrice)}` : ""}
+          {formatQuantity(qty, selected.unit)}
+          {qty > 1
+            ? ` × ${formatIDR(selected.unitPrice)} ${unitLabel(selected.unit)}`
+            : ""}
+          {weight ? ` · total ${weight}` : ""}
         </p>
         <p className="mt-1 font-display text-2xl font-semibold text-coffee">
           {formatIDR(lineTotal)}
@@ -144,6 +151,7 @@ export function PurchasePanel({
         productName={productName}
         variant={selected}
         qty={qty}
+        soldOut={soldOut}
       />
     </div>
   );

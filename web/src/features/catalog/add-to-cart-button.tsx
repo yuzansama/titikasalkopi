@@ -10,6 +10,11 @@
  *
  * Umpan balik keberhasilan diumumkan lewat wilayah `aria-live="polite"`
  * sehingga pemakai pembaca layar tahu aksinya berhasil (Bagian 11.5).
+ *
+ * FR-14 — bila owner menandai produk kosong di sheet, tombol ini TIDAK BOLEH
+ * menerima pesanan. Sampai 9 September 2026 medan `status` mengalir sampai ke
+ * data lalu berhenti: owner menandai kosong, memercayainya, dan situs tetap
+ * menerima pesanan yang tidak bisa dipenuhi. Kegagalan itu sunyi di kedua sisi.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -23,11 +28,14 @@ export function AddToCartButton({
   productName,
   variant,
   qty,
+  soldOut = false,
 }: {
   slug: string;
   productName: string;
   variant: VariantOption;
   qty: number;
+  /** true bila owner menandai produk ini kosong di sheet (FR-14, KD-08). */
+  soldOut?: boolean;
 }) {
   const dispatch = useCartDispatch();
   const [added, setAdded] = useState(false);
@@ -52,6 +60,27 @@ export function AddToCartButton({
     if (timer.current !== null) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setAdded(false), 4000);
   };
+
+  if (soldOut) {
+    // Tombol nonaktif, bukan tombol yang hilang: pembeli yang datang dari
+    // tautan lama perlu tahu bahwa produknya ada tetapi sedang habis, bukan
+    // mengira halamannya rusak.
+    return (
+      <div>
+        <button
+          type="button"
+          disabled
+          className={buttonClass("dark", "lg", "w-full cursor-not-allowed opacity-50 sm:w-auto")}
+        >
+          Stok sedang kosong
+        </button>
+        <p className="mt-2 text-sm text-olive">
+          {productName} sedang tidak tersedia. Tanyakan lewat WhatsApp untuk
+          perkiraan roasting berikutnya.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>

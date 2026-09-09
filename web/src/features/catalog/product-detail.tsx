@@ -7,6 +7,8 @@ import {
   categoryLabel,
   defaultVariant,
   houseblendComposition,
+  houseblendSizeGroups,
+  packSaving,
   productHref,
   relatedProducts,
 } from "@/data/catalog";
@@ -16,6 +18,7 @@ import { ViewEvent } from "@/features/analytics/view-event";
 import { AskAboutProductButton } from "@/features/whatsapp/ask-about-product-button";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { PurchasePanel } from "./purchase-panel";
+import type { RatioRow } from "./ratio-table";
 import { ProductMedia } from "./product-media";
 import { RelatedProducts } from "./related-products";
 import type { VariantOption } from "./variant-option";
@@ -30,18 +33,40 @@ import type { VariantOption } from "./variant-option";
  * ada kalimat pemasaran yang menyiratkan atribut yang tidak ada di brand brief.
  */
 
-function toVariantOptions(product: Product): VariantOption[] {
-  return product.variants.map((variant) => ({
+function toVariantOption(variant: Product["variants"][number]): VariantOption {
+  return {
     id: variant.id,
     label: variant.label,
     unit: variant.unit,
     unitPrice: variant.unitPrice,
-    ...(variant.pricePerKg !== undefined
-      ? { pricePerKg: variant.pricePerKg }
-      : {}),
+    ...(variant.groupId !== undefined ? { groupId: variant.groupId } : {}),
     minQty: variant.minQty,
     step: variant.step,
-  }));
+  };
+}
+
+function toVariantOptions(product: Product): VariantOption[] {
+  return product.variants.map(toVariantOption);
+}
+
+/**
+ * Baris tabel rasio: satu rasio, dua ukuran kemasan.
+ *
+ * Penghematan memilih kemasan 1 kg dihitung DI SINI lewat `packSaving()`, sama
+ * seperti penghematan bundel 3 pack lewat `bundleSaving()`. Tidak ada uang yang
+ * dihitung ulang di Client Component.
+ */
+function toRatioRows(product: Product): RatioRow[] {
+  return houseblendSizeGroups(product).map((group) => {
+    const saving = packSaving(group);
+    return {
+      id: group.id,
+      label: group.label,
+      kg: toVariantOption(group.kg),
+      halfKg: toVariantOption(group.halfKg),
+      ...(saving > 0 ? { kgSavingLabel: `Hemat ${formatIDR(saving)}` } : {}),
+    };
+  });
 }
 
 function originFacts(product: Product): Array<{ label: string; value: string }> {
@@ -212,13 +237,27 @@ export function ProductDetail({ product }: { product: Product }) {
             >
               Pesan {product.name}
             </h2>
+            {/* FR-14 — status dari sheet owner, dinyatakan sekali dan di tempat
+                keputusan. Menaruhnya hanya di kartu katalog berarti pembeli yang
+                membuka tautan langsung tidak pernah melihatnya. */}
+            {product.status === "out-of-stock" ? (
+              <p className="mt-2 rounded-md bg-rust/10 px-3 py-2 text-sm text-coffee">
+                Stok {product.name} sedang kosong. Halaman ini tetap tayang agar
+                Anda bisa menandainya, tetapi pesanan belum bisa kami terima.
+              </p>
+            ) : null}
             <div className="mt-4">
               <PurchasePanel
                 slug={product.slug}
                 productName={product.name}
                 variants={variants}
-                useRatioTable={isHouseblend && variants.length > 2}
+                ratioRows={
+                  isHouseblend && product.variants.length > 2
+                    ? toRatioRows(product)
+                    : undefined
+                }
                 variantNotes={variantNotes}
+                soldOut={product.status === "out-of-stock"}
               />
             </div>
 
@@ -230,7 +269,6 @@ export function ProductDetail({ product }: { product: Product }) {
                 variantLabel={cheapest.label}
                 unit={cheapest.unit}
                 unitPrice={cheapest.unitPrice}
-                pricePerKg={cheapest.pricePerKg}
                 path={productHref(product)}
               />
               <ShopeeLink productId={product.slug} className="w-full sm:w-auto" />

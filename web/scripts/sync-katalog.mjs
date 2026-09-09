@@ -33,17 +33,31 @@ const OUT_PATH = join(import.meta.dirname, "..", "src", "data", "managed.generat
 const REQUIRED_PRICE_KEYS = [
   "single.signature.pack1",
   "single.signature.pack3",
+  "single.signature.mini1",
   "single.reguler.pack1",
   "single.reguler.pack3",
+  "single.reguler.mini1",
+  // Houseblend punya dua harga per varian. Kunci polos adalah harga per kg;
+  // akhiran ".half" adalah harga satu kemasan 0,5 kg, yang BUKAN setengahnya
+  // (D-02 direvisi oleh lembar "Product" bisnis plan).
   "houseblend.bold-70-30",
+  "houseblend.bold-70-30.half",
   "houseblend.bold-60-40",
+  "houseblend.bold-60-40.half",
   "houseblend.bold-50-50",
+  "houseblend.bold-50-50.half",
   "houseblend.bold-40-60",
+  "houseblend.bold-40-60.half",
   "houseblend.bold-30-70",
+  "houseblend.bold-30-70.half",
   "houseblend.bold-20-80",
+  "houseblend.bold-20-80.half",
   "houseblend.bright-signature",
+  "houseblend.bright-signature.half",
   "houseblend.bright-reguler",
+  "houseblend.bright-reguler.half",
   "houseblend.full-robusta",
+  "houseblend.full-robusta.half",
 ];
 
 /** Slug yang wajib punya status. Produk 200 gr dan lini houseblend. */
@@ -55,6 +69,7 @@ const REQUIRED_STOCK_SLUGS = [
   "palimping",
   "kerinci",
   "pondok-baru",
+  "sindoro",
   "bold",
   "bright",
   "full-robusta",

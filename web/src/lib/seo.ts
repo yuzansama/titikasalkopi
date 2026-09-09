@@ -321,17 +321,18 @@ export function productJsonLd(product: Product): string {
       price: variant.unitPrice, // bilangan bulat rupiah (ADR-05)
       priceCurrency: "IDR",
       /**
-       * Google menampilkan `price` apa adanya. Untuk houseblend `unitPrice`
-       * adalah harga 0,5 kg (KD-02) — separuh harga katalog — sehingga rich
-       * result akan mengiklankan Rp105.000 untuk BOLD 70:30 yang harga
-       * resminya Rp210.000/kg. `referenceQuantity` menyatakan satuannya
-       * supaya angka itu tidak terbaca sebagai harga per kilogram.
+       * Google menampilkan `price` apa adanya. Houseblend dijual dalam dua
+       * ukuran kemasan yang harganya berbeda, jadi angka telanjang tidak cukup:
+       * Rp120.000 dan Rp215.000 sama-sama benar untuk BOLD 70:30, tergantung
+       * kemasannya. `referenceQuantity` menyatakan berat kemasan yang sedang
+       * dihargai, diambil dari satuan variannya — bukan dari angka tetap, yang
+       * akan salah untuk separuh varian.
        */
-      ...(product.category === "houseblend"
+      ...(variant.unit === "kg" || variant.unit === "half-kg"
         ? {
             referenceQuantity: {
               "@type": "QuantitativeValue",
-              value: 0.5,
+              value: variant.unit === "kg" ? 1 : 0.5,
               unitCode: "KGM",
               unitText: "kg",
             },

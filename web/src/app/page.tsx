@@ -106,7 +106,7 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Untuk kedai dan rumah"
             title="Tiga lini houseblend"
-            lead="Dijual per kilogram dengan pemesanan mulai 0,5 kg. Harga 0,5 kg tepat setengah harga per kg."
+            lead="Setiap rasio tersedia dalam kemasan 1 kg dan 0,5 kg. Kemasan 1 kg lebih hemat per gramnya."
           />
           <ul className="mt-6 grid gap-4 sm:grid-cols-3">
             {houseblendProducts.map((line) => {

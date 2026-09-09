@@ -30,17 +30,26 @@ export type HouseblendLineSlug = "bold" | "bright" | "full-robusta";
 export type ProductStatus = "available" | "out-of-stock";
 
 /**
- * Satuan pesan sebuah varian.
- * - "pack"    : 1 kemasan 200 gr           -> qty = jumlah pack
- * - "paket"   : 1 bundel berisi 3 x 200 gr -> qty = jumlah paket (BR-12, D-01)
- * - "half-kg" : 0,5 kg houseblend          -> qty = halfKgUnits (D-02)
- * - "gram-100": 1 kemasan 100 gr            -> qty = jumlah kemasan (KD-07)
+ * Satuan pesan sebuah varian. SELURUHNYA menghitung KEMASAN, dan `qty` selalu
+ * berarti "berapa kemasan" — tidak pernah berat, tidak pernah tarif.
+ * - "pack"    : 1 kemasan 200 gr           -> qty = jumlah kemasan
+ * - "paket"   : 1 bundel berisi 3 x 200 gr -> qty = jumlah bundel (BR-12, D-01)
+ * - "kg"      : 1 kemasan 1 kg houseblend  -> qty = jumlah kemasan
+ * - "half-kg" : 1 kemasan 0,5 kg houseblend -> qty = jumlah kemasan
+ * - "gram-100": 1 kemasan 100 gr           -> qty = jumlah kemasan (KD-07)
  *
  * `gram-100` melayani lini Katalog Kopi 100 gram, yang berharga PER BIJI dan
  * karena itu tidak memakai `Tier` maupun `Product` sama sekali. Lihat
  * `src/data/picks.ts`.
+ *
+ * PERUBAHAN 9 September 2026: "half-kg" dahulu berarti "satuan 0,5 kg" dengan
+ * `qty` sebagai jumlah satuan berat, dan harganya turunan dari tarif per kg.
+ * Lembar `Product` bisnis plan menyatakan houseblend dijual dalam dua UKURAN
+ * KEMASAN, 1 kg dan 0,5 kg, masing-masing berharga sendiri. Sejak itu tidak ada
+ * lagi tarif yang tidak bisa dibeli: setiap angka yang tampil adalah harga satu
+ * kemasan yang benar-benar ada.
  */
-export type OrderUnit = "pack" | "paket" | "half-kg" | "gram-100";
+export type OrderUnit = "pack" | "paket" | "kg" | "half-kg" | "gram-100";
 
 export type Variant = {
   /** Stabil dan permanen; dipakai sebagai kunci baris keranjang. */
@@ -48,13 +57,25 @@ export type Variant = {
   /** Label siap tampil, mis. "3 pack (200 gr)" atau "60% Arabica : 40% Robusta". */
   label: string;
   unit: OrderUnit;
-  /** Harga SATU satuan pesan, bilangan bulat. Untuk half-kg = pricePerKg / 2. */
+  /**
+   * Harga SATU kemasan, bilangan bulat. Ini SELALU angka yang ditagih untuk
+   * satu `qty`, sehingga `qty * unitPrice` selalu sama dengan subtotal baris.
+   *
+   * Tidak ada medan harga kedua di sini, dan itu disengaja. Sebelum 9 September
+   * 2026 varian houseblend juga membawa `pricePerKg`, dan antarmuka menampilkan
+   * tarif itu di sebelah subtotal yang dihitung dari `unitPrice`. Begitu kedua
+   * angka berhenti berhubungan secara aritmetika, pesan yang diterima pembeli
+   * berbunyi "5 kg x Rp205.000/kg" di atas "Subtotal: Rp1.150.000". Satu harga
+   * per varian membuat kesalahan itu tidak bisa ditulis lagi.
+   */
   unitPrice: PriceIDR;
   /**
-   * Hanya untuk unit "half-kg": harga per kg — satu-satunya angka yang benar-benar
-   * tersimpan di products.ts. `unitPrice` di atas SELALU turunan darinya (D-02).
+   * Menandai varian-varian yang merupakan UKURAN BERBEDA dari barang yang sama,
+   * mis. `bold-60-40` untuk kemasan 1 kg dan 0,5 kg rasio itu. Dipakai tabel
+   * rasio untuk menyusun satu baris per rasio, dan dipakai validator V-06 untuk
+   * memasangkan kedua ukuran sebelum memeriksa kewajaran harganya.
    */
-  pricePerKg?: PriceIDR;
+  groupId?: string;
   /** Jumlah kemasan 200 gr di dalam satu satuan pesan. 1 untuk pack, 3 untuk paket. */
   packsPerUnit?: number;
   /** Selalu 1 pada Fase 1. Disediakan agar konfigurator tidak menghardcode angka. */
@@ -149,9 +170,7 @@ export type ResolvedCartLine = {
   unit: OrderUnit;
   /** Harga TERKINI dari katalog, bukan snapshot (ADR-04, NFR-12). */
   unitPrice: PriceIDR;
-  /** Hanya houseblend, untuk tampilan "x Rp200.000/kg". */
-  pricePerKg?: PriceIDR;
-  /** qty * unitPrice, bilangan bulat. */
+  /** qty * unitPrice, bilangan bulat. Selalu dapat direkonstruksi pembaca. */
   lineTotal: PriceIDR;
   /** "/produk/abmisibil" atau "/houseblend/bold". */
   href: string;
@@ -183,7 +202,7 @@ export type CartCatalogEntry = {
     label: string;
     unit: OrderUnit;
     unitPrice: PriceIDR;
-    pricePerKg?: PriceIDR;
+    groupId?: string;
     minQty: number;
     step: number;
   }>;

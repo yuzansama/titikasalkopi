@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="Placeholder produk Sindoro">
+  <title>Sindoro — placeholder</title>
+  <rect width="800" height="1000" fill="#F9F4EE"/>
+  <rect x="32" y="32" width="736" height="936" rx="28" fill="#474A2D"/>
+  <g fill="#F9F4EE" opacity="0.08">
+    <circle cx="140" cy="880" r="120"/>
+    <circle cx="700" cy="180" r="90"/>
+  </g>
+  <text x="400" y="132" text-anchor="middle" fill="#F9F4EE" opacity="0.72" font-family="Barlow Condensed, Arial Narrow, Helvetica, sans-serif" font-size="26" letter-spacing="7">TITIK ASAL KOPI</text>
+  <g transform="translate(400 440) rotate(-18)">
+    <ellipse rx="150" ry="205" fill="#F9F4EE" opacity="0.93"/>
+    <path d="M0 -190 C58 -95 -58 95 0 190" fill="none" stroke="#474A2D" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <text x="400" y="742" text-anchor="middle" fill="#F9F4EE" opacity="0.72" font-family="Barlow Condensed, Arial Narrow, Helvetica, sans-serif" font-size="24" letter-spacing="5">SINGLE ORIGIN · REGULER</text>
+  <text x="400" y="812" text-anchor="middle" fill="#F9F4EE" font-family="Fraunces, Georgia, serif" font-size="56" font-weight="600">Sindoro</text>
+</svg>

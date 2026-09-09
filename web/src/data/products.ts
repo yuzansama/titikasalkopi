@@ -12,8 +12,12 @@
  * Aturan menyunting:
  * - Harga selalu integer rupiah penuh (210000 = Rp210.000). Jangan pakai float,
  *   jangan pakai titik desimal, jangan pakai tanda "Rp" (BR-03, ADR-05).
- * - Harga houseblend hanya ditulis PER KG. Harga 0,5 kg DIHITUNG di catalog.ts —
- *   jangan pernah menulisnya sebagai data kedua (D-02).
+ * - Houseblend punya DUA harga tersimpan karena ia punya DUA UKURAN KEMASAN:
+ *   1 kg dan 0,5 kg. Kemasan kecil tidak dijual setengah harga kemasan besar —
+ *   bisnis plan "Kopi from heart" memberinya margin sendiri, mis. BOLD 70:30
+ *   Rp215.000 sekemasan 1 kg tetapi Rp120.000 sekemasan 0,5 kg. Keduanya harga
+ *   satu kemasan yang benar-benar dijual; tidak ada tarif turunan di mana pun
+ *   (D-02 direvisi; lihat catatan di catalog.ts).
  * - Jangan menambah metadata yang tidak disebut brief. Field yang tidak
  *   disebutkan brief bernilai `null`, bukan tebakan (FR-07).
  * - Panduan lengkap untuk owner ada di docs/05-backend.md Bagian "Panduan owner".
@@ -47,8 +51,10 @@ export type HouseblendBoldRatio = {
   robustaPercent: number;
   /** Label siap tampil, mis. "70% Arabica : 30% Robusta". */
   label: string;
-  /** SATU-SATUNYA harga tersimpan. Harga 0,5 kg dihitung di catalog.ts (D-02). */
+  /** Harga satu kemasan 1 kg. */
   pricePerKg: PriceIDR;
+  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
+  pricePerHalfKg: PriceIDR;
 };
 
 /** Arabica Natural & Fine Robusta Natural. Notes: choco, almond, caramel. */
@@ -61,6 +67,7 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     robustaPercent: 30,
     label: "70% Arabica : 30% Robusta",
     pricePerKg: managedPrice("houseblend.bold-70-30"),
+    pricePerHalfKg: managedPrice("houseblend.bold-70-30.half"),
   },
   {
     id: "bold-60-40",
@@ -68,6 +75,7 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     robustaPercent: 40,
     label: "60% Arabica : 40% Robusta",
     pricePerKg: managedPrice("houseblend.bold-60-40"),
+    pricePerHalfKg: managedPrice("houseblend.bold-60-40.half"),
   },
   {
     id: "bold-50-50",
@@ -75,6 +83,7 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     robustaPercent: 50,
     label: "50% Arabica : 50% Robusta",
     pricePerKg: managedPrice("houseblend.bold-50-50"),
+    pricePerHalfKg: managedPrice("houseblend.bold-50-50.half"),
   },
   {
     id: "bold-40-60",
@@ -82,6 +91,7 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     robustaPercent: 60,
     label: "40% Arabica : 60% Robusta",
     pricePerKg: managedPrice("houseblend.bold-40-60"),
+    pricePerHalfKg: managedPrice("houseblend.bold-40-60.half"),
   },
   {
     id: "bold-30-70",
@@ -89,6 +99,7 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     robustaPercent: 70,
     label: "30% Arabica : 70% Robusta",
     pricePerKg: managedPrice("houseblend.bold-30-70"),
+    pricePerHalfKg: managedPrice("houseblend.bold-30-70.half"),
   },
   {
     id: "bold-20-80",
@@ -96,6 +107,7 @@ export const houseblendBold: HouseblendBoldRatio[] = [
     robustaPercent: 80,
     label: "20% Arabica : 80% Robusta",
     pricePerKg: managedPrice("houseblend.bold-20-80"),
+    pricePerHalfKg: managedPrice("houseblend.bold-20-80.half"),
   },
 ];
 
@@ -114,6 +126,8 @@ export type HouseblendBrightVariant = {
   /** Label siap tampil, mis. "Signature". */
   label: string;
   pricePerKg: PriceIDR;
+  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
+  pricePerHalfKg: PriceIDR;
 };
 
 /** Full Arabica, natural & washed. Notes: raisin, orange, lemon zest. */
@@ -129,12 +143,14 @@ export const houseblendBright: HouseblendBrightVariant[] = [
     tier: "signature",
     label: "Signature",
     pricePerKg: managedPrice("houseblend.bright-signature"),
+    pricePerHalfKg: managedPrice("houseblend.bright-signature.half"),
   },
   {
     id: "bright-reguler",
     tier: "reguler",
     label: "Reguler",
     pricePerKg: managedPrice("houseblend.bright-reguler"),
+    pricePerHalfKg: managedPrice("houseblend.bright-reguler.half"),
   },
 ];
 
@@ -146,12 +162,15 @@ export type HouseblendFullRobusta = {
   id: string;
   label: string;
   pricePerKg: PriceIDR;
+  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
+  pricePerHalfKg: PriceIDR;
 };
 
 export const houseblendFullRobusta: HouseblendFullRobusta = {
   id: "full-robusta",
   label: "Full Robusta",
   pricePerKg: managedPrice("houseblend.full-robusta"),
+  pricePerHalfKg: managedPrice("houseblend.full-robusta.half"),
 };
 
 /* ------------------------------------------------------------------ */
@@ -183,7 +202,7 @@ export const houseblendLines: HouseblendLine[] = [
     name: "Houseblend BOLD",
     composition: "Arabica Natural & Fine Robusta Natural",
     summary:
-      "Houseblend BOLD — campuran Arabica Natural dan Fine Robusta Natural dalam enam rasio, dijual per kilogram mulai Rp175.000.",
+      "Houseblend BOLD — campuran Arabica Natural dan Fine Robusta Natural dalam enam rasio, dijual per kilogram mulai Rp185.000.",
     description:
       "Houseblend BOLD memadukan Arabica Natural dan Fine Robusta Natural. Tersedia dalam enam rasio Arabica:Robusta sehingga kedai dapat memilih titik keseimbangan body dan manis yang paling cocok dengan mesin dan menunya. Seluruh rasio dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
     tastingNotes: [...HOUSEBLEND_BOLD_NOTES],
@@ -224,7 +243,7 @@ export const houseblendLines: HouseblendLine[] = [
     name: "Houseblend Full Robusta",
     composition: "Full Robusta",
     summary:
-      "Houseblend Full Robusta — blend robusta penuh untuk kebutuhan volume kedai, Rp175.000 per kilogram.",
+      "Houseblend Full Robusta — blend robusta penuh untuk kebutuhan volume kedai, Rp180.000 per kilogram.",
     description:
       "Houseblend Full Robusta adalah blend robusta penuh untuk kedai yang mengutamakan body tebal dan biaya per cangkir yang terjaga. Dijual per kilogram, dengan pemesanan mulai 0,5 kg.",
     tastingNotes: null,
@@ -242,19 +261,27 @@ export const houseblendLines: HouseblendLine[] = [
 ];
 
 /**
- * Houseblend dijual per 0,5 kg, kelipatan 0,5 kg (D-02, merevisi BR-13).
- * Satuan pesan internal adalah "half-kg"; harga per 0,5 kg SELALU dihitung
- * dari pricePerKg di catalog.ts — jangan menuliskannya sebagai data.
+ * Houseblend dijual dalam dua ukuran kemasan, 1 kg dan 0,5 kg (D-02 direvisi
+ * 9 September 2026 oleh lembar `Product`). Keduanya dipesan per kemasan utuh,
+ * jadi tidak ada minimum atau kelipatan khusus untuk dijaga di sini.
  */
-export const HOUSEBLEND_MIN_HALF_KG_UNITS = 1; // = 0,5 kg
-export const HOUSEBLEND_STEP_HALF_KG_UNITS = 1; // = 0,5 kg
+export const HOUSEBLEND_KG_GRAMS = 1000;
+export const HOUSEBLEND_HALF_KG_GRAMS = 500;
 
 /* ------------------------------------------------------------------ */
 /* Single origin                                                       */
 /* ------------------------------------------------------------------ */
 
-/** Semua single origin dijual dalam kemasan 200 gr (BR-08). */
+/** Kemasan utama single origin (BR-08). */
 export const SINGLE_ORIGIN_PACK_GRAMS = 200;
+
+/**
+ * Kemasan kecil single origin, dari lembar "Product" bisnis plan
+ * ("Single Origin - Mini Packs"). Lini terpisah dari Katalog Kopi 100 gram di
+ * `picks.ts`: yang ini biji yang sama dengan kemasan 200 gr, dijual di halaman
+ * produk yang sama.
+ */
+export const SINGLE_ORIGIN_MINI_PACK_GRAMS = 100;
 
 /** Jumlah kemasan 200 gr di dalam satu paket bundel (BR-11, D-01). */
 export const SINGLE_ORIGIN_PACKS_PER_BUNDLE = 3;
@@ -264,6 +291,12 @@ export type TierPricing = {
   pack1: PriceIDR;
   /** Harga bundel 3 pack 200 gr. HARGA PAKET, bukan 3 x pack1 (BR-10). */
   pack3: PriceIDR;
+  /**
+   * Harga 1 kemasan mini 100 gr. Bukan setengah `pack1`: kemasan kecil
+   * membawa marginnya sendiri di bisnis plan (Signature Rp85.000 terhadap
+   * Rp140.000, Reguler Rp70.000 terhadap Rp125.000).
+   */
+  mini1: PriceIDR;
 };
 
 /**
@@ -274,10 +307,12 @@ export const singleOriginPricing: Record<Tier, TierPricing> = {
   signature: {
     pack1: managedPrice("single.signature.pack1"),
     pack3: managedPrice("single.signature.pack3"),
+    mini1: managedPrice("single.signature.mini1"),
   },
   reguler: {
     pack1: managedPrice("single.reguler.pack1"),
     pack3: managedPrice("single.reguler.pack3"),
+    mini1: managedPrice("single.reguler.mini1"),
   },
 };
 
@@ -308,6 +343,14 @@ export type SingleOriginBean = {
   tastingNotes: string[] | null;
   /** Foto produk; null bila belum tersedia — placeholder brand dipakai (R-13). */
   image: ProductImage | null;
+  /**
+   * Apakah biji ini juga dijual dalam kemasan mini 100 gr.
+   * `false` bukan berarti belum diputuskan: lembar "Product" mendaftar tujuh
+   * biji pada kolom Mini Packs dan sengaja melewatkan Sindoro. Menerbitkan
+   * kemasan yang tidak ada di rencana berarti menerima pesanan yang tidak bisa
+   * dipenuhi, jadi kolomnya ditulis per biji, bukan diturunkan dari tier.
+   */
+  hasMiniPack: boolean;
   /** Medan disiapkan sejak 1a; UI-nya baru dipakai 1b (FR-14). */
   status: ProductStatus;
   /** Kata kunci pemasaran untuk metadata. BUKAN klaim atribut origin (CA-04). */
@@ -329,6 +372,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
+    hasMiniPack: true,
     status: managedStatus("oelbiteno"),
     searchTerms: ["kopi Kupang", "kopi NTT", "kopi Timor", "single origin NTT"],
   },
@@ -352,6 +396,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
       src: abmisibilArtwork,
       alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: kanguru pohon bertengger di dahan berlumut di atas lembah hutan berkabut, dengan para-para penjemuran ceri kopi merah di kejauhan.",
     },
+    hasMiniPack: true,
     status: managedStatus("abmisibil"),
     searchTerms: [
       "kopi Papua",
@@ -380,6 +425,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
       src: sabinArtwork,
       alt: "Ilustrasi lanskap Pegunungan Bintang, Papua: burung cendrawasih bertengger di dahan pohon menghadap lembah sungai berhutan, dengan para-para penjemuran ceri kopi di halaman.",
     },
+    hasMiniPack: true,
     status: managedStatus("sabin"),
     searchTerms: [
       "kopi Papua",
@@ -401,6 +447,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
+    hasMiniPack: true,
     status: managedStatus("pyramid"),
     searchTerms: ["kopi Papua", "kopi Jayawijaya", "kopi Wamena", "arabica Papua"],
   },
@@ -426,6 +473,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
+    hasMiniPack: true,
     status: managedStatus("palimping"),
     searchTerms: ["kopi Garut", "kopi Jawa Barat", "arabica Garut"],
   },
@@ -442,6 +490,7 @@ export const singleOriginBeans: SingleOriginBean[] = [
     varietals: null,
     tastingNotes: null,
     image: null,
+    hasMiniPack: true,
     status: managedStatus("kerinci"),
     searchTerms: ["kopi Kerinci", "kopi Jambi", "arabica Kerinci"],
   },
@@ -466,12 +515,41 @@ export const singleOriginBeans: SingleOriginBean[] = [
       src: pondokBaruArtwork,
       alt: "Ilustrasi lanskap dataran tinggi Bener Meriah, Aceh: harimau berjalan di antara kebun kopi berbuah merah dengan punggungan gunung berkabut di kejauhan.",
     },
+    hasMiniPack: true,
     status: managedStatus("pondok-baru"),
     searchTerms: [
       "kopi Gayo",
       "arabica Gayo",
       "kopi Aceh",
       "kopi Bener Meriah",
+    ],
+  },
+  {
+    id: "sindoro",
+    slug: "sindoro",
+    name: "Sindoro",
+    tier: "reguler",
+    origin: null,
+    region: "Gunung Sindoro",
+    // DIKONFIRMASI OWNER 9 September 2026. Lembar "Product" hanya menulis nama
+    // "Sindoro" tanpa satu pun kolom asal; "Jawa Tengah" datang dari owner,
+    // bukan dari tebakan kode. Kolom asal lain tetap `null` sampai ia
+    // menyerahkan datanya — itu keadaan yang sah, bukan pekerjaan tertinggal.
+    province: "Jawa Tengah",
+    process: null,
+    altitudeMasl: null,
+    varietals: null,
+    tastingNotes: null,
+    image: null,
+    // Lembar "Product" mendaftar Sindoro hanya pada kolom 200 gr; kolom Mini
+    // Packs melewatinya. Lihat catatan pada `hasMiniPack`.
+    hasMiniPack: false,
+    status: managedStatus("sindoro"),
+    searchTerms: [
+      "kopi Sindoro",
+      "kopi Temanggung",
+      "kopi Jawa Tengah",
+      "arabica Jawa Tengah",
     ],
   },
 ];

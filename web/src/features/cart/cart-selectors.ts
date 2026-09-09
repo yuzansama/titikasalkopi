@@ -44,9 +44,6 @@ export function resolveCart(
       variantLabel: variant.label,
       unit: variant.unit,
       unitPrice: variant.unitPrice,
-      ...(variant.pricePerKg !== undefined
-        ? { pricePerKg: variant.pricePerKg }
-        : {}),
       // Dua bilangan bulat dikalikan. Tidak pernah ada pecahan (ADR-05, BR-03).
       lineTotal: item.qty * variant.unitPrice,
       href: entry.href,

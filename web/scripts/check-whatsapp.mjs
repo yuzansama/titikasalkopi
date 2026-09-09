@@ -114,15 +114,105 @@ function buildFrom(items, note = "") {
 const twoLine = buildFrom(
   [
     { slug: "abmisibil", variantId: "abmisibil-pack3", qty: 1 },
-    { slug: "bold", variantId: "bold-60-40", qty: 10 },
+    { slug: "bold", variantId: "bold-60-40-1kg", qty: 5 },
   ],
   "tolong digiling untuk V60, kirim ke Bandung.",
 );
 
+/* ---------------------------------------------------------------- */
+/* PEMERIKSAAN TERPENTING DI BERKAS INI                              */
+/*                                                                   */
+/* Pesan ini dibaca manusia yang akan mentransfer uang. Kalau angka   */
+/* di dalamnya tidak bisa ia jumlahkan sendiri, ia menyimpulkan       */
+/* dirinya ditagih lebih — dan ia benar untuk curiga.                 */
+/*                                                                   */
+/* Pada 9 September 2026 pesan berbunyi "5 kg x Rp205.000/kg" di atas */
+/* "Subtotal: Rp1.150.000". Tidak ada satu pun pemeriksaan yang       */
+/* menahannya, karena semuanya menegaskan nilai, bukan hubungan.      */
+/* Yang berikut ini MEMBACA ULANG teks yang terkirim dan menghitung   */
+/* ulang aritmetikanya, sehingga kelas kesalahan itu tidak bisa lolos */
+/* lagi berapa pun harganya.                                         */
+/* ---------------------------------------------------------------- */
+
+/** "Rp1.150.000" -> 1150000. null bila bukan rupiah. */
+function parseIDR(text) {
+  const match = /^Rp([\d.]+)$/.exec(text.trim());
+  return match ? Number(match[1].replace(/\./g, "")) : null;
+}
+
+/**
+ * Membaca blok item pada pesan dan mengembalikan aritmetika yang TAMPAK oleh
+ * pembeli — bukan yang dihitung kode. Bentuk barisnya ditetapkan BRD 11.2:
+ *
+ *   Jumlah: 5 kemasan 1 kg x Rp215.000
+ *   Subtotal: Rp1.075.000
+ */
+function readArithmetic(text) {
+  const rows = [];
+  const lines = plain(text).split(/\r?\n/);
+  for (let i = 0; i < lines.length; i += 1) {
+    // `.*` sengaja rakus: baris lini 100 gram berbunyi "3 x 100 gr x Rp85.000"
+    // dan yang dicari adalah "x" TERAKHIR, yang memisahkan jumlah dari harga.
+    const qtyMatch = /^\s*Jumlah:\s*(\d+)\b.*\sx\s*(Rp[\d.]+)\s*$/.exec(lines[i]);
+    if (!qtyMatch) continue;
+    const subtotalMatch = /^\s*Subtotal:\s*(Rp[\d.]+)\s*$/.exec(lines[i + 1] ?? "");
+    assert.ok(subtotalMatch, `baris "Jumlah" tanpa "Subtotal" tepat di bawahnya`);
+    rows.push({
+      qty: Number(qtyMatch[1]),
+      unitPrice: parseIDR(qtyMatch[2]),
+      subtotal: parseIDR(subtotalMatch[1]),
+      raw: `${lines[i].trim()} / ${lines[i + 1].trim()}`,
+    });
+  }
+  return rows;
+}
+
+check("pesan bisa dijumlahkan sendiri: qty x harga satuan == subtotal baris", () => {
+  const rows = readArithmetic(twoLine.text);
+  assert.equal(rows.length, 2, "kedua baris pesanan wajib terbaca");
+  for (const row of rows) {
+    assert.equal(
+      row.qty * row.unitPrice,
+      row.subtotal,
+      `pembeli yang mengalikan mendapat angka lain: ${row.raw}`,
+    );
+  }
+});
+
+check("jumlah subtotal baris == subtotal pesanan yang tertulis", () => {
+  const rows = readArithmetic(twoLine.text);
+  const stated = /Subtotal pesanan:\s*(Rp[\d.]+)/.exec(plain(twoLine.text));
+  assert.ok(stated, "blok subtotal pesanan tidak ditemukan");
+  assert.equal(
+    rows.reduce((total, row) => total + row.subtotal, 0),
+    parseIDR(stated[1]),
+  );
+});
+
+check("aritmetika pesan utuh untuk SETIAP jenis kemasan yang dijual", () => {
+  // Satuan yang tertukar hanya terlihat pada kemasan yang satuannya bukan
+  // "sebuah barang" — houseblend dan lini 100 gram. Disapu seluruhnya.
+  const seen = new Set();
+  const items = [];
+  for (const entry of Object.values(index)) {
+    for (const variant of entry.variants) {
+      if (seen.has(variant.unit)) continue;
+      seen.add(variant.unit);
+      items.push({ slug: entry.slug, variantId: variant.id, qty: 3 });
+    }
+  }
+  assert.equal(seen.size, 5, "belum semua jenis kemasan terwakili");
+  const rows = readArithmetic(buildFrom(items).text);
+  assert.equal(rows.length, items.length);
+  for (const row of rows) {
+    assert.equal(row.qty * row.unitPrice, row.subtotal, row.raw);
+  }
+});
+
 check("pesan memuat kelima blok wajib BRD 11.2", () => {
   assert.ok(plain(twoLine.text).includes("Halo Titik Asal Kopi, saya ingin memesan:"));
   assert.ok(plain(twoLine.text).includes(`Kode order: ${CODE}`));
-  assert.ok(plain(twoLine.text).includes("Subtotal pesanan: Rp1.350.000"));
+  assert.ok(/Subtotal pesanan: Rp[\d.]+/.test(plain(twoLine.text)));
   assert.ok(plain(twoLine.text).includes("Belum termasuk ongkos kirim"));
   assert.ok(plain(twoLine.text).includes("Dikirim dari titikasalkopi.id"));
   assert.ok(plain(twoLine.text).includes(SOURCE));
@@ -134,18 +224,24 @@ check("FR-24: penanda sumber ada di BADAN pesan, bukan sebagai query UTM", () =>
   assert.ok(decodeURIComponent(twoLine.url.split("?text=")[1]).includes("Dikirim dari"));
 });
 
-check("houseblend memakai harga per kg dan satuan kilogram, bukan halfKgUnits", () => {
-  assert.ok(plain(twoLine.text).includes("5 kg x Rp200.000/kg"));
-  assert.ok(plain(twoLine.text).includes("Subtotal: Rp1.000.000"));
-  assert.ok(!plain(twoLine.text).includes("10 x"));
+check("houseblend menyebut jumlah KEMASAN, bukan berat, di baris jumlah", () => {
+  // Berat total boleh muncul di tempat lain, tetapi TIDAK sebagai faktor
+  // pengali: "5 kg x Rp215.000" mengundang pembeli mengalikan berat dengan
+  // harga kemasan, dan hasilnya hanya kebetulan benar untuk kemasan 1 kg.
+  assert.ok(plain(twoLine.text).includes("5 kemasan 1 kg x Rp"));
+  // Yang dilarang: angka yang LANGSUNG diikuti "kg x", mis. "5 kg x Rp215.000".
+  // "5 kemasan 1 kg x Rp215.000" sah — di situ "1 kg" adalah nama kemasan,
+  // bukan faktor pengali, dan angka pengalinya tetap 5.
+  assert.ok(!/Jumlah:\s*\d+(,\d+)? kg\s*x/.test(plain(twoLine.text)));
 });
 
-check("pesanan 0,5 kg ditulis dengan koma desimal Indonesia (FR-21)", () => {
+check("kemasan 0,5 kg tertulis sebagai kemasan, dan aritmetikanya utuh", () => {
   const half = buildFrom([
-    { slug: "full-robusta", variantId: "full-robusta", qty: 1 },
+    { slug: "full-robusta", variantId: "full-robusta-05kg", qty: 3 },
   ]);
-  assert.ok(plain(half.text).includes("0,5 kg x Rp175.000/kg"));
-  assert.ok(plain(half.text).includes("Subtotal: Rp87.500"));
+  assert.ok(plain(half.text).includes("3 kemasan 0,5 kg x Rp"));
+  const [row] = readArithmetic(half.text);
+  assert.equal(row.qty * row.unitPrice, row.subtotal);
 });
 
 check("keranjang dua baris: bentuk penuh, tidak diringkas, jauh di bawah batas", () => {
@@ -309,17 +405,22 @@ check("FR-38: pesan tanya produk menyebut nama, varian, harga, dan sumber", () =
   assert.ok(ask.encodedLength <= WA_MAX_ENCODED_LENGTH);
 });
 
-check("pesan tanya houseblend menyebut harga per kg", () => {
+check("pesan tanya houseblend menyebut harga kemasan yang ditanyakan", () => {
+  // Dulu pesan ini menyebut tarif per kg, yang bukan harga varian yang sedang
+  // dibuka pembeli. Sekarang label varian sudah memuat ukuran kemasannya, jadi
+  // harga dan barangnya menunjuk hal yang sama.
   const ask = buildAskMessage({
     productName: "Houseblend BOLD",
     categoryLabel: "Houseblend BOLD",
-    variantLabel: "60% Arabica : 40% Robusta",
+    variantLabel: "60% Arabica : 40% Robusta · 0,5 kg",
     unit: "half-kg",
-    unitPrice: 100_000,
-    pricePerKg: 200_000,
+    unitPrice: 115_000,
     sourceUrl: "https://titikasalkopi.id/houseblend/bold",
   });
-  assert.ok(plain(ask.text).includes("Rp200.000/kg"));
+  const text = plain(ask.text);
+  assert.ok(text.includes("60% Arabica : 40% Robusta · 0,5 kg"));
+  assert.ok(text.includes("Rp115.000"));
+  assert.ok(!/\/kg/.test(text), "tidak boleh menyebut tarif per kg di sini");
 });
 
 summary("WhatsApp");
