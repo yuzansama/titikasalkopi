@@ -553,6 +553,10 @@ export const pickCartEntries: readonly CartCatalogEntry[] = coffeePicks.map(
     name: pick.name,
     categoryLabel: PICK_CATEGORY_LABEL,
     href: "/katalog#katalog-100-gram",
+    // Lini 100 gram tidak punya tab stok sendiri di sheet owner; tab `stok`
+    // hanya memuat produk 200 gr dan lini houseblend. Sampai ia punya,
+    // seluruh biji lini ini dianggap tersedia.
+    status: "available" as const,
     variants: [
       {
         id: pickVariantId(pick.slug),
@@ -578,6 +582,7 @@ export const cartCatalogIndex: CartCatalogIndex = Object.fromEntries(
       name: product.name,
       categoryLabel: categoryLabel(product),
       href: productHref(product),
+      status: product.status,
       variants: product.variants.map((variant) => ({
         id: variant.id,
         label: variant.label,

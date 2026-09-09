@@ -89,6 +89,12 @@ Hanya dua nilai yang diterima: `available` dan `out-of-stock`. Kesebelas baris w
 
 ### Tab `katalog100`
 
+> Kerinci **sengaja tidak ada** di tab ini sejak 9 September 2026. Ia sudah
+> dijual sebagai single origin, lengkap dengan halaman produk dan kemasan
+> 100 gram seharga Rp70.000; menambahkannya kembali di sini berarti satu kopi
+> punya dua harga untuk berat yang sama pada halaman yang sama. Sinkronisasi
+> akan menolak dan menyebut namanya.
+
 | slug | nama | harga | status |
 |---|---|---|---|
 | bali-kintamani | Bali Kintamani | 80000 | available |

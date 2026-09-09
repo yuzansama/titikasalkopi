@@ -176,7 +176,21 @@ Pencatatan **tidak boleh menunda atau menggagalkan pembukaan WhatsApp**. Ia diki
 
 Tanggal: 8 September 2026. Dirujuk sebagai **KD-07** dari `02-BRD.md`. Membuka FR-52.
 
-Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping single origin 200 gram (delapan biji sejak Sindoro masuk, 9 September 2026); keduanya tayang berdampingan dan tidak saling menggantikan. Ke-18 biji **bisa dipesan lewat keranjang**.
+Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping single origin 200 gram (delapan biji sejak Sindoro masuk, 9 September 2026); keduanya tayang berdampingan dan tidak saling menggantikan. Seluruh biji lini ini **bisa dipesan lewat keranjang**.
+
+> **Revisi 9 September 2026 — tinggal 17 biji.** Kerinci dihapus dari lini ini.
+> Sampai 8 September ia hidup di kedua lini dan itu masih bisa dijelaskan:
+> beratnya berbeda, 200 gr terhadap 100 gr. Kemasan mini 100 gram yang masuk
+> bersama lembar `Product` menghapus penjelasan itu — kedua lini menjual
+> Kerinci dalam ukuran **yang sama** seharga Rp70.000 dan Rp85.000, pada satu
+> halaman katalog. Pada toko yang dibayar di muka lewat transfer, dua harga
+> untuk satu barang terbaca sebagai kesalahan atau itikad buruk.
+>
+> Yang dipertahankan adalah versi single origin, karena ia punya halaman
+> produk dan data asal; baris poster hanya punya nama dan harga. Ditegakkan
+> `check-picks.mjs`, yang menolak nama apa pun yang muncul di kedua lini dan
+> berjalan di dalam alur sinkronisasi katalog — jadi barisnya tidak bisa
+> kembali lewat sheet tanpa disadari.
 
 ### `BR-09` sengaja tidak berlaku di lini ini
 
@@ -188,11 +202,11 @@ Karena itu lini ini tidak memakai `Tier`, dan `BR-09` tetap berlaku penuh untuk 
 
 Yang diketahui hanya **nama dan harga**. Asal desa, wilayah, provinsi, proses, ketinggian, varietas, dan catatan rasa tidak ada.
 
-`Product.origin` mewajibkan `province` terisi dan merakit judul metadata SEO dari sana. Memaksa 18 kopi ini ke dalamnya menuntut 18 provinsi karangan — dan untuk **Panama** serta **Kenya**, kolom itu salah secara konsep, bukan sekadar kosong. Karena itu lini ini punya bentuk datanya sendiri yang hanya memuat apa yang benar-benar diketahui.
+`Product.origin` mewajibkan `province` terisi dan merakit judul metadata SEO dari sana. Memaksa kopi-kopi ini ke dalamnya menuntut belasan provinsi karangan — dan untuk **Panama** serta **Kenya**, kolom itu salah secara konsep, bukan sekadar kosong. Karena itu lini ini punya bentuk datanya sendiri yang hanya memuat apa yang benar-benar diketahui.
 
 Konsekuensi yang diterima: tidak ada halaman produk per biji, jadi tidak ada halaman yang tampak lengkap padahal isinya karangan. Sebuah biji boleh naik menjadi `Product` penuh begitu owner menyerahkan data asalnya. Halaman katalog menyatakan terus terang bahwa data itu belum ada dan mengarahkan pertanyaan ke WhatsApp.
 
-Bentuknya daftar padat, bukan kartu seperti lini 200 gram. Kartu menjanjikan foto dan catatan rasa; delapan belas kartu berisi nama dan harga saja akan terbaca sebagai katalog yang rusak.
+Bentuknya daftar padat, bukan kartu seperti lini 200 gram. Kartu menjanjikan foto dan catatan rasa; belasan kartu berisi nama dan harga saja akan terbaca sebagai katalog yang rusak.
 
 ### Dua bentrokan yang MASIH menunggu jawaban owner
 

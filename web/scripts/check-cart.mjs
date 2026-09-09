@@ -174,6 +174,97 @@ check("FR-14: setiap produk membawa status yang dikenal", () => {
   }
 });
 
+/**
+ * DEF-15 — barang yang ditandai kosong TIDAK boleh ikut terkirim.
+ *
+ * Perbaikan pertama FR-14 hanya menahan penambahan BARU: halaman produk
+ * menolak, tetapi keranjang yang sudah berisi barang itu tetap menghitungnya,
+ * memasukkannya ke pesan WhatsApp, dan lewat KD-06 menuliskannya sebagai baris
+ * pesanan sungguhan di buku order. Keranjang bertahan tujuh hari, jadi jendela
+ * antara owner menandai kosong dan pembeli menekan kirim bukan teoretis.
+ *
+ * Diuji dengan indeks buatan, bukan dengan mengubah katalog sungguhan: yang
+ * diperiksa adalah PERILAKUNYA saat ada barang kosong, dan itu harus benar
+ * berapa pun isi tab stok hari ini.
+ */
+check("DEF-15: baris berstok kosong tetap tampil tetapi tidak ikut dipesan", () => {
+  const index = {
+    ada: {
+      slug: "ada",
+      name: "Kopi Ada",
+      categoryLabel: "Single Origin, Reguler",
+      href: "/produk/ada",
+      status: "available",
+      variants: [
+        { id: "ada-pack1", label: "1 pack", unit: "pack", unitPrice: 100_000, minQty: 1, step: 1 },
+      ],
+    },
+    habis: {
+      slug: "habis",
+      name: "Kopi Habis",
+      categoryLabel: "Single Origin, Reguler",
+      href: "/produk/habis",
+      status: "out-of-stock",
+      variants: [
+        { id: "habis-pack1", label: "1 pack", unit: "pack", unitPrice: 200_000, minQty: 1, step: 1 },
+      ],
+    },
+  };
+
+  const cart = resolveCart(
+    [
+      { slug: "ada", variantId: "ada-pack1", qty: 2 },
+      { slug: "habis", variantId: "habis-pack1", qty: 3 },
+    ],
+    "",
+    index,
+  );
+
+  // Tetap tampil — dibuang diam-diam membuat pembeli mengira keranjang rusak.
+  assert.equal(cart.lines.length, 2);
+  assert.equal(cart.droppedCount, 0);
+  assert.equal(cart.soldOutCount, 1);
+  assert.equal(cart.lines.find((l) => l.slug === "habis").soldOut, true);
+  assert.equal(cart.lines.find((l) => l.slug === "ada").soldOut, false);
+
+  // Tetapi tidak ikut dihitung, dan tidak ikut dikirim.
+  assert.equal(cart.orderableLines.length, 1);
+  assert.equal(cart.orderableLines[0].slug, "ada");
+  assert.equal(cart.subtotal, 200_000, "barang kosong ikut subtotal");
+  assert.equal(cart.itemCount, 2, "barang kosong ikut jumlah item");
+});
+
+check("DEF-15: keranjang yang isinya kosong semua tidak bisa dipesan", () => {
+  const index = {
+    habis: {
+      slug: "habis",
+      name: "Kopi Habis",
+      categoryLabel: "Single Origin, Reguler",
+      href: "/produk/habis",
+      status: "out-of-stock",
+      variants: [
+        { id: "habis-pack1", label: "1 pack", unit: "pack", unitPrice: 200_000, minQty: 1, step: 1 },
+      ],
+    },
+  };
+  const cart = resolveCart([{ slug: "habis", variantId: "habis-pack1", qty: 1 }], "", index);
+  // Tombol pesan menonaktifkan diri saat daftar yang dikirim kosong, jadi
+  // inilah yang menahan checkout — tanpa cabang khusus di komponennya.
+  assert.equal(cart.orderableLines.length, 0);
+  assert.equal(cart.subtotal, 0);
+});
+
+check("DEF-15: setiap entri indeks keranjang membawa status", () => {
+  // Medan inilah yang hilang dan membuat kebocoran itu mungkin. Kalau ia
+  // hilang lagi, `soldOut` diam-diam menjadi false untuk semua barang.
+  for (const entry of Object.values(catalog.cartCatalogIndex)) {
+    assert.ok(
+      entry.status === "available" || entry.status === "out-of-stock",
+      `entri "${entry.slug}" tidak membawa status`,
+    );
+  }
+});
+
 check("FR-14: status owner sampai ke produk, bukan berhenti di data", () => {
   // Sampai 9 September 2026 `status` mengalir ke `Product` lalu tidak dibaca
   // satu komponen pun: owner menandai kosong di sheet, memercayainya, dan situs

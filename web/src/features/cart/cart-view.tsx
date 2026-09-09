@@ -107,6 +107,7 @@ export function CartView({
     <div className="grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div>
         {cart.droppedCount > 0 ? <DroppedNotice count={cart.droppedCount} /> : null}
+        {cart.soldOutCount > 0 ? <SoldOutNotice count={cart.soldOutCount} /> : null}
 
         <h2 className="sr-only">Isi keranjang</h2>
         <ul className="space-y-4">
@@ -167,8 +168,12 @@ export function CartView({
         </div>
 
         <div className="mt-5">
+          {/* `orderableLines`, BUKAN `lines`. Baris berstatus kosong tidak
+              boleh ikut: pesan ini langsung menjadi baris di buku order
+              (KD-06), jadi mengirimnya berarti menerima pesanan yang tidak
+              bisa dipenuhi. */}
           <WhatsAppOrderButton
-            lines={cart.lines}
+            lines={cart.orderableLines}
             subtotal={cart.subtotal}
             itemCount={cart.itemCount}
             note={cart.note}
@@ -195,6 +200,25 @@ export function CartView({
   );
 }
 
+/**
+ * FR-14 — pemberitahuan sekali bahwa ada barang yang stoknya habis SETELAH
+ * masuk keranjang. Disampaikan di atas daftar, tidak diulang per baris, karena
+ * penandanya sudah menempel pada barisnya masing-masing.
+ */
+function SoldOutNotice({ count }: { count: number }) {
+  return (
+    <p
+      className="mb-4 rounded-md bg-rust/10 px-4 py-3 text-sm text-coffee"
+      role="status"
+    >
+      {count === 1 ? "Satu barang" : `${count} barang`} di keranjang Anda stoknya
+      habis sejak ditambahkan. {count === 1 ? "Ia" : "Semuanya"} tidak ikut
+      dihitung dan tidak ikut terkirim. Hapus dari keranjang, atau tanyakan
+      lewat WhatsApp kapan roasting berikutnya.
+    </p>
+  );
+}
+
 function DroppedNotice({ count }: { count: number }) {
   return (
     <p
@@ -218,10 +242,15 @@ function CartLineRow({
   const weight = formatTotalWeight(line.qty, line.unit);
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div
+      className={`flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${
+        line.soldOut ? "opacity-60" : ""
+      }`}
+    >
       <div className="min-w-0">
         <p className="font-heading text-xs font-semibold uppercase tracking-[0.15em] text-rust">
           {line.categoryLabel}
+          {line.soldOut ? " · stok kosong" : ""}
         </p>
         <h3 className="mt-1 font-display text-lg font-semibold text-primary">
           <Link href={line.href} className={`rounded-sm hover:text-rust ${FOCUS_RING}`}>
@@ -257,7 +286,14 @@ function CartLineRow({
       </div>
 
       <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-        <p className="font-display text-lg font-semibold text-coffee">
+        {/* Harga baris yang kosong dicoret, bukan disembunyikan: pembeli perlu
+            tahu barangnya masih di keranjang dan berapa harganya, sekaligus
+            bahwa angka itu TIDAK ikut subtotal. */}
+        <p
+          className={`font-display text-lg font-semibold ${
+            line.soldOut ? "text-olive line-through" : "text-coffee"
+          }`}
+        >
           {formatIDR(line.lineTotal)}
         </p>
         <button

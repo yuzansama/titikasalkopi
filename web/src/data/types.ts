@@ -170,6 +170,17 @@ export type ResolvedCartLine = {
   unit: OrderUnit;
   /** Harga TERKINI dari katalog, bukan snapshot (ADR-04, NFR-12). */
   unitPrice: PriceIDR;
+  /**
+   * true bila owner menandai produknya kosong SETELAH baris ini masuk
+   * keranjang (FR-14).
+   *
+   * Baris seperti ini tidak dibuang. Menghilangkannya diam-diam membuat
+   * pembeli mengira keranjangnya rusak, dan keranjang bertahan tujuh hari
+   * sehingga jendelanya nyata. Yang dilakukan: barisnya tetap tampil dengan
+   * penanda, TIDAK ikut subtotal, dan TIDAK ikut ke pesan WhatsApp maupun ke
+   * buku order — pesanan yang tidak bisa dipenuhi tidak boleh terkirim.
+   */
+  soldOut: boolean;
   /** qty * unitPrice, bilangan bulat. Selalu dapat direkonstruksi pembaca. */
   lineTotal: PriceIDR;
   /** "/produk/abmisibil" atau "/houseblend/bold". */
@@ -178,13 +189,20 @@ export type ResolvedCartLine = {
 
 export type ResolvedCart = {
   lines: ResolvedCartLine[];
-  /** Jumlah satuan pesan seluruh baris; angka untuk badge header (FR-17). */
+  /**
+   * Baris yang benar-benar bisa dipesan. Inilah yang dikirim ke WhatsApp dan
+   * ke buku order — bukan `lines`, yang juga memuat baris berstatus kosong.
+   */
+  orderableLines: ResolvedCartLine[];
+  /** Jumlah satuan pesan yang bisa dipesan; angka untuk badge header (FR-17). */
   itemCount: number;
-  /** Subtotal produk, BELUM termasuk ongkir (BR-18). */
+  /** Subtotal produk yang bisa dipesan, BELUM termasuk ongkir (BR-18). */
   subtotal: PriceIDR;
   note: string;
   /** Baris yang dibuang karena produk/varian tidak lagi ada di katalog. */
   droppedCount: number;
+  /** Baris yang masih tampil tetapi stoknya habis (FR-14). */
+  soldOutCount: number;
 };
 
 /**
@@ -197,6 +215,12 @@ export type CartCatalogEntry = {
   name: string;
   categoryLabel: string;
   href: string;
+  /**
+   * Status jual dari sheet owner (FR-14, KD-08). WAJIB ikut ke sini: tanpa
+   * medan ini keranjang tidak punya cara mengetahui bahwa sebuah barang sudah
+   * ditandai kosong, dan barang itu ikut terkirim sebagai pesanan sungguhan.
+   */
+  status: ProductStatus;
   variants: Array<{
     id: string;
     label: string;
