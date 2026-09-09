@@ -160,15 +160,23 @@ sekali di situs. Saya tidak bisa mengarangnya.
 
 ---
 
-## 9. Foto enam produk · ~1 hari
+## 9. Foto enam produk · ~1 hari · **MEMBLOKIR RILIS sejak 9 September 2026**
 
 Oelbiteno, Pyramid, Palimping, Kerinci, Full Robusta, Sindoro. Rasio 4:5,
 800×1000, di bawah 120 KB. Sisanya sudah punya gambar.
 
-Placeholder bergaya brand sudah tayang dan tidak merusak apa pun (R-13), jadi
-ini tidak memblokir rilis. Tapi separuh katalog tanpa foto pada toko yang
-memposisikan diri premium adalah keputusan yang sebaiknya Anda ambil sadar,
-bukan yang terjadi karena waktu habis.
+> **Berubah 9 September 2026.** Butir ini dulu berbunyi "tidak memblokir
+> rilis". `D-10` pada `docs/13-diet-tampilan.md` mencabutnya. Alasannya:
+> Anda menilai situs terlalu banyak kata, dan sebab utamanya adalah gambar
+> yang belum mengerjakan bagiannya. Memangkas teks di atas grid yang enam
+> kartunya masih placeholder tidak membuat situs terlihat bersih — ia membuat
+> situs terlihat kosong. Foto ini yang menentukan hasil akhirnya.
+
+Kirim apa adanya dari kamera atau HP; konversi dan pengecilan dikerjakan
+developer. Latar polos dan seragam untuk keenamnya — grid katalog hanya rapi
+kalau latar sebelas kartunya konsisten. Sertakan satu kalimat untuk tiap foto
+yang menjelaskan isinya; hanya Anda yang tahu, dan kalimat itu dipakai
+pembaca layar.
 
 ---
 

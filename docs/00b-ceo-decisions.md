@@ -352,3 +352,12 @@ Pemeriksaan lama menjaga agar tidak ada nama yang muncul di **dua** lini. Karena
 ### Catatan untuk QA
 
 Test case yang menguji lini poster **dicabut, bukan dihapus** — TC-313, TC-314, TC-403, dan TC-404, dirinci pada Bagian 4.10 `06-qa-test-plan.md`. Menghapusnya diam-diam membuat rujukan lama menunjuk ke ruang kosong; mencabutnya membuat pembaca tahu bahwa kasusnya pernah ada dan mengapa ia tidak dijalankan lagi.
+
+## D-10 sampai D-13 — Diet tampilan, 9 September 2026
+
+Isi lengkapnya di `docs/13-diet-tampilan.md`, termasuk diskusi lintas peran, angka jumlah kata tiap halaman, dan rencana deployment-nya. Ringkasnya, dan bagian ini yang mengikat:
+
+- **D-10** — Enam foto produk yang belum ada (Oelbiteno, Pyramid, Palimping, Kerinci, Full Robusta, Sindoro) **memblokir rilis**. Butir 9 pada `docs/12-tugas-owner.md` yang menyebut foto tidak memblokir rilis dicabut.
+- **D-11** — Ada plafon jumlah kata terlihat per rute, ditegakkan `web/scripts/check-copy-budget.mjs` di dalam `check-all.mjs`. Plafonnya hanya boleh naik lewat perubahan pada `docs/13-diet-tampilan.md`, tidak pernah dengan menyunting skripnya agar hijau.
+- **D-12** — Kartu produk dibekukan pada empat unsur: gambar, nama, baris asal, harga "mulai dari", ditambah penanda "Stok kosong" bila berlaku. Label kategori, pil catatan rasa, dan baris harga paket 3 pack pindah ke halaman produk. Penghematan tetap dihitung `bundleSaving()` dan `packSaving()` dan tetap tampil pada opsi varian di halaman produk.
+- **D-13** — Beranda tinggal tiga blok: hero, sorotan Signature, satu ajakan memesan. Blok "Cara pesan" pindah ke `/kontak`. Pernyataan bahwa pembayaran tidak dilakukan di website ini tetap ada di `/kontak` dan di panel pesan halaman produk, dan keluar dari footer.
