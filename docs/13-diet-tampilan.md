@@ -9,7 +9,7 @@
 
 ## 0. Ringkasan satu halaman
 
-Owner benar, dan angkanya membuktikannya. Halaman katalog kita memuat **774 kata**; beranda **470 kata**. Kerangka header dan footer sendiri sudah menyumbang ±105 kata, jadi isi beranda kita ±365 kata sebelum pengunjung melihat harga pertama yang bisa dia bandingkan.
+Owner benar, dan angkanya membuktikannya. Beranda memuat **467 kata terlihat** dan `/houseblend` **468**. Kerangka header dan footer sendiri sudah menyumbang ±100 kata, jadi isi beranda ±367 kata sebelum pengunjung melihat harga pertama yang bisa dia bandingkan. Enam belas rute berplafon bersama-sama memuat 5.300 kata; sesudah pemangkasan 3.729, turun 30%.
 
 Tetapi diagnosisnya bukan "kalimatnya terlalu panjang". Diagnosisnya:
 
@@ -57,28 +57,36 @@ Deskripsinya **adalah namanya sendiri**. Nol kalimat pemasaran, lima foto. Itu b
 
 ## 2. Angka kita hari ini
 
-Diukur dari hasil build yang benar-benar tayang (`web/out/**/*.html`, seluruh tag dibuang, sisa teks dihitung):
+> **Dikoreksi 9 September 2026, setelah pemangkasan dikerjakan.** Tabel pertama pada bagian ini diukur dari folder `out/` yang kebetulan masih ada di disk — dan folder itu **basi**: ia dibangun sebelum lini poster 100 gram dicabut `D-09`. Karena itu ia melaporkan `/katalog` 774 kata, padahal kode yang sama menghasilkan 331. Angka yang salah itu sempat masuk ke plafon `D-11`, membuat plafon `/katalog` (420) berada di ATAS keadaan sebelum dipangkas — plafon yang tidak pernah bisa dilanggar bukan plafon. Keduanya sudah diukur ulang dari build bersih dan plafonnya diturunkan. Tabel lama tidak disimpan karena ia tidak pernah menggambarkan kode mana pun; yang di bawah ini menggantikannya.
 
-| Halaman | Kata | Isi tanpa kerangka (±105) |
-|---|---:|---:|
-| `/katalog` | 774 | ±669 |
-| `/` (beranda) | 470 | ±365 |
-| `/houseblend` | 411 | ±306 |
-| `/houseblend/bold` | 400 | ±295 |
-| `/produk/pondok-baru` | 357 | ±252 |
-| `/cerita-kami` | 351 | ±246 |
-| `/kontak` | 299 | ±194 |
-| `/keranjang` | 104 | ±0 |
+Diukur dari build bersih kode sebelum pemangkasan (`web/out/**/*.html`, seluruh tag dibuang, teks `sr-only` tidak dihitung karena ia tidak terlihat):
 
-Sumber angka kerangka: halaman 404 kita berisi 105 kata dan hampir seluruhnya header + footer.
+| Halaman | Sebelum | Sesudah | Plafon |
+|---|---:|---:|---:|
+| `/houseblend` | 468 | 240 | 300 |
+| `/` (beranda) | 467 | 173 | 220 |
+| `/cerita-kami` | 344 | 241 | 260 |
+| `/produk/pondok-baru` | 339 | 267 | 280 |
+| `/produk/sabin` | 333 | 255 | 280 |
+| `/katalog` | 331 | 227 | 280 |
+| `/produk/abmisibil` | 329 | 252 | 280 |
+| `/produk/oelbiteno` | 306 | 223 | 280 |
+| `/produk/pyramid` | 305 | 222 | 280 |
+| `/produk/palimping` | 305 | 228 | 280 |
+| `/produk/kerinci` | 302 | 225 | 280 |
+| `/houseblend/bold` | 297 | 272 | 300 |
+| `/kontak` | 292 | 251 | 260 |
+| `/produk/sindoro` | 289 | 212 | 280 |
+| `/houseblend/full-robusta` | 258 | 231 | 300 |
+| `/houseblend/bright` | 234 | 210 | 300 |
 
-Tiga hal yang langsung terbaca dari tabel ini:
+Total 5300 kata menjadi 3729 pada enam belas rute berplafon — **turun 30%**. Kerangka header dan footer menyumbang ±100 kata dari setiap baris itu.
 
-1. **`/katalog` adalah pelanggar terbesar,** dan bukan karena paragraf pengantarnya (39 kata). Karena **kartunya**: sebelas kartu × ±40 kata = ±440 kata hanya dari grid produk.
+Tiga hal yang terbaca dari tabel ini:
+
+1. **`/houseblend` ternyata pelanggar terbesar, bukan `/katalog`.** Angka basi menyembunyikannya. Halaman itu memuat deskripsi panjang ketiga lini secara utuh, padahal masing-masing sudah punya halaman sendiri.
 2. **Beranda mengulang katalog.** Ia memuat sorotan Signature, tiga lini houseblend, dan tiga kartu "mulai dari" — tiga cara mengatakan hal yang sama sebelum pengunjung sempat mengklik apa pun.
 3. **`/keranjang` yang paling sedikit katanya, dan tidak ada yang mengeluhkannya.** Halaman yang isinya jelas tidak butuh dijelaskan.
-
----
 
 ## 3. Diskusi lintas peran
 
@@ -155,15 +163,19 @@ Sampai foto tiba, placeholder tetap tayang. Menunda seluruh diet kata sampai fot
 
 Plafon **kata terlihat** per halaman, diukur dari HTML hasil build, kerangka header dan footer ikut dihitung:
 
-| Rute | Plafon | Hari ini |
-|---|---:|---:|
-| `/` | 260 | 470 |
-| `/katalog` | 420 | 774 |
-| `/houseblend` | 300 | 411 |
-| `/houseblend/[line]` | 300 | 400 |
-| `/produk/[slug]` | 280 | 304–357 |
-| `/cerita-kami` | 260 | 351 |
-| `/kontak` | 260 | 299 |
+| Rute | Plafon | Sebelum | Sesudah |
+|---|---:|---:|---:|
+| `/` | 220 | 467 | 173 |
+| `/katalog` | 280 | 331 | 227 |
+| `/houseblend` | 300 | 468 | 240 |
+| `/houseblend/[line]` | 300 | 234–297 | 210–272 |
+| `/produk/[slug]` | 280 | 289–339 | 212–267 |
+| `/cerita-kami` | 260 | 344 | 241 |
+| `/kontak` | 260 | 292 | 251 |
+
+Plafon `/` dan `/katalog` diturunkan dari 260 dan 420 pada 9 September 2026, setelah ketahuan keduanya diturunkan dari build basi dan `/katalog` 420 justru berada di atas keadaan sebelum dipangkas.
+
+Teks `sr-only` tidak ikut dihitung. Ia tidak terlihat, jadi ia bukan bagian dari beban baca yang dikeluhkan — dan menghitungnya akan membuat plafon ini menekan siapa pun untuk menghapus keterangan pembaca layar demi angka yang lebih kecil. `RatioTable` menaruh satu keterangan per sel harga karena "Rp215.000" saja tidak memberi tahu apa yang sedang dipilih; plafon tidak boleh menghukum kalimat itu.
 
 Ditegakkan `web/scripts/check-copy-budget.mjs`, dipasang di `check-all.mjs`, tanpa dependensi baru (ADR-14). Plafon boleh dinaikkan, tetapi **hanya lewat perubahan berkas keputusan ini** — bukan dengan menyunting skripnya agar hijau. Aturan itu yang dilanggar pada cacat harga 9 September, dan ia tidak akan dilanggar lagi.
 

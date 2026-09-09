@@ -4,9 +4,10 @@
  *   node scripts/check-copy-budget.mjs
  *
  * Owner menilai situs ini terlalu banyak kata, dan angkanya membenarkannya:
- * `/katalog` 774 kata, beranda 470, sementara kerangka header dan footer saja
- * sudah menyumbang ±105. D-11 karena itu menetapkan plafon kata per rute dan
- * meminta plafon itu ditegakkan CI, bukan diingat orang.
+ * sebelum pemangkasan `/houseblend` 468 kata, beranda 467, `/cerita-kami` 344,
+ * sementara kerangka header dan footer saja sudah menyumbang ±100. D-11 karena
+ * itu menetapkan plafon kata per rute dan meminta plafon itu ditegakkan CI,
+ * bukan diingat orang.
  *
  * Kenapa harus gerbang, bukan kalimat di dokumen. Situs ini sudah punya
  * pelajarannya: plafon 190 KB pada D-04 disepakati sejak awal, lalu tiga fitur
@@ -27,6 +28,13 @@
  * benar: pemangkasan (Sprint C-1 dan seterusnya) belum dikerjakan, dan D-11
  * sengaja meminta gerbangnya dipasang lebih dulu supaya ia pernah terlihat
  * merah. Gerbang yang lahir hijau tidak pernah dibuktikan bekerja.
+ *
+ * Catatan atas angka pertama itu: ia diukur terhadap folder `out/` yang basi,
+ * dibangun sebelum lini poster 100 gram dicabut D-09, sehingga `/katalog`
+ * terbaca 774 kata padahal kode yang sama sebenarnya menghasilkan 331. Plafon
+ * `/` dan `/katalog` sudah dikoreksi turun setelah keduanya diukur ulang dari
+ * build yang bersih. Pelajarannya melekat pada gerbang ini: ukur dari build
+ * yang baru saja dibuat, jangan dari yang kebetulan masih ada di disk.
  *
  * Yang dihitung adalah KATA TERLIHAT pada HTML hasil build: isi `<script>`,
  * `<style>`, dan `<template>` dibuang beserta tagnya, sisa tag dilucuti, entitas
@@ -55,8 +63,8 @@ import { check, summary } from "./_ts-load.mjs";
  * plafon berarti menambah angka yang tidak pernah dibahas siapa pun.
  */
 const BUDGETS = new Map([
-  ["", 260],
-  ["katalog", 420],
+  ["", 220],
+  ["katalog", 280],
   ["houseblend", 300],
   ["houseblend/bold", 300],
   ["houseblend/bright", 300],
