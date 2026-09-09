@@ -7,9 +7,8 @@
  *
  * ATURAN PALING PENTING: skrip ini GAGAL TERTUTUP. Apa pun yang tidak
  * meyakinkan — endpoint mati, jawaban rusak, tab hilang, satu harga bukan
- * bilangan bulat positif, daftar 100 gram kosong — membuatnya keluar dengan
- * kode bukan nol TANPA menyentuh berkas apa pun. Katalog yang sudah ter-commit
- * tetap tayang.
+ * bilangan bulat positif — membuatnya keluar dengan kode bukan nol TANPA
+ * menyentuh berkas apa pun. Katalog yang sudah ter-commit tetap tayang.
  *
  * Alasannya bukan kehati-hatian umum. Berkas yang ditulis di sini memuat
  * SELURUH harga situs. Sinkronisasi yang setengah berhasil akan menerbitkan
@@ -74,8 +73,6 @@ const REQUIRED_STOCK_SLUGS = [
   "bright",
   "full-robusta",
 ];
-
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
  * Batas kewarasan harga, dalam rupiah.
@@ -155,42 +152,6 @@ export function validateCatalogPayload(payload) {
     }
   }
 
-  /* ---------------- lini 100 gram ---------------- */
-
-  const picks = payload?.picks;
-  if (!Array.isArray(picks)) {
-    fail('Tab "katalog100" tidak ditemukan di spreadsheet.');
-  } else if (picks.length === 0) {
-    // Daftar kosong hampir pasti berarti salah nama kolom, bukan keputusan
-    // menghapus seluruh lini. Menerbitkannya berarti katalog hilang diam-diam.
-    fail('Tab "katalog100" tidak menghasilkan satu baris pun yang sah.');
-  } else {
-    const seen = new Set();
-    for (const pick of picks) {
-      const { slug, name, price } = pick ?? {};
-      if (typeof slug !== "string" || !SLUG_PATTERN.test(slug)) {
-        fail(`Slug "${slug}" tidak sah; pakai huruf kecil dan tanda hubung.`);
-        continue;
-      }
-      if (seen.has(slug)) fail(`Slug "${slug}" muncul dua kali di katalog100.`);
-      seen.add(slug);
-
-      if (REQUIRED_STOCK_SLUGS.includes(slug)) {
-        fail(
-          `Slug "${slug}" bentrok dengan produk 200 gram. Keranjang akan ` +
-            `menampilkan barang dan harga yang salah — pakai nama lain, ` +
-            `misalnya "${slug}-100".`,
-        );
-      }
-      if (typeof name !== "string" || name.trim().length === 0) {
-        fail(`Baris "${slug}" tidak punya nama.`);
-      }
-      if (!isSanePrice(price)) {
-        fail(`Harga "${slug}" bernilai ${price} — di luar batas wajar.`);
-      }
-    }
-  }
-
   return problems;
 }
 
@@ -224,12 +185,12 @@ async function main() {
     process.exit(1);
   }
 
-  const { harga, stok, picks } = payload;
+  const { harga, stok } = payload;
 
   /* ---------------- menulis ---------------- */
 
   const previous = readFileSync(OUT_PATH, "utf8");
-  const next = render(harga, stok, picks, previous);
+  const next = render(harga, stok, previous);
 
   if (next === previous) {
     console.log("Katalog sudah sama dengan sheet. Tidak ada yang diubah.");
@@ -237,8 +198,10 @@ async function main() {
   }
 
   writeFileSync(OUT_PATH, next);
-  console.log(`Katalog diperbarui: ${picks.length} biji 100 gram, ` +
-    `${Object.keys(harga).length} harga, ${Object.keys(stok).length} status stok.`);
+  console.log(
+    `Katalog diperbarui: ${Object.keys(harga).length} harga, ` +
+      `${Object.keys(stok).length} status stok.`,
+  );
   summarizeChanges(previous, next);
 }
 
@@ -252,7 +215,7 @@ function todayWib() {
  * dan tipe di berkas hasil. Skrip yang mengarang ulang seluruh berkas akan
  * menghapus penjelasan yang justru dibaca orang berikutnya.
  */
-function render(harga, stok, picks, previous) {
+function render(harga, stok, previous) {
   const q = (value) => JSON.stringify(value);
   const body = [
     `export const managedCatalog: ManagedCatalog = {`,
@@ -265,13 +228,6 @@ function render(harga, stok, picks, previous) {
     `  stok: {`,
     ...REQUIRED_STOCK_SLUGS.map((slug) => `    ${q(slug)}: ${q(stok[slug])},`),
     `  },`,
-    ``,
-    `  picks: [`,
-    ...picks.map(
-      (pick) =>
-        `    { slug: ${q(pick.slug)}, name: ${q(pick.name)}, price: ${pick.price} },`,
-    ),
-    `  ],`,
     `};`,
   ].join("\n");
 

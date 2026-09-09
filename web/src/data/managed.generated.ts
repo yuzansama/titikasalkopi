@@ -5,10 +5,10 @@
  * Google Sheet milik owner. Suntingan tangan akan hilang pada sinkronisasi
  * berikutnya tanpa peringatan.
  *
- * Isinya SATU-SATUNYA sumber untuk harga, stok, dan lini 100 gram. Tidak ada
- * nilai cadangan di berkas lain, dan itu disengaja: dua sumber kebenaran untuk
- * harga berarti suatu hari situs menayangkan angka yang tidak seorang pun
- * merasa menuliskannya.
+ * Isinya SATU-SATUNYA sumber untuk harga dan stok. Tidak ada nilai cadangan di
+ * berkas lain, dan itu disengaja: dua sumber kebenaran untuk harga berarti
+ * suatu hari situs menayangkan angka yang tidak seorang pun merasa
+ * menuliskannya.
  *
  * Yang TIDAK ada di sini, dan tetap ditulis tangan di `products.ts`: asal,
  * proses, ketinggian, varietas, catatan rasa, dan foto. Semuanya klaim produk
@@ -24,10 +24,8 @@ export type ManagedCatalog = {
   syncedAt: string;
   /** Seluruh harga situs, dalam rupiah bulat. Kunci dijelaskan di doc. */
   harga: Readonly<Record<string, number>>;
-  /** Status jual per slug produk 200 gr dan lini houseblend. */
+  /** Status jual per slug single origin dan lini houseblend. */
   stok: Readonly<Record<string, ProductStatus>>;
-  /** Lini Katalog Kopi 100 gram, urut sesuai poster owner. */
-  picks: readonly { slug: string; name: string; price: number }[];
 };
 
 export const managedCatalog: ManagedCatalog = {
@@ -75,25 +73,6 @@ export const managedCatalog: ManagedCatalog = {
     "full-robusta": "available",
   },
 
-  picks: [
-    { slug: "bali-kintamani", name: "Bali Kintamani", price: 80_000 },
-    { slug: "gayo", name: "Gayo", price: 80_000 },
-    { slug: "bali-peach", name: "Bali Peach", price: 110_000 },
-    { slug: "gayo-lecie", name: "Gayo Lecie", price: 120_000 },
-    { slug: "panama", name: "Panama", price: 270_000 },
-    { slug: "kenya", name: "Kenya", price: 195_000 },
-    { slug: "luwak", name: "Luwak", price: 140_000 },
-    { slug: "ciwidey", name: "Ciwidey", price: 85_000 },
-    { slug: "telomoyo", name: "Telomoyo", price: 65_000 },
-    { slug: "gedong-songo", name: "Gedong Songo", price: 75_000 },
-    { slug: "sumbing", name: "Sumbing", price: 85_000 },
-    { slug: "halu-banana-anaerob", name: "Halu Banana Anaerob", price: 90_000 },
-    { slug: "merbabu", name: "Merbabu", price: 85_000 },
-    { slug: "merapi", name: "Merapi", price: 75_000 },
-    { slug: "argopuro", name: "Argopuro", price: 90_000 },
-    { slug: "situjuah", name: "Situjuah", price: 80_000 },
-    { slug: "lawu", name: "Lawu", price: 65_000 },
-  ],
 };
 
 /**

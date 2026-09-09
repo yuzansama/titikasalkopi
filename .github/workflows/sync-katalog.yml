@@ -55,7 +55,6 @@ jobs:
       # evaluation, so a bad price fails here rather than on the live site.
       - run: npx next typegen
       - run: npx tsc --noEmit
-      - run: node scripts/check-picks.mjs
       - run: node scripts/check-cart.mjs
       - run: node scripts/check-sync-katalog.mjs
 

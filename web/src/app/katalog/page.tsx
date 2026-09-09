@@ -1,7 +1,6 @@
 import { Container, SectionHeading } from "@/components/ui/container";
-import { catalogGroups, pickCartEntries } from "@/data/catalog";
+import { catalogGroups } from "@/data/catalog";
 import { ViewEvent } from "@/features/analytics/view-event";
-import { PickList } from "@/features/catalog/pick-list";
 import { ProductGrid } from "@/features/catalog/product-grid";
 import { breadcrumbJsonLd, katalogMetadata } from "@/lib/seo";
 
@@ -30,9 +29,9 @@ export default function KatalogPage() {
           Katalog kopi
         </h1>
         <p className="mt-3 max-w-2xl text-olive">
-          Single origin dalam kemasan 200 gr, houseblend per kilogram, dan
-          Katalog Kopi dalam kemasan 100 gr. Seluruh harga di halaman ini adalah
-          harga resmi; ongkos kirim dikonfirmasi lewat WhatsApp.
+          Single origin dalam kemasan 100 gr dan 200 gr, dan houseblend dalam
+          kemasan 1 kg dan 0,5 kg. Seluruh harga di halaman ini adalah harga
+          resmi; ongkos kirim dikonfirmasi lewat WhatsApp.
         </p>
 
         {catalogGroups.map((group, index) => (
@@ -51,28 +50,6 @@ export default function KatalogPage() {
           </section>
         ))}
 
-        {/* Lini kedua, berdiri sendiri. Ditaruh setelah kelompok yang punya
-            halaman produk karena hanya kelompok itu yang bisa menjawab
-            pertanyaan lanjutan pengunjung (KD-07). */}
-        <section className="mt-12" aria-labelledby="katalog-100-gram">
-          <SectionHeading
-            id="katalog-100-gram"
-            eyebrow="Kemasan 100 gr"
-            title="Katalog Kopi"
-          />
-          <p className="mt-3 max-w-2xl text-olive">
-            Kopi pilihan dari berbagai titik terbaik di Indonesia dan dunia,
-            dalam kemasan 100 gr. Harga ditentukan per biji, bukan per tier
-            seperti single origin 200 gr di atas.
-          </p>
-          <p className="mt-3 max-w-2xl text-[0.95rem] text-olive">
-            Untuk lini ini kami baru memiliki nama dan harga. Asal, proses,
-            ketinggian, dan catatan rasanya belum kami cantumkan karena belum
-            terverifikasi — tanyakan lewat WhatsApp bila Anda membutuhkannya
-            sebelum memesan.
-          </p>
-          <PickList entries={pickCartEntries} />
-        </section>
       </Container>
     </>
   );

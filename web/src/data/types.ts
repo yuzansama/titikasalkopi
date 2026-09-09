@@ -36,11 +36,12 @@ export type ProductStatus = "available" | "out-of-stock";
  * - "paket"   : 1 bundel berisi 3 x 200 gr -> qty = jumlah bundel (BR-12, D-01)
  * - "kg"      : 1 kemasan 1 kg houseblend  -> qty = jumlah kemasan
  * - "half-kg" : 1 kemasan 0,5 kg houseblend -> qty = jumlah kemasan
- * - "gram-100": 1 kemasan 100 gr           -> qty = jumlah kemasan (KD-07)
+ * - "gram-100": 1 kemasan mini 100 gr      -> qty = jumlah kemasan
  *
- * `gram-100` melayani lini Katalog Kopi 100 gram, yang berharga PER BIJI dan
- * karena itu tidak memakai `Tier` maupun `Product` sama sekali. Lihat
- * `src/data/picks.ts`.
+ * `gram-100` melayani kemasan mini single origin dari lembar `Product` bisnis
+ * plan. Ia pernah juga melayani lini "Katalog Kopi 100 gram" dari poster owner
+ * (KD-07); lini itu dihapus 9 September 2026 karena seluruh produk situs kini
+ * berasal dari satu sumber, `assets/brand/Kopi from heart.xlsx`.
  *
  * PERUBAHAN 9 September 2026: "half-kg" dahulu berarti "satuan 0,5 kg" dengan
  * `qty` sebagai jumlah satuan berat, dan harganya turunan dari tarif per kg.

@@ -60,12 +60,9 @@ const STOK = {
   "full-robusta": "available",
 };
 
-const PICKS = [{ slug: "lawu", name: "Lawu", price: 65_000 }];
-
 const good = (overrides = {}) => ({
   harga: { ...HARGA },
   stok: { ...STOK },
-  picks: PICKS.map((p) => ({ ...p })),
   ...overrides,
 });
 
@@ -88,13 +85,17 @@ check("KD-08: data sheet yang sehat diterima tanpa keluhan", () => {
 check("KD-08: tab yang hilang ditolak, satu per satu", () => {
   failsWith(good({ harga: null }), /Tab "harga" tidak ditemukan/);
   failsWith(good({ stok: null }), /Tab "stok" tidak ditemukan/);
-  failsWith(good({ picks: null }), /Tab "katalog100" tidak ditemukan/);
 });
 
-check("KD-08: katalog100 kosong ditolak, bukan diterbitkan sebagai kosong", () => {
-  // Daftar kosong hampir selalu berarti salah nama kolom. Menerimanya berarti
-  // seluruh lini hilang dari situs tanpa seorang pun memutuskannya.
-  failsWith(good({ picks: [] }), /tidak menghasilkan satu baris pun/);
+check("KD-08: tab tambahan di sheet diabaikan, bukan ikut diterbitkan", () => {
+  // Seluruh produk situs berasal dari `assets/brand/Kopi from heart.xlsx`.
+  // Lini "Katalog Kopi 100 gram" dari poster dihapus 9 September 2026, dan
+  // tab `katalog100` yang mungkin masih tertinggal di spreadsheet owner tidak
+  // boleh punya efek apa pun.
+  const problems = validateCatalogPayload(
+    good({ picks: [{ slug: "lawu", name: "Lawu", price: 65_000 }] }),
+  );
+  assert.deepEqual(problems, []);
 });
 
 check("KD-08: jawaban rusak sama sekali tetap ditolak, bukan melempar", () => {
@@ -159,46 +160,6 @@ check("KD-08: status stok yang hilang atau tidak dikenal ditolak", () => {
     /hanya boleh available atau out-of-stock/,
   );
 });
-
-/* ------------------------------------------------------------------ */
-/* Lini 100 gram                                                       */
-/* ------------------------------------------------------------------ */
-
-check("KEAMANAN DATA: slug 100 gram yang bentrok dengan produk ditolak", () => {
-  // Kegagalan paling sunyi dari semuanya: keranjang akan menampilkan barang
-  // dan harga yang berbeda dari yang ditambahkan pengunjung.
-  failsWith(
-    good({ picks: [{ slug: "kerinci", name: "Kerinci", price: 85_000 }] }),
-    /bentrok dengan produk 200 gram/,
-  );
-});
-
-check("KD-08: slug 100 gram ganda ditolak", () => {
-  failsWith(
-    good({
-      picks: [
-        { slug: "lawu", name: "Lawu", price: 65_000 },
-        { slug: "lawu", name: "Lawu Dua", price: 70_000 },
-      ],
-    }),
-    /muncul dua kali/,
-  );
-});
-
-check("KD-08: baris tanpa nama atau berslug tidak sah ditolak", () => {
-  failsWith(
-    good({ picks: [{ slug: "lawu", name: "   ", price: 65_000 }] }),
-    /tidak punya nama/,
-  );
-  failsWith(
-    good({ picks: [{ slug: "Lawu Gunung", name: "Lawu", price: 65_000 }] }),
-    /tidak sah/,
-  );
-});
-
-/* ------------------------------------------------------------------ */
-/* Kontrak dengan kode                                                 */
-/* ------------------------------------------------------------------ */
 
 check("KD-08: setiap managedPrice() di products.ts punya kunci wajib", () => {
   // Kunci yang dipakai kode tetapi tidak diwajibkan skrip akan lolos

@@ -17,7 +17,6 @@
  * yang sudah di-resolve sebagai props (aturan ketergantungan nomor 4).
  */
 
-import { coffeePicks, PICK_GRAMS, pickVariantId } from "./picks";
 import {
   SINGLE_ORIGIN_MINI_PACK_GRAMS,
   SINGLE_ORIGIN_PACKS_PER_BUNDLE,
@@ -40,7 +39,7 @@ import type {
   Tier,
   Variant,
 } from "./types";
-import { assertCatalogValid, assertPicksValid } from "./validate";
+import { assertCatalogValid } from "./validate";
 
 /* ------------------------------------------------------------------ */
 /* Konstanta tampilan yang diturunkan dari data                        */
@@ -393,12 +392,6 @@ export const products: Product[] = [
    Dievaluasi saat modul dimuat. Setiap rute statis mengimpor berkas ini, jadi
    `next build` pasti menjalankannya dan data rusak menghentikan build. */
 assertCatalogValid(products);
-// Dijalankan saat modul dievaluasi, sama seperti validator produk: data lini
-// 100 gram yang rusak MENGGAGALKAN BUILD, bukan tayang (FR-43, ADR-09).
-assertPicksValid(
-  coffeePicks,
-  products.map((product) => product.slug),
-);
 
 /* ------------------------------------------------------------------ */
 /* Query / lookup                                                      */
@@ -535,47 +528,8 @@ export function productPaths(): string[] {
  *
  * Sengaja ramping: hanya medan yang benar-benar dipakai baris keranjang.
  */
-export const PICK_CATEGORY_LABEL = "Katalog Kopi 100 gr";
-
-/**
- * Entri keranjang untuk lini Katalog Kopi 100 gram (KD-07).
- *
- * Dirakit langsung menjadi `CartCatalogEntry`, tanpa melewati `Product`: lini
- * ini tidak punya data asal, dan `Product.origin` mewajibkan `province`. Lihat
- * catatan panjang di `src/data/picks.ts`.
- *
- * `href` menunjuk seksi di halaman katalog, bukan halaman produk tersendiri —
- * karena memang belum ada yang layak ditulis di halaman seperti itu.
- */
-export const pickCartEntries: readonly CartCatalogEntry[] = coffeePicks.map(
-  (pick) => ({
-    slug: pick.slug,
-    name: pick.name,
-    categoryLabel: PICK_CATEGORY_LABEL,
-    href: "/katalog#katalog-100-gram",
-    // Lini 100 gram tidak punya tab stok sendiri di sheet owner; tab `stok`
-    // hanya memuat produk 200 gr dan lini houseblend. Sampai ia punya,
-    // seluruh biji lini ini dianggap tersedia.
-    status: "available" as const,
-    variants: [
-      {
-        id: pickVariantId(pick.slug),
-        label: `${PICK_GRAMS} gr`,
-        unit: "gram-100" as const,
-        unitPrice: pick.price,
-        minQty: 1,
-        step: 1,
-      },
-    ],
-  }),
-);
-
 export const cartCatalogIndex: CartCatalogIndex = Object.fromEntries(
-  [
-    ...pickCartEntries.map(
-      (entry): [string, CartCatalogEntry] => [entry.slug, entry],
-    ),
-    ...products.map((product): [string, CartCatalogEntry] => [
+  products.map((product): [string, CartCatalogEntry] => [
     product.slug,
     {
       slug: product.slug,
@@ -594,5 +548,4 @@ export const cartCatalogIndex: CartCatalogIndex = Object.fromEntries(
       })),
     },
   ]),
-  ],
 );

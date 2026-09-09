@@ -95,8 +95,8 @@ check("kedua ukuran kemasan setiap rasio saling masuk akal", () => {
  *
  * Pitanya dibedakan per jenis kemasan karena harga per gram memang berbeda
  * jauh antar lini: houseblend robusta curah Rp180/gram, sementara Panama pada
- * lini 100 gram Rp2.700/gram. Satu pita untuk semuanya akan terlalu longgar
- * untuk menangkap apa pun.
+ * kemasan mini 100 gram Rp850/gram. Satu pita untuk semuanya akan terlalu
+ * longgar untuk menangkap apa pun.
  *
  * TINJAU ULANG bila lini produk baru masuk dengan struktur harga yang berbeda.
  */
@@ -112,7 +112,7 @@ const PRICE_PER_GRAM_BAND = {
   paket: [400, 1200],
   kg: [120, 400],
   "half-kg": [150, 500],
-  "gram-100": [400, 3500],
+  "gram-100": [500, 1200],
 };
 
 check("harga per gram setiap varian berada di pita wajar jenis kemasannya", () => {
@@ -159,6 +159,76 @@ check("kemasan mini 100 gr: tujuh biji punya, Sindoro tidak", () => {
     assert.ok(mini.unitPrice < pack.unitPrice, `${product.slug}: mini >= 200 gr`);
     assert.ok(mini.unitPrice * 2 > pack.unitPrice, `${product.slug}: mini terlalu murah`);
   }
+});
+
+/* ---------------------------------------------------------------- */
+/* Satu sumber produk                                                 */
+/* ---------------------------------------------------------------- */
+
+/**
+ * Seluruh produk yang dijual situs, disalin ulang dari lembar `Product` pada
+ * `assets/brand/Kopi from heart.xlsx`.
+ *
+ * Sengaja diketik ulang, bukan diimpor: pemeriksaan yang membandingkan data
+ * dengan dirinya sendiri selalu lulus. Ini salinan kedua dari daftar yang
+ * owner tetapkan, jadi produk yang muncul tanpa ada di lembar itu — atau
+ * hilang darinya — terlihat di sini.
+ *
+ * Lembar `Product` juga memuat kolom "Tier 2" yang isinya baru sebuah catatan
+ * tanpa satu pun nama biji. Selama masih begitu, tidak ada yang boleh muncul
+ * di situs atas namanya.
+ */
+const LEMBAR_PRODUCT = {
+  singleOrigin: [
+    "Oelbiteno",
+    "Sabin",
+    "Abmisibil",
+    "Pyramid",
+    "Palimping",
+    "Kerinci",
+    "Pondok Baru",
+    "Sindoro",
+  ],
+  // Biji yang punya baris pada kolom "Mini Packs" lembar itu.
+  denganKemasanMini: [
+    "Oelbiteno",
+    "Sabin",
+    "Abmisibil",
+    "Pyramid",
+    "Palimping",
+    "Kerinci",
+    "Pondok Baru",
+  ],
+  houseblend: ["Houseblend BOLD", "Houseblend BRIGHT", "Houseblend Full Robusta"],
+};
+
+check("seluruh produk berasal dari lembar Product, tidak lebih dan tidak kurang", () => {
+  assert.deepEqual(
+    catalog.singleOriginProducts.map((p) => p.name).sort(),
+    [...LEMBAR_PRODUCT.singleOrigin].sort(),
+    "daftar single origin menyimpang dari lembar Product",
+  );
+  assert.deepEqual(
+    catalog.houseblendProducts.map((p) => p.name).sort(),
+    [...LEMBAR_PRODUCT.houseblend].sort(),
+    "daftar houseblend menyimpang dari lembar Product",
+  );
+  // Termasuk keranjang: apa pun yang bisa dipesan harus berupa produk.
+  const slugProduk = new Set(catalog.products.map((p) => p.slug));
+  for (const slug of Object.keys(catalog.cartCatalogIndex)) {
+    assert.ok(
+      slugProduk.has(slug),
+      `"${slug}" bisa ditambahkan ke keranjang tetapi bukan produk dari lembar Product`,
+    );
+  }
+});
+
+check("kemasan mini 100 gr hanya pada biji yang punya barisnya di lembar Product", () => {
+  const punyaMini = catalog.singleOriginProducts
+    .filter((p) => p.variants.some((v) => v.unit === "gram-100"))
+    .map((p) => p.name)
+    .sort();
+  assert.deepEqual(punyaMini, [...LEMBAR_PRODUCT.denganKemasanMini].sort());
 });
 
 /* ---------------------------------------------------------------- */
@@ -561,14 +631,14 @@ check("tidak ada baris keranjang yang membawa harga kedua", () => {
  * dihitung dari data yang sedang diuji, katalog yang menyusut diam-diam akan
  * tetap lulus.
  *
- *   41 varian produk single origin dan houseblend
- *     (7 biji x 3 kemasan + Sindoro tanpa mini x 2 = 23,
- *      ditambah 9 rasio houseblend x 2 ukuran kemasan = 18)
- * + 17 varian lini Katalog Kopi 100 gram (KD-07; Kerinci dihapus 9 Sep 2026)
+ *   7 biji x 3 kemasan + Sindoro tanpa kemasan mini x 2 = 23,
+ * + 9 rasio houseblend x 2 ukuran kemasan = 18.
+ *
+ * Tidak ada lini lain. Sejak 9 September 2026 seluruh produk situs berasal
+ * dari `assets/brand/Kopi from heart.xlsx`; lini "Katalog Kopi 100 gram" dari
+ * poster dihapus seluruhnya.
  */
-const EXPECTED_PRODUCT_VARIANTS = 41;
-const EXPECTED_PICK_VARIANTS = 17;
-const EXPECTED_VARIANT_COUNT = EXPECTED_PRODUCT_VARIANTS + EXPECTED_PICK_VARIANTS;
+const EXPECTED_VARIANT_COUNT = 41;
 
 check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () => {
   const items = Object.values(index).flatMap((entry) =>

@@ -99,7 +99,6 @@ for (const file of files) {
    pemeriksaan harga di bawah menurunkan angkanya dari katalog alih-alih
    menuliskannya sebagai teks. */
 const catalogModule = await loadTs("src/data/catalog.ts");
-const picksModule = await loadTs("src/data/picks.ts");
 const { formatIDR } = await loadTs("src/lib/format.ts");
 
 /** Rute publik Fase 1a — yang wajib ada dan wajib terindeks. */
@@ -821,59 +820,6 @@ check("BRD Bagian 12: halaman katalog menampilkan kesebelas nama produk", () => 
 });
 
 /* ------------------------------------------------------------------ */
-/* ------------------------------------------------------------------ */
-/* 14b. KD-07 — Katalog Kopi 100 gram                                  */
-/* ------------------------------------------------------------------ */
-
-check(
-  "KD-07: seluruh biji Katalog Kopi 100 gram tayang beserta harganya",
-  () => {
-    const html = pages.get("katalog").html;
-    const expected = [
-      ["Bali Kintamani", "Rp80.000"],
-      ["Gayo Lecie", "Rp120.000"],
-      ["Panama", "Rp270.000"],
-      ["Kenya", "Rp195.000"],
-      ["Luwak", "Rp140.000"],
-      ["Halu Banana Anaerob", "Rp90.000"],
-      ["Situjuah", "Rp80.000"],
-      ["Lawu", "Rp65.000"],
-    ];
-    const missing = expected.filter(
-      ([name, price]) => !html.includes(name) || !html.includes(price),
-    );
-    assert.deepEqual(
-      missing.map(([name]) => name),
-      [],
-      `biji atau harganya tidak tayang: ${missing.map(([n]) => n).join(", ")}`,
-    );
-  },
-);
-
-check("KD-07: kedua lini tayang berdampingan tanpa saling menutupi", () => {
-  // Dua lini hidup di halaman yang sama dengan harga berbeda untuk berat
-  // berbeda. Kerinci ada di KEDUANYA; menyembunyikan salah satunya berarti
-  // memilihkan jawaban yang belum owner berikan.
-  const html = pages.get("katalog").html;
-  assert.ok(html.includes("100 gr"), "label 100 gr hilang dari halaman");
-  const pick = picksModule.coffeePicks[0];
-  const bean = catalogModule.findSingleOriginBySlug("kerinci");
-  const beanPack = bean.variants.find((v) => v.unit === "pack");
-  assert.ok(html.includes(formatIDR(pick.price)), `harga ${pick.name} 100 gr hilang`);
-  assert.ok(html.includes(formatIDR(beanPack.unitPrice)), "harga Reguler 200 gr hilang");
-
-  // 0.5 — tidak boleh ada nama produk yang tayang dengan dua harga berbeda
-  // untuk berat yang sama. Kerinci melanggarnya sampai 9 September 2026.
-  const pickNames = new Set(picksModule.coffeePicks.map((p) => p.name.toLowerCase()));
-  for (const product of catalogModule.singleOriginProducts) {
-    assert.ok(
-      !pickNames.has(product.name.toLowerCase()),
-      `"${product.name}" tayang di dua lini sekaligus; pembeli melihat dua harga ` +
-        `untuk berat yang sama pada satu halaman`,
-    );
-  }
-});
-
 /* ------------------------------------------------------------------ */
 /* 14c. Ikon tab                                                       */
 /* ------------------------------------------------------------------ */
