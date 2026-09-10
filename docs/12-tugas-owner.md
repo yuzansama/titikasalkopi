@@ -160,10 +160,18 @@ sekali di situs. Saya tidak bisa mengarangnya.
 
 ---
 
-## 9. Foto enam produk · ~1 hari · **MEMBLOKIR RILIS sejak 9 September 2026**
+## 9. Foto dua produk · ~1 hari · **MEMBLOKIR RILIS sejak 9 September 2026**
 
-Oelbiteno, Pyramid, Palimping, Kerinci, Full Robusta, Sindoro. Rasio 4:5,
-800×1000, di bawah 120 KB. Sisanya sudah punya gambar.
+> **Berkurang dari enam menjadi dua, 10 September 2026.** Oelbiteno, Pyramid,
+> Palimping, dan Kerinci kini memakai potongan artwork dari poster origin
+> Anda — keputusan Anda sendiri: pakai yang ada dulu. Mutunya di bawah lima
+> gambar yang lain (diperbesar ±4x dari ubin poster) dan penggantinya dicatat
+> di `web/public/produk/README.md`. Yang benar-benar tidak punya gambar sama
+> sekali tinggal dua.
+
+Sindoro dan Full Robusta. Rasio 4:5, 800×1000, di bawah 120 KB. Keduanya tidak
+ada di aset mana pun: poster origin hanya memuat tujuh nama tanpa Sindoro, dan
+lembar houseblend hanya memotret BOLD dan BRIGHT.
 
 > **Berubah 9 September 2026.** Butir ini dulu berbunyi "tidak memblokir
 > rilis". `D-10` pada `docs/13-diet-tampilan.md` mencabutnya. Alasannya:

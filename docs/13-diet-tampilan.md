@@ -150,7 +150,7 @@ Situs ini tidak akan pernah terlihat seperti acuan selama enam dari sebelas prod
 
 Spesifikasi minimum yang dibutuhkan developer, supaya owner tidak memotret dua kali:
 
-- **Wajib:** 1 foto untuk enam produk yang belum punya — Oelbiteno, Pyramid, Palimping, Kerinci, Full Robusta, Sindoro. Ini yang menahan.
+- **Wajib:** 1 foto untuk produk yang belum punya. Per 10 September 2026 tinggal **dua** — Sindoro dan Full Robusta. Empat lainnya (Oelbiteno, Pyramid, Palimping, Kerinci) diisi dari potongan poster origin atas keputusan owner: pakai yang ada dulu, terima mutunya yang lebih rendah, dan ganti saat berkas desainnya datang (`web/public/produk/README.md`).
 - **Sangat dianjurkan, sesudahnya:** 2 foto tambahan untuk kesebelas produk (biji dan satu foto suasana seduh). Lima produk yang sudah berfoto pun baru punya satu.
 - Rasio **4:5 tegak**, sisi terpendek minimal 1000 px.
 - Latar polos dan konsisten untuk foto pertama setiap produk — grid katalog hanya terlihat rapi kalau latar sebelas kartunya seragam.
