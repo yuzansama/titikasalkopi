@@ -15,15 +15,15 @@
  * mendampinginya (BA-06, R-14).
  */
 
-import type { Product, Tier } from "./types";
+import type { Product, Tier, Variant } from "./types";
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const VALID_TIERS: readonly Tier[] = ["signature", "reguler"];
 
 /** Hitungan pagar dari brand brief (V-15). */
-export const EXPECTED_SINGLE_ORIGIN_COUNT = 7;
+export const EXPECTED_SINGLE_ORIGIN_COUNT = 8;
 export const EXPECTED_HOUSEBLEND_LINE_COUNT = 3;
-export const EXPECTED_HOUSEBLEND_VARIANT_COUNT = 9;
+export const EXPECTED_HOUSEBLEND_VARIANT_COUNT = 18;
 
 function isPositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value > 0;
@@ -122,36 +122,15 @@ export function assertCatalogValid(products: Product[]): void {
         );
       }
 
-      if (variant.unit === "half-kg") {
-        if (!isPositiveInteger(variant.pricePerKg)) {
-          report(
-            slug,
-            `${where} bersatuan half-kg tetapi \`pricePerKg\` = ${String(variant.pricePerKg)}. Harga per kg wajib bilangan bulat rupiah lebih besar dari nol (D-02).`,
-            "V-04",
-          );
-        } else {
-          /* ---------------- V-05 pricePerKg habis dibagi 1000 ---------------- */
-          if (variant.pricePerKg % 1000 !== 0) {
-            report(
-              slug,
-              `${where} punya \`pricePerKg\` = ${variant.pricePerKg} yang tidak habis dibagi 1.000. Harga per kg wajib kelipatan Rp1.000 supaya harga 0,5 kg pasti bilangan bulat (D-02, ADR-05).`,
-              "V-05",
-            );
-          }
-          /* ---------------- V-06 unitPrice = pricePerKg / 2 ---------------- */
-          if (variant.unitPrice !== variant.pricePerKg / 2) {
-            report(
-              slug,
-              `${where} punya \`unitPrice\` = ${variant.unitPrice}, seharusnya tepat setengah dari \`pricePerKg\` = ${variant.pricePerKg}, yaitu ${variant.pricePerKg / 2} (D-02).`,
-              "V-06",
-            );
-          }
-        }
-      } else if (variant.pricePerKg !== undefined) {
+      /* ---------------- V-05 harga kemasan 1 kg kelipatan Rp1.000 ----------
+         Bukan aturan bisnis, melainkan jaring pengaman ketikan: harga kemasan
+         besar yang berakhiran angka ganjil hampir selalu salah ketik, dan pada
+         katalog ini semuanya bulat ribuan. */
+      if (variant.unit === "kg" && variant.unitPrice % 1000 !== 0) {
         report(
           slug,
-          `${where} bersatuan "${variant.unit}" tetapi mengisi \`pricePerKg\`. Medan itu hanya untuk satuan half-kg.`,
-          "V-04",
+          `${where} punya \`unitPrice\` = ${variant.unitPrice} yang tidak habis dibagi 1.000. Harga kemasan 1 kg wajib kelipatan Rp1.000 (ADR-05).`,
+          "V-05",
         );
       }
 
@@ -214,6 +193,53 @@ export function assertCatalogValid(products: Product[]): void {
           "V-08",
         );
       }
+      /* ---------------- V-06 pasangan ukuran kemasan houseblend ----------
+         Sejak 9 September 2026 setiap rasio dijual dalam dua ukuran, dan
+         keduanya punya harga tersimpan sendiri. Yang dulu dijamin aritmetika
+         (`harga 0,5 kg == harga per kg / 2`) sekarang harus dijamin di sini.
+
+         Dua batas, dan keduanya melindungi hal yang berbeda:
+
+         - Dua kemasan 0,5 kg wajib LEBIH MAHAL daripada satu kemasan 1 kg.
+           Kalau tidak, kemasan besar kehilangan alasan untuk ada, dan pembeli
+           yang menghitung akan selalu memesan yang kecil.
+         - Satu kemasan 0,5 kg wajib LEBIH MURAH daripada kemasan 1 kg. Kalau
+           tidak, halaman yang sama menawarkan kemasan lebih kecil dengan harga
+           lebih tinggi, dan pembeli wajar menyimpulkan situsnya salah harga. */
+      const groups = new Map<string, Variant[]>();
+      for (const variant of product.variants) {
+        if (!variant.groupId) continue;
+        groups.set(variant.groupId, [
+          ...(groups.get(variant.groupId) ?? []),
+          variant,
+        ]);
+      }
+      for (const [groupId, variants] of groups) {
+        const kg = variants.find((v) => v.unit === "kg");
+        const halfKg = variants.find((v) => v.unit === "half-kg");
+        if (!kg || !halfKg || variants.length !== 2) {
+          report(
+            slug,
+            `kelompok ukuran "${groupId}" wajib berisi tepat satu kemasan 1 kg dan satu kemasan 0,5 kg; ditemukan ${variants.length} varian.`,
+            "V-06",
+          );
+          continue;
+        }
+        if (halfKg.unitPrice * 2 <= kg.unitPrice) {
+          report(
+            slug,
+            `pada "${groupId}", dua kemasan 0,5 kg berharga ${halfKg.unitPrice * 2} — tidak lebih mahal daripada satu kemasan 1 kg (${kg.unitPrice}). Kemasan 1 kg jadi tidak punya alasan untuk ada.`,
+            "V-06",
+          );
+        }
+        if (halfKg.unitPrice >= kg.unitPrice) {
+          report(
+            slug,
+            `pada "${groupId}", kemasan 0,5 kg berharga ${halfKg.unitPrice} — tidak lebih murah daripada kemasan 1 kg (${kg.unitPrice}).`,
+            "V-06",
+          );
+        }
+      }
     } else {
       report(
         slug,
@@ -244,6 +270,27 @@ export function assertCatalogValid(products: Product[]): void {
         report(
           slug,
           `varian "${bundles[0].id}" bersatuan paket wajib \`packsPerUnit\` = 3 (D-01: satu paket berisi tiga kemasan dari origin yang sama), bukan ${String(bundles[0].packsPerUnit)}.`,
+          "V-10",
+        );
+      }
+
+      /* ---------------- V-10b kemasan mini 100 gr ----------------
+         Opsional: lembar "Product" tidak memberi Sindoro kemasan mini. Tetapi
+         bila ada, ia wajib lebih murah dari kemasan 200 gr — kalau tidak,
+         halaman produk menawarkan kemasan lebih kecil dengan harga lebih
+         tinggi, dan pengunjung wajar menyimpulkan situsnya salah harga. */
+      const minis = product.variants.filter((v) => v.unit === "gram-100");
+      if (minis.length > 1) {
+        report(
+          slug,
+          `ditemukan ${minis.length} varian kemasan 100 gr; satu produk hanya boleh punya satu.`,
+          "V-10",
+        );
+      }
+      if (minis[0] && packs[0] && minis[0].unitPrice >= packs[0].unitPrice) {
+        report(
+          slug,
+          `kemasan 100 gr berharga ${minis[0].unitPrice}, tidak lebih murah dari kemasan 200 gr (${packs[0].unitPrice}).`,
           "V-10",
         );
       }
@@ -337,57 +384,6 @@ export function assertCatalogValid(products: Product[]): void {
         "==================================================================",
         "",
       ].join("\n"),
-    );
-  }
-}
-
-/**
- * V-20 — lini Katalog Kopi 100 gram (KD-07).
- *
- * Lini ini tidak melewati `assertCatalogValid` karena ia bukan `Product`, jadi
- * invariannya diperiksa di sini. Yang paling berbahaya adalah slug bertabrakan
- * dengan produk: `cartCatalogIndex` dirakit dari kedua daftar, dan yang belakangan
- * menang secara diam-diam — pengunjung akan menambahkan satu barang lalu melihat
- * barang lain beserta harga lain di keranjang.
- */
-export function assertPicksValid(
-  picks: readonly { slug: string; name: string; price: number }[],
-  productSlugs: readonly string[],
-): void {
-  const errors: string[] = [];
-  const taken = new Set(productSlugs);
-  const seen = new Set<string>();
-
-  for (const pick of picks) {
-    if (!SLUG_PATTERN.test(pick.slug)) {
-      errors.push(`[V-20] ${pick.slug}: bentuk slug tidak sah.`);
-    }
-    if (seen.has(pick.slug)) {
-      errors.push(`[V-20] ${pick.slug}: slug ganda di dalam lini 100 gram.`);
-    }
-    seen.add(pick.slug);
-
-    if (taken.has(pick.slug)) {
-      errors.push(
-        `[V-20] ${pick.slug}: slug bentrok dengan produk 200 gram. ` +
-          `Keranjang akan menampilkan barang dan harga yang salah.`,
-      );
-    }
-    if (!isNonEmptyString(pick.name)) {
-      errors.push(`[V-20] ${pick.slug}: nama kosong.`);
-    }
-    if (!Number.isInteger(pick.price) || pick.price <= 0) {
-      errors.push(
-        `[V-20] ${pick.slug}: harga wajib bilangan bulat positif (BR-03).`,
-      );
-    }
-  }
-
-  if (errors.length > 0) {
-    throw new Error(
-      ["Katalog Kopi 100 gram tidak sah:", ...errors.map((e) => `  ${e}`)].join(
-        "\n",
-      ),
     );
   }
 }

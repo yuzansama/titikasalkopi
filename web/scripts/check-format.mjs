@@ -21,7 +21,7 @@ const format = await loadTs("src/lib/format.ts");
 const {
   formatIDR,
   formatPricePerKg,
-  formatKgFromHalfUnits,
+  formatTotalWeight,
   formatQuantity,
   unitLabel,
   formatNumber,
@@ -78,40 +78,65 @@ check("BR-02: sufiks /kg menempel tanpa spasi", () => {
 });
 
 /* ---------------------------------------------------------------- */
-/* FR-21 — satuan kilogram dengan koma desimal Indonesia             */
+/* Berat total, dengan koma desimal Indonesia                        */
 /* ---------------------------------------------------------------- */
 
-check("FR-21: halfKgUnits diubah ke kilogram dengan koma Indonesia", () => {
-  assert.equal(formatKgFromHalfUnits(1), "0,5 kg");
-  assert.equal(formatKgFromHalfUnits(2), "1 kg");
-  assert.equal(formatKgFromHalfUnits(3), "1,5 kg");
-  assert.equal(formatKgFromHalfUnits(10), "5 kg");
-  assert.equal(formatKgFromHalfUnits(199), "99,5 kg");
+check("berat total dihitung dari jumlah kemasan, dengan koma Indonesia", () => {
+  assert.equal(formatTotalWeight(1, "half-kg"), "0,5 kg");
+  assert.equal(formatTotalWeight(2, "half-kg"), "1 kg");
+  assert.equal(formatTotalWeight(3, "half-kg"), "1,5 kg");
+  assert.equal(formatTotalWeight(1, "kg"), "1 kg");
+  assert.equal(formatTotalWeight(5, "kg"), "5 kg");
+  // Kemasan yang beratnya bukan urusan pembeli tidak menghasilkan berat total.
+  assert.equal(formatTotalWeight(2, "pack"), null);
+  assert.equal(formatTotalWeight(2, "gram-100"), null);
 });
 
-check("FR-21: tidak ada titik desimal gaya Inggris pada satuan kg", () => {
-  for (let units = 1; units <= 99; units += 1) {
-    const text = formatKgFromHalfUnits(units);
-    assert.ok(!text.includes("."), `${units} -> ${text} memakai titik desimal`);
+check("tidak ada titik desimal gaya Inggris pada berat total", () => {
+  for (let packs = 1; packs <= 99; packs += 1) {
+    const text = formatTotalWeight(packs, "half-kg");
+    assert.ok(!text.includes("."), `${packs} -> ${text} memakai titik desimal`);
   }
 });
 
-check("BRD 11.2: formatQuantity menulis satuan apa adanya per unit pesan", () => {
+/**
+ * BRD 11.2 — kuantitas SELALU menghitung kemasan.
+ *
+ * Ini yang berubah pada 9 September 2026, dan alasannya bukan gaya penulisan.
+ * Selama houseblend ditulis sebagai berat ("1,5 kg") di sebelah harga satu
+ * kemasan, pembeli yang mengalikan keduanya mendapat angka yang bukan
+ * tagihannya. Angka di kiri "x" wajib angka yang sama dengan yang dikalikan
+ * kode.
+ */
+check("BRD 11.2: formatQuantity selalu menghitung kemasan, bukan berat", () => {
   assert.equal(formatQuantity(2, "pack"), "2 pack");
   assert.equal(formatQuantity(1, "paket"), "1 paket (3 pack)");
-  assert.equal(formatQuantity(1, "half-kg"), "0,5 kg");
-  assert.equal(formatQuantity(3, "half-kg"), "1,5 kg");
+  assert.equal(formatQuantity(1, "kg"), "1 kemasan 1 kg");
+  assert.equal(formatQuantity(5, "kg"), "5 kemasan 1 kg");
+  assert.equal(formatQuantity(1, "half-kg"), "1 kemasan 0,5 kg");
+  assert.equal(formatQuantity(3, "half-kg"), "3 kemasan 0,5 kg");
+  assert.equal(formatQuantity(3, "gram-100"), "3 x 100 gr");
 });
 
-check("0,5 kg tidak pernah dibulatkan menjadi 1 kg", () => {
-  assert.equal(formatQuantity(1, "half-kg"), "0,5 kg");
-  assert.notEqual(formatQuantity(1, "half-kg"), "1 kg");
+check("kuantitas houseblend tidak pernah terbaca sebagai berat", () => {
+  // "1,5 kg" di posisi kuantitas adalah bentuk yang melahirkan cacat harga
+  // 9 September 2026. Angka pengali dan berat total tidak boleh tertukar.
+  for (const packs of [1, 2, 3, 10]) {
+    for (const unit of ["kg", "half-kg"]) {
+      assert.ok(
+        formatQuantity(packs, unit).startsWith(`${packs} kemasan`),
+        `${packs} ${unit} -> ${formatQuantity(packs, unit)}`,
+      );
+    }
+  }
 });
 
-check("label satuan konsisten dengan BR-08 dan BR-13", () => {
+check("label satuan menyebut kemasan yang dihargai", () => {
   assert.equal(unitLabel("pack"), "per pack 200 gr");
   assert.equal(unitLabel("paket"), "per paket 3 pack");
-  assert.equal(unitLabel("half-kg"), "per 0,5 kg");
+  assert.equal(unitLabel("kg"), "per kemasan 1 kg");
+  assert.equal(unitLabel("half-kg"), "per kemasan 0,5 kg");
+  assert.equal(unitLabel("gram-100"), "per 100 gr");
 });
 
 check("formatNumber memakai pemisah ribuan Indonesia (MASL)", () => {

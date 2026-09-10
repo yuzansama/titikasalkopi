@@ -7,6 +7,8 @@ import {
   categoryLabel,
   defaultVariant,
   houseblendComposition,
+  houseblendSizeGroups,
+  packSaving,
   productHref,
   relatedProducts,
 } from "@/data/catalog";
@@ -16,6 +18,7 @@ import { ViewEvent } from "@/features/analytics/view-event";
 import { AskAboutProductButton } from "@/features/whatsapp/ask-about-product-button";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { PurchasePanel } from "./purchase-panel";
+import type { RatioRow } from "./ratio-table";
 import { ProductMedia } from "./product-media";
 import { RelatedProducts } from "./related-products";
 import type { VariantOption } from "./variant-option";
@@ -28,20 +31,49 @@ import type { VariantOption } from "./variant-option";
  * FR-07 ditegakkan secara struktural: daftar fakta di bawah hanya merender
  * medan yang BUKAN `null`. Tidak ada atribut origin yang dikarang, dan tidak
  * ada kalimat pemasaran yang menyiratkan atribut yang tidak ada di brand brief.
+ *
+ * D-12 memindahkan pil catatan rasa dan penghematan 3 pack keluar dari kartu
+ * produk, sehingga halaman INI satu-satunya tempat keduanya masih tayang.
+ * Jangan hapus salah satu pun saat memangkas kata: penghematan wajib tetap
+ * menempel pada opsi variannya (syarat Business Analyst), dan angkanya wajib
+ * datang dari `bundleSaving()` — tidak pernah diketik, tidak pernah dihitung
+ * ulang di Client Component.
  */
 
-function toVariantOptions(product: Product): VariantOption[] {
-  return product.variants.map((variant) => ({
+function toVariantOption(variant: Product["variants"][number]): VariantOption {
+  return {
     id: variant.id,
     label: variant.label,
     unit: variant.unit,
     unitPrice: variant.unitPrice,
-    ...(variant.pricePerKg !== undefined
-      ? { pricePerKg: variant.pricePerKg }
-      : {}),
+    ...(variant.groupId !== undefined ? { groupId: variant.groupId } : {}),
     minQty: variant.minQty,
     step: variant.step,
-  }));
+  };
+}
+
+function toVariantOptions(product: Product): VariantOption[] {
+  return product.variants.map(toVariantOption);
+}
+
+/**
+ * Baris tabel rasio: satu rasio, dua ukuran kemasan.
+ *
+ * Penghematan memilih kemasan 1 kg dihitung DI SINI lewat `packSaving()`, sama
+ * seperti penghematan bundel 3 pack lewat `bundleSaving()`. Tidak ada uang yang
+ * dihitung ulang di Client Component.
+ */
+function toRatioRows(product: Product): RatioRow[] {
+  return houseblendSizeGroups(product).map((group) => {
+    const saving = packSaving(group);
+    return {
+      id: group.id,
+      label: group.label,
+      kg: toVariantOption(group.kg),
+      halfKg: toVariantOption(group.halfKg),
+      ...(saving > 0 ? { kgSavingLabel: `Hemat ${formatIDR(saving)}` } : {}),
+    };
+  });
 }
 
 function originFacts(product: Product): Array<{ label: string; value: string }> {
@@ -191,17 +223,20 @@ export function ProductDetail({ product }: { product: Product }) {
                   </div>
                 ))}
               </dl>
-              <p className="mt-2 text-sm text-olive">
-                Hanya keterangan yang kami ketahui yang ditampilkan. Detail lain
-                dapat ditanyakan lewat WhatsApp.
-              </p>
+              {/* D-12 — kalimat "Hanya keterangan yang kami ketahui yang
+                  ditampilkan…" dihapus: ia mengumumkan kebijakan editorial
+                  kepada pembeli yang tidak menanyakannya. Aturannya sendiri
+                  tidak ikut hilang — FR-07 ditegakkan `originFacts()` di atas,
+                  yang memang hanya merender medan non-null. */}
             </section>
           ) : null}
 
           {saving !== null ? (
+            /* D-12 — dipendekkan, tidak dihapus. Isi satu paket sudah dijelaskan
+               `qtyHint()` di panel pesan tepat di bawah, jadi mengulangnya di
+               sini hanya menambah kata. Angkanya tetap `bundleSaving()`. */
             <p className="mt-6 rounded-md bg-coffee px-4 py-3 text-[0.95rem] text-cream">
-              Paket 3 pack berisi tiga kemasan 200 gr dari origin yang sama dan
-              hemat {formatIDR(saving)} dibanding membeli tiga pack satuan.
+              Paket 3 pack hemat {formatIDR(saving)} dibanding tiga pack satuan.
             </p>
           ) : null}
 
@@ -212,15 +247,38 @@ export function ProductDetail({ product }: { product: Product }) {
             >
               Pesan {product.name}
             </h2>
+            {/* FR-14 — status dari sheet owner, dinyatakan sekali dan di tempat
+                keputusan. Menaruhnya hanya di kartu katalog berarti pembeli yang
+                membuka tautan langsung tidak pernah melihatnya. */}
+            {product.status === "out-of-stock" ? (
+              <p className="mt-2 rounded-md bg-rust/10 px-3 py-2 text-sm text-coffee">
+                Stok {product.name} sedang kosong. Halaman ini tetap tayang agar
+                Anda bisa menandainya, tetapi pesanan belum bisa kami terima.
+              </p>
+            ) : null}
             <div className="mt-4">
               <PurchasePanel
                 slug={product.slug}
                 productName={product.name}
                 variants={variants}
-                useRatioTable={isHouseblend && variants.length > 2}
+                ratioRows={
+                  isHouseblend && product.variants.length > 2
+                    ? toRatioRows(product)
+                    : undefined
+                }
                 variantNotes={variantNotes}
+                soldOut={product.status === "out-of-stock"}
               />
             </div>
+
+            {/* D-13 menyatakan kalimat ini hidup di /kontak DAN di panel pesan
+                halaman produk. Bagian keduanya ternyata tidak pernah ada:
+                sampai footer dipendekkan, satu-satunya alasan halaman produk
+                memuatnya adalah footer yang mengulanginya di setiap rute. Ini
+                yang menepatinya, di titik pembeli benar-benar menekan tombol. */}
+            <p className="mt-3 text-sm text-olive">
+              Pembayaran tidak dilakukan di website ini.
+            </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <AskAboutProductButton
@@ -230,7 +288,6 @@ export function ProductDetail({ product }: { product: Product }) {
                 variantLabel={cheapest.label}
                 unit={cheapest.unit}
                 unitPrice={cheapest.unitPrice}
-                pricePerKg={cheapest.pricePerKg}
                 path={productHref(product)}
               />
               <ShopeeLink productId={product.slug} className="w-full sm:w-auto" />
@@ -239,14 +296,13 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
+      {/* D-12 — `lead` dilepas: judul seksinya sudah menyatakan isi grid, dan
+          kalimat pengantarnya mengulang apa yang terlihat di kartu. Prop-nya
+          tetap opsional di `RelatedProducts`, jadi tidak ada yang perlu diubah
+          di sana. */}
       <RelatedProducts
         id="produk-lain"
         title={isHouseblend ? "Lini houseblend lainnya" : "Origin lainnya"}
-        lead={
-          isHouseblend
-            ? "Dua lini sisanya, sama-sama dijual per kilogram dengan pemesanan mulai 0,5 kg."
-            : "Origin lain dalam kemasan 200 gr, tersedia satuan maupun paket 3 pack."
-        }
         products={related}
       />
     </Container>

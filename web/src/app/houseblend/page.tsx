@@ -4,10 +4,11 @@ import { buttonClass, CARD, FOCUS_RING_INVERSE } from "@/components/ui/styles";
 import {
   houseblendComposition,
   houseblendProducts,
+  houseblendSizeGroups,
   productHref,
 } from "@/data/catalog";
 import { ViewEvent } from "@/features/analytics/view-event";
-import { formatIDR, formatPricePerKg } from "@/lib/format";
+import { formatIDR } from "@/lib/format";
 import { breadcrumbJsonLd, houseblendIndexMetadata } from "@/lib/seo";
 import { site, waLink } from "@/lib/site";
 
@@ -17,8 +18,8 @@ export const dynamic = "error";
 export const metadata = houseblendIndexMetadata();
 
 /**
- * FR-08, FR-27, FR-28 — penjelasan tiga lini dan tabel gabungan sembilan
- * varian beserta harga per kg dan harga 0,5 kg turunannya.
+ * FR-08, FR-27, FR-28 — penjelasan tiga lini dan tabel gabungan sembilan rasio
+ * beserta harga kedua ukuran kemasannya.
  *
  * Tabel di sini SENGAJA statis (bukan `RatioTable` interaktif): halaman ini
  * membandingkan seluruh lini, sementara pemilihan rasio dilakukan di halaman
@@ -42,12 +43,10 @@ export default function HouseblendIndexPage() {
 
       <Container className="py-10 sm:py-14">
         <h1 className="font-display text-3xl font-semibold text-primary sm:text-4xl">
-          Houseblend per kilogram
+          Houseblend
         </h1>
         <p className="mt-3 max-w-2xl text-olive">
-          Tiga lini blend untuk kedai dan rumah. Dijual per kilogram dengan
-          pemesanan mulai 0,5 kg; harga 0,5 kg tepat setengah harga per kg,
-          tanpa premium kemasan kecil.
+          Tiga lini blend untuk kedai dan rumah, dalam kemasan 1 kg dan 0,5 kg.
         </p>
 
         {/* FR-27 — karakter dan komposisi tiap lini */}
@@ -75,10 +74,12 @@ export default function HouseblendIndexPage() {
                     ))}
                   </ul>
                 ) : null}
-                <p className="mt-3 flex-1 text-[0.95rem] text-olive">
-                  {line.description}
-                </p>
-                <p className="mt-4">
+                {/* D-11 — deskripsi panjang tiap lini TIDAK diulang di kartu
+                    ini. Ia utuh di halaman lininya, dan kartu ini cukup
+                    menyebut komposisi lalu mengantar ke sana; mengulangnya di
+                    sini menghabiskan seperempat anggaran kata halaman untuk
+                    kalimat yang sudah punya rumah. */}
+                <p className="mt-auto pt-4">
                   <Link
                     href={productHref(line)}
                     className={buttonClass("outline", "md", "w-full")}
@@ -101,8 +102,8 @@ export default function HouseblendIndexPage() {
           <div className="mt-6 overflow-x-auto rounded-lg border-l-2 border-gold">
             <table className="w-full min-w-[26rem] border-collapse text-left">
               <caption className="sr-only">
-                Daftar sembilan varian houseblend beserta harga per kilogram dan
-                harga per 0,5 kg
+                Daftar sembilan rasio houseblend beserta harga kemasan 1 kg dan
+                kemasan 0,5 kg
               </caption>
               <thead>
                 <tr className="border-b border-primary/20">
@@ -110,27 +111,27 @@ export default function HouseblendIndexPage() {
                     Lini
                   </th>
                   <th scope="col" className="px-3 py-2 text-sm font-semibold">
-                    Varian
+                    Rasio
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-2 text-right text-sm font-semibold"
                   >
-                    Per kg
+                    Kemasan 1 kg
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-2 text-right text-sm font-semibold"
                   >
-                    Per 0,5 kg
+                    Kemasan 0,5 kg
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {houseblendProducts.flatMap((line) =>
-                  line.variants.map((variant) => (
+                  houseblendSizeGroups(line).map((group) => (
                     <tr
-                      key={variant.id}
+                      key={group.id}
                       className="border-b border-primary/10 last:border-0"
                     >
                       <td className="whitespace-nowrap px-3 py-2 text-sm text-olive">
@@ -140,15 +141,13 @@ export default function HouseblendIndexPage() {
                         scope="row"
                         className="px-3 py-2 text-left font-normal text-primary"
                       >
-                        {variant.label}
+                        {group.label}
                       </th>
                       <td className="whitespace-nowrap px-3 py-2 text-right text-coffee">
-                        {variant.pricePerKg
-                          ? formatPricePerKg(variant.pricePerKg)
-                          : "—"}
+                        {formatIDR(group.kg.unitPrice)}
                       </td>
                       <td className="whitespace-nowrap px-3 py-2 text-right text-olive">
-                        {formatIDR(variant.unitPrice)}
+                        {formatIDR(group.halfKg.unitPrice)}
                       </td>
                     </tr>
                   )),
@@ -166,9 +165,8 @@ export default function HouseblendIndexPage() {
             Untuk kedai
           </h2>
           <p className="mt-2 max-w-2xl text-cream/80">
-            Butuh bantuan memilih rasio yang cocok dengan mesin dan menu Anda?
-            Ceritakan kebutuhannya lewat WhatsApp — kami bantu bandingkan lini
-            dan rasionya.
+            Ceritakan mesin dan menu Anda lewat WhatsApp; kami bantu memilih
+            rasionya.
           </p>
           <p className="mt-5">
             <a

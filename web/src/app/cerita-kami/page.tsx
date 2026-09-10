@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
-import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
+import { buttonClass, CARD } from "@/components/ui/styles";
 import { catalogGroups } from "@/data/catalog";
 import { ceritaKamiMetadata } from "@/lib/seo";
-import { instagram, shopee, site, whatsapp } from "@/lib/site";
+import { site } from "@/lib/site";
 
 /* ADR-01 */
 export const dynamic = "error";
@@ -18,7 +18,21 @@ export const metadata = ceritaKamiMetadata();
  * cerita pendiri — tidak satu pun disebut brand brief, dan mengarangnya
  * melanggar FR-07 dan FR-31. Setiap kalimat di bawah dapat ditelusuri ke
  * docs/00-brand-brief.md atau ke isi katalog yang sudah tayang.
+ *
+ * D-11 memangkas halaman ini dari 351 kata ke plafon 260. Pemangkasannya
+ * dikerjakan dengan MEMBUANG kalimat, bukan dengan menukarnya menjadi kalimat
+ * yang lebih pendek dan lebih berani: batasan di atas membuat kalimat pengganti
+ * yang lebih tegas hampir pasti menjadi klaim yang tidak berdasar. Yang tersisa
+ * adalah alinea yang menjawab "kenapa Indonesia Timur dan Nusantara" beserta
+ * dua kartu kelompok asalnya — itu alasan halaman ini ada.
  */
+
+/* TODO(copy): bila owner ingin menceritakan proses kurasi origin (kunjungan
+   kebun, cupping, kriteria seleksi), kalimatnya harus berasal dari owner. Kami
+   tidak menambahkannya sendiri karena docs/00-brand-brief.md tidak menyebut
+   satu pun proses tersebut. Catatan ini dipindahkan ke sini karena seksi "Cara
+   kami menuliskan asal" yang dulu memuatnya dihapus oleh D-11; utangnya kepada
+   owner belum lunas, jadi catatannya tidak ikut dihapus. */
 export default function CeritaKamiPage() {
   const signature = catalogGroups[0];
   const reguler = catalogGroups[1];
@@ -83,59 +97,27 @@ export default function CeritaKamiPage() {
         </div>
       </section>
 
-      <section className="mt-10" aria-labelledby="cara-memilih">
-        <h2
-          id="cara-memilih"
-          className="font-display text-2xl font-semibold text-primary"
-        >
-          Cara kami menuliskan asal
-        </h2>
-        <p className="mt-3 text-primary">
-          Pada halaman produk kami hanya menuliskan keterangan yang benar-benar
-          kami ketahui: lokasi, wilayah, provinsi, dan — bila tersedia — proses
-          pasca panen, nama prosesor, ketinggian, serta varietal. Bila sebuah
-          keterangan belum kami pastikan, keterangan itu tidak ditampilkan sama
-          sekali, bukan diisi perkiraan. Karena itu sebagian halaman produk
-          memuat lebih sedikit baris daripada yang lain.
-        </p>
-        {/* TODO(copy): bila owner ingin menceritakan proses kurasi origin
-            (kunjungan kebun, cupping, kriteria seleksi), kalimatnya harus
-            berasal dari owner. Kami tidak menambahkannya sendiri karena
-            docs/00-brand-brief.md tidak menyebut satu pun proses tersebut. */}
-      </section>
+      {/* D-11 — seksi "Cara kami menuliskan asal" dihapus seluruhnya. Ia
+          menjelaskan kebijakan editorial yang sama dengan kalimat yang dibuang
+          dari halaman produk, dan kebijakan itu tetap ditegakkan kode
+          (`originFacts()` hanya merender medan non-null), bukan oleh paragraf.
+          TODO(copy) yang dulu menempel di sini dipindahkan ke atas berkas.
 
-      <section className="mt-10" aria-labelledby="kanal">
-        <h2 id="kanal" className="font-display text-2xl font-semibold text-primary">
-          Kanal resmi
-        </h2>
-        <p className="mt-3 text-primary">
-          Kami hanya melayani lewat tiga kanal berikut. Pemesanan diselesaikan di
-          WhatsApp; pembayaran tidak pernah dilakukan di website ini.
-        </p>
-        <ul className="mt-3 space-y-1 text-primary">
-          <li>WhatsApp {whatsapp.display}</li>
-          <li>Instagram {instagram.handle}</li>
-          <li>Shopee {shopee.handle}</li>
-        </ul>
-        <p className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Link href="/katalog" className={buttonClass("primary", "lg")}>
-            Lihat katalog
-          </Link>
-          <Link href="/kontak" className={buttonClass("outline", "lg")}>
-            Halaman kontak
-          </Link>
-        </p>
-      </section>
+          D-11 — seksi "Kanal resmi" ikut dihapus, disusutkan menjadi dua tombol
+          di bawah. Ketiga kanalnya sudah tayang di footer setiap halaman dan
+          diulang lengkap di /kontak; kalimat pembayarannya pun hidup di
+          /kontak. Yang tersisa di sini hanyalah dua langkah lanjutan.
 
-      <p className="mt-10 text-sm text-olive">
-        Ada pertanyaan tentang asal biji tertentu?{" "}
-        <Link
-          href="/kontak"
-          className={`rounded-sm text-rust underline underline-offset-4 ${FOCUS_RING}`}
-        >
-          Hubungi kami
+          D-11 — kalimat penutup "Ada pertanyaan tentang asal biji tertentu?
+          Hubungi kami." dihapus: ia mengulang tombol "Halaman kontak" yang
+          berdiri tepat di atasnya. */}
+      <p className="mt-10 flex flex-col gap-3 sm:flex-row">
+        <Link href="/katalog" className={buttonClass("primary", "lg")}>
+          Lihat katalog
         </Link>
-        .
+        <Link href="/kontak" className={buttonClass("outline", "lg")}>
+          Halaman kontak
+        </Link>
       </p>
     </Container>
   );

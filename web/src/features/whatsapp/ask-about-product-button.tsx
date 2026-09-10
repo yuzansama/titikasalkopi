@@ -24,7 +24,6 @@ export function AskAboutProductButton({
   variantLabel,
   unit,
   unitPrice,
-  pricePerKg,
   path,
 }: {
   productId: string;
@@ -33,7 +32,6 @@ export function AskAboutProductButton({
   variantLabel: string;
   unit: OrderUnit;
   unitPrice: number;
-  pricePerKg?: number;
   /** Path kanonis produk, mis. "/produk/abmisibil". */
   path: string;
 }) {
@@ -44,7 +42,6 @@ export function AskAboutProductButton({
     variantLabel,
     unit,
     unitPrice,
-    pricePerKg,
     sourceUrl: `${site.url}${path}`,
   });
 

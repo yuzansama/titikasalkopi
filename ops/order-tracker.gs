@@ -191,7 +191,6 @@ function json(payload) {
 
 var PRICE_SHEET = 'harga';
 var STOCK_SHEET = 'stok';
-var PICKS_SHEET = 'katalog100';
 
 /** Membaca satu tab sebagai array objek berkunci judul kolom. */
 function readSheetRows_(name) {
@@ -243,7 +242,6 @@ function money_(raw) {
 function readCatalog_() {
   var priceRows = readSheetRows_(PRICE_SHEET);
   var stockRows = readSheetRows_(STOCK_SHEET);
-  var pickRows = readSheetRows_(PICKS_SHEET);
 
   var harga = null;
   if (priceRows) {
@@ -267,21 +265,7 @@ function readCatalog_() {
     });
   }
 
-  var picks = null;
-  if (pickRows) {
-    picks = [];
-    pickRows.forEach(function (row) {
-      var slug = String(row.slug || '').trim().toLowerCase();
-      var nama = sanitizeCell_(row.nama);
-      var harga100 = money_(row.harga);
-      var status = String(row.status || 'available').trim().toLowerCase();
-      if (!slug || !nama || harga100 === null) return;
-      if (status === 'out-of-stock') return; // disembunyikan, bukan dihapus
-      picks.push({ slug: slug, name: nama, price: harga100 });
-    });
-  }
-
-  return { harga: harga, stok: stok, picks: picks };
+  return { harga: harga, stok: stok };
 }
 
 /* ================================================================== */

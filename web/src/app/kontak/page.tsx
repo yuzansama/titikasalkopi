@@ -31,8 +31,7 @@ export default function KontakPage() {
         Kontak
       </h1>
       <p className="mt-3 max-w-2xl text-olive">
-        Pesanan, pertanyaan tentang origin, dan kebutuhan kedai semuanya
-        diselesaikan lewat WhatsApp. Tidak ada formulir yang perlu diisi di sini.
+        Semua pesanan diselesaikan lewat WhatsApp.
       </p>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">
@@ -44,6 +43,9 @@ export default function KontakPage() {
             Kanal resmi
           </h2>
 
+          {/* D-13: baris keterangan di bawah Instagram dan Shopee dibuang.
+              Judul kartu, handle, dan label tombolnya sudah menyebut kanalnya;
+              kalimat tambahan hanya menjelaskan apa yang sudah terlihat. */}
           <ul className="mt-5 space-y-4">
             <li className={`${CARD} p-5`}>
               <h3 className="flex items-center gap-2 font-heading text-sm font-semibold uppercase tracking-wide text-primary">
@@ -74,9 +76,6 @@ export default function KontakPage() {
               <p className="mt-2 text-lg font-semibold text-primary">
                 {instagram.handle}
               </p>
-              <p className="mt-1 text-[0.95rem] text-olive">
-                Tempat kami menayangkan kabar produk dan aktivitas roastery.
-              </p>
               <p className="mt-4">
                 <a
                   href={instagram.url}
@@ -94,10 +93,6 @@ export default function KontakPage() {
                 <ShopeeIcon />
                 Shopee
               </h3>
-              <p className="mt-1 text-[0.95rem] text-olive">
-                Alternatif pembelian bila Anda lebih nyaman bertransaksi di
-                marketplace.
-              </p>
               <p className="mt-4">
                 <ShopeeLink className="w-full sm:w-auto" />
               </p>

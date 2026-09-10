@@ -17,10 +17,8 @@
  * yang sudah di-resolve sebagai props (aturan ketergantungan nomor 4).
  */
 
-import { coffeePicks, PICK_GRAMS, pickVariantId } from "./picks";
 import {
-  HOUSEBLEND_MIN_HALF_KG_UNITS,
-  HOUSEBLEND_STEP_HALF_KG_UNITS,
+  SINGLE_ORIGIN_MINI_PACK_GRAMS,
   SINGLE_ORIGIN_PACKS_PER_BUNDLE,
   SINGLE_ORIGIN_PACK_GRAMS,
   houseblendBold,
@@ -41,7 +39,7 @@ import type {
   Tier,
   Variant,
 } from "./types";
-import { assertCatalogValid, assertPicksValid } from "./validate";
+import { assertCatalogValid } from "./validate";
 
 /* ------------------------------------------------------------------ */
 /* Konstanta tampilan yang diturunkan dari data                        */
@@ -52,8 +50,8 @@ export const PRODUCT_IMAGE_ASPECT_RATIO = "4 / 5";
 export const PRODUCT_IMAGE_WIDTH = 800;
 export const PRODUCT_IMAGE_HEIGHT = 1000;
 
-/** Satu kg = dua satuan pesan houseblend (D-02). */
-export const HALF_KG_UNITS_PER_KG = 2;
+/** Dua kemasan 0,5 kg menutupi berat yang sama dengan satu kemasan 1 kg. */
+export const HALF_KG_PACKS_PER_KG = 2;
 
 export const TIER_LABEL: Record<Tier, string> = {
   signature: "Signature",
@@ -76,10 +74,16 @@ export function placeholderImagePath(slug: string): string {
 /* Turunan harga — dihitung, tidak pernah disimpan                     */
 /* ------------------------------------------------------------------ */
 
-/** Harga 0,5 kg SELALU turunan dari pricePerKg (D-02). */
-export function halfKgPrice(pricePerKg: PriceIDR): PriceIDR {
-  // Dijamin bilangan bulat oleh validator V-05: pricePerKg % 1000 === 0.
-  return pricePerKg / 2;
+/**
+ * Penghematan membeli satu kemasan 1 kg dibanding dua kemasan 0,5 kg.
+ *
+ * Kemasan kecil membawa margin sendiri, sehingga dua kemasan 0,5 kg selalu
+ * lebih mahal daripada satu kemasan 1 kg (BOLD 70:30 — 2 x Rp120.000 =
+ * Rp240.000 terhadap Rp215.000). Seperti `bundleSaving()`, angka ini WAJIB
+ * dihitung dan tidak pernah ditulis sebagai teks.
+ */
+export function packSaving(group: HouseblendSizeGroup): PriceIDR {
+  return group.halfKg.unitPrice * HALF_KG_PACKS_PER_KG - group.kg.unitPrice;
 }
 
 /** Harga terendah antar varian; dipakai kartu katalog "mulai dari" (BRD 10.2). */
@@ -87,17 +91,22 @@ export function priceFrom(product: Product): PriceIDR {
   return Math.min(...product.variants.map((v) => v.unitPrice));
 }
 
-/** Harga per kg terendah pada satu lini houseblend. null untuk single origin. */
+/**
+ * Harga kemasan 1 kg termurah pada satu lini houseblend. null untuk single origin.
+ *
+ * Ini harga sebuah kemasan yang benar-benar dijual, bukan tarif turunan — itulah
+ * sebabnya ia boleh ditulis dengan akhiran "/kg" di kartu dan beranda.
+ */
 export function pricePerKgFrom(product: Product): PriceIDR | null {
   const perKg = product.variants
-    .map((v) => v.pricePerKg)
-    .filter((price): price is PriceIDR => typeof price === "number");
+    .filter((v) => v.unit === "kg")
+    .map((v) => v.unitPrice);
   return perKg.length > 0 ? Math.min(...perKg) : null;
 }
 
 /**
  * Penghematan bundling 3 pack (BR-10). WAJIB dihitung, tidak boleh ditulis
- * sebagai angka di konten: Signature Rp25.000, Reguler Rp20.000.
+ * sebagai angka di konten: Signature Rp28.000, Reguler Rp23.000.
  */
 export function bundleSaving(product: Product): PriceIDR | null {
   const single = product.variants.find((v) => v.unit === "pack");
@@ -123,18 +132,28 @@ export function lineTotal(variant: Variant, qty: number): PriceIDR {
   return variant.unitPrice * qty;
 }
 
-/** Konversi satuan pesan ke kilogram — HANYA untuk tampilan (ADR-05). */
-export function halfKgUnitsToKg(halfKgUnits: number): number {
-  return halfKgUnits / HALF_KG_UNITS_PER_KG;
-}
-
 /* ------------------------------------------------------------------ */
 /* Penyusunan varian                                                   */
 /* ------------------------------------------------------------------ */
 
 function singleOriginVariants(bean: SingleOriginBean): Variant[] {
   const pricing = singleOriginPricing[bean.tier];
+  const mini: Variant[] = bean.hasMiniPack
+    ? [
+        {
+          id: `${bean.slug}-mini1`,
+          label: `1 pack (${SINGLE_ORIGIN_MINI_PACK_GRAMS} gr)`,
+          // Satuan yang sama dengan lini Katalog Kopi 100 gram: keranjang,
+          // format kuantitas, dan pesan WhatsApp sudah mengenalnya (KD-07).
+          unit: "gram-100",
+          unitPrice: pricing.mini1,
+          minQty: 1,
+          step: 1,
+        },
+      ]
+    : [];
   return [
+    ...mini,
     {
       id: `${bean.slug}-pack1`,
       label: `1 pack (${SINGLE_ORIGIN_PACK_GRAMS} gr)`,
@@ -156,38 +175,113 @@ function singleOriginVariants(bean: SingleOriginBean): Variant[] {
   ];
 }
 
-/** Varian houseblend: satuan pesan 0,5 kg, harga selalu turunan pricePerKg (D-02). */
-function halfKgVariant(id: string, label: string, pricePerKg: PriceIDR): Variant {
-  return {
-    id,
-    label,
-    unit: "half-kg",
-    unitPrice: halfKgPrice(pricePerKg),
-    pricePerKg,
-    minQty: HOUSEBLEND_MIN_HALF_KG_UNITS,
-    step: HOUSEBLEND_STEP_HALF_KG_UNITS,
-  };
+/**
+ * Dua varian per rasio: kemasan 1 kg dan kemasan 0,5 kg.
+ *
+ * Keduanya berbagi `groupId` — itulah yang membuat tabel rasio bisa menyusun
+ * satu baris per rasio dengan dua kolom harga, dan yang membuat validator V-06
+ * bisa memasangkan keduanya untuk diperiksa kewajarannya.
+ *
+ * `label` sengaja memuat ukuran kemasannya. Label inilah yang muncul di baris
+ * keranjang dan di pesan WhatsApp, jauh dari tabel yang menjelaskan konteksnya;
+ * "60% Arabica : 40% Robusta" saja tidak memberi tahu pembeli berapa berat yang
+ * ia pesan.
+ */
+function sizePair(
+  groupId: string,
+  groupLabel: string,
+  pricePerKg: PriceIDR,
+  pricePerHalfKg: PriceIDR,
+): Variant[] {
+  return [
+    {
+      id: `${groupId}-1kg`,
+      label: `${groupLabel} · 1 kg`,
+      unit: "kg",
+      unitPrice: pricePerKg,
+      groupId,
+      minQty: 1,
+      step: 1,
+    },
+    {
+      id: `${groupId}-05kg`,
+      label: `${groupLabel} · 0,5 kg`,
+      unit: "half-kg",
+      unitPrice: pricePerHalfKg,
+      groupId,
+      minQty: 1,
+      step: 1,
+    },
+  ];
 }
 
 function houseblendVariants(slug: HouseblendLineSlug): Variant[] {
   switch (slug) {
     case "bold":
-      return houseblendBold.map((ratio) =>
-        halfKgVariant(ratio.id, ratio.label, ratio.pricePerKg),
+      return houseblendBold.flatMap((ratio) =>
+        sizePair(ratio.id, ratio.label, ratio.pricePerKg, ratio.pricePerHalfKg),
       );
     case "bright":
-      return houseblendBright.map((variant) =>
-        halfKgVariant(variant.id, variant.label, variant.pricePerKg),
+      return houseblendBright.flatMap((variant) =>
+        sizePair(
+          variant.id,
+          variant.label,
+          variant.pricePerKg,
+          variant.pricePerHalfKg,
+        ),
       );
     case "full-robusta":
-      return [
-        halfKgVariant(
-          houseblendFullRobusta.id,
-          houseblendFullRobusta.label,
-          houseblendFullRobusta.pricePerKg,
-        ),
-      ];
+      return sizePair(
+        houseblendFullRobusta.id,
+        houseblendFullRobusta.label,
+        houseblendFullRobusta.pricePerKg,
+        houseblendFullRobusta.pricePerHalfKg,
+      );
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Pengelompokan ukuran kemasan                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Satu rasio houseblend beserta kedua ukuran kemasannya, siap dirender sebagai
+ * satu baris tabel rasio.
+ */
+export type HouseblendSizeGroup = {
+  id: string;
+  /** Nama rasio tanpa ukuran, mis. "60% Arabica : 40% Robusta". */
+  label: string;
+  kg: Variant;
+  halfKg: Variant;
+};
+
+/**
+ * Menyusun varian sebuah produk menjadi kelompok ukuran.
+ *
+ * Melempar bila sebuah kelompok tidak lengkap: baris tabel dengan satu sel
+ * harga kosong adalah cara paling halus untuk menerbitkan katalog yang salah,
+ * dan validator V-06 sudah menjamin kelengkapan ini saat build.
+ */
+export function houseblendSizeGroups(product: Product): HouseblendSizeGroup[] {
+  const byGroup = new Map<string, Variant[]>();
+  for (const variant of product.variants) {
+    if (!variant.groupId) continue;
+    const list = byGroup.get(variant.groupId) ?? [];
+    list.push(variant);
+    byGroup.set(variant.groupId, list);
+  }
+  return [...byGroup.entries()].map(([id, variants]) => {
+    const kg = variants.find((v) => v.unit === "kg");
+    const halfKg = variants.find((v) => v.unit === "half-kg");
+    if (!kg || !halfKg) {
+      throw new Error(
+        `Kelompok ukuran "${id}" pada ${product.slug} tidak punya kedua kemasan.`,
+      );
+    }
+    // Label kelompok = label varian tanpa akhiran ukurannya.
+    return { id, label: kg.label.replace(/ · 1 kg$/, ""), kg, halfKg };
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -207,10 +301,17 @@ function beanFactList(bean: SingleOriginBean): string[] {
   ].filter((fact): fact is string => fact !== null);
 }
 
+/** "200 gr" atau "100 gr dan 200 gr", tergantung kemasan yang benar-benar ada. */
+function beanPackPhrase(bean: SingleOriginBean): string {
+  return bean.hasMiniPack
+    ? `${SINGLE_ORIGIN_MINI_PACK_GRAMS} gr dan ${SINGLE_ORIGIN_PACK_GRAMS} gr`
+    : `${SINGLE_ORIGIN_PACK_GRAMS} gr`;
+}
+
 function beanSummary(bean: SingleOriginBean): string {
   const facts = beanFactList(bean);
   const factPart = facts.length > 0 ? ` ${facts.join(", ")}.` : "";
-  return `${bean.name} — single origin ${TIER_LABEL[bean.tier]} dari ${beanOriginPhrase(bean)}.${factPart} Kemasan ${SINGLE_ORIGIN_PACK_GRAMS} gr.`;
+  return `${bean.name} — single origin ${TIER_LABEL[bean.tier]} dari ${beanOriginPhrase(bean)}.${factPart} Kemasan ${beanPackPhrase(bean)}.`;
 }
 
 function beanDescription(bean: SingleOriginBean): string {
@@ -219,7 +320,7 @@ function beanDescription(bean: SingleOriginBean): string {
     facts.length > 0
       ? ` Yang kami ketahui tentang biji ini: ${facts.join(", ")}.`
       : "";
-  return `${bean.name} berasal dari ${beanOriginPhrase(bean)} dan masuk tier ${TIER_LABEL[bean.tier]}.${factSentence} Tersedia dalam kemasan ${SINGLE_ORIGIN_PACK_GRAMS} gr, satuan maupun paket ${SINGLE_ORIGIN_PACKS_PER_BUNDLE} pack dari origin yang sama.`;
+  return `${bean.name} berasal dari ${beanOriginPhrase(bean)} dan masuk tier ${TIER_LABEL[bean.tier]}.${factSentence} Tersedia dalam kemasan ${beanPackPhrase(bean)}, satuan maupun paket ${SINGLE_ORIGIN_PACKS_PER_BUNDLE} x ${SINGLE_ORIGIN_PACK_GRAMS} gr dari origin yang sama.`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -291,12 +392,6 @@ export const products: Product[] = [
    Dievaluasi saat modul dimuat. Setiap rute statis mengimpor berkas ini, jadi
    `next build` pasti menjalankannya dan data rusak menghentikan build. */
 assertCatalogValid(products);
-// Dijalankan saat modul dievaluasi, sama seperti validator produk: data lini
-// 100 gram yang rusak MENGGAGALKAN BUILD, bukan tayang (FR-43, ADR-09).
-assertPicksValid(
-  coffeePicks,
-  products.map((product) => product.slug),
-);
 
 /* ------------------------------------------------------------------ */
 /* Query / lookup                                                      */
@@ -386,7 +481,7 @@ export const catalogGroups: Array<{
   {
     id: "houseblend",
     title: "Houseblend",
-    subtitle: "Dijual per kilogram, pemesanan mulai 0,5 kg",
+    subtitle: "Dua ukuran kemasan: 1 kg dan 0,5 kg",
     products: houseblendProducts,
   },
 ];
@@ -433,61 +528,24 @@ export function productPaths(): string[] {
  *
  * Sengaja ramping: hanya medan yang benar-benar dipakai baris keranjang.
  */
-export const PICK_CATEGORY_LABEL = "Katalog Kopi 100 gr";
-
-/**
- * Entri keranjang untuk lini Katalog Kopi 100 gram (KD-07).
- *
- * Dirakit langsung menjadi `CartCatalogEntry`, tanpa melewati `Product`: lini
- * ini tidak punya data asal, dan `Product.origin` mewajibkan `province`. Lihat
- * catatan panjang di `src/data/picks.ts`.
- *
- * `href` menunjuk seksi di halaman katalog, bukan halaman produk tersendiri —
- * karena memang belum ada yang layak ditulis di halaman seperti itu.
- */
-export const pickCartEntries: readonly CartCatalogEntry[] = coffeePicks.map(
-  (pick) => ({
-    slug: pick.slug,
-    name: pick.name,
-    categoryLabel: PICK_CATEGORY_LABEL,
-    href: "/katalog#katalog-100-gram",
-    variants: [
-      {
-        id: pickVariantId(pick.slug),
-        label: `${PICK_GRAMS} gr`,
-        unit: "gram-100" as const,
-        unitPrice: pick.price,
-        minQty: 1,
-        step: 1,
-      },
-    ],
-  }),
-);
-
 export const cartCatalogIndex: CartCatalogIndex = Object.fromEntries(
-  [
-    ...pickCartEntries.map(
-      (entry): [string, CartCatalogEntry] => [entry.slug, entry],
-    ),
-    ...products.map((product): [string, CartCatalogEntry] => [
+  products.map((product): [string, CartCatalogEntry] => [
     product.slug,
     {
       slug: product.slug,
       name: product.name,
       categoryLabel: categoryLabel(product),
       href: productHref(product),
+      status: product.status,
       variants: product.variants.map((variant) => ({
         id: variant.id,
         label: variant.label,
         unit: variant.unit,
         unitPrice: variant.unitPrice,
-        ...(variant.pricePerKg !== undefined
-          ? { pricePerKg: variant.pricePerKg }
-          : {}),
+        ...(variant.groupId !== undefined ? { groupId: variant.groupId } : {}),
         minQty: variant.minQty,
         step: variant.step,
       })),
     },
   ]),
-  ],
 );

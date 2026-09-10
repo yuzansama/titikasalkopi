@@ -1,18 +1,9 @@
 import Link from "next/link";
 import { Container, SectionHeading } from "@/components/ui/container";
 import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
-import {
-  featuredSignature,
-  houseblendProducts,
-  pricePerKgFrom,
-  priceFrom,
-  productHref,
-  productsByTier,
-} from "@/data/catalog";
+import { featuredSignature } from "@/data/catalog";
 import { ProductGrid } from "@/features/catalog/product-grid";
-import { OrderSteps } from "@/features/contact/order-steps";
 import { ShopeeLink } from "@/features/contact/shopee-link";
-import { formatIDR, formatPricePerKg } from "@/lib/format";
 import { homeMetadata, organizationJsonLd } from "@/lib/seo";
 import { site, waLink } from "@/lib/site";
 
@@ -23,12 +14,6 @@ export const dynamic = "error";
 export const metadata = homeMetadata();
 
 export default function HomePage() {
-  const signatureFrom = priceFrom(productsByTier("signature")[0]);
-  const regulerFrom = priceFrom(productsByTier("reguler")[0]);
-  const houseblendFrom = Math.min(
-    ...houseblendProducts.map((product) => pricePerKgFrom(product) ?? Infinity),
-  );
-
   return (
     <>
       <script
@@ -60,23 +45,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <dl className="mt-10 grid gap-4 sm:grid-cols-3">
-            <PriceStat
-              term="Single Origin Signature"
-              detail="Kupang dan Papua, kemasan 200 gr"
-              value={`Mulai ${formatIDR(signatureFrom)}`}
-            />
-            <PriceStat
-              term="Single Origin Reguler"
-              detail="Pilihan Nusantara, kemasan 200 gr"
-              value={`Mulai ${formatIDR(regulerFrom)}`}
-            />
-            <PriceStat
-              term="Houseblend"
-              detail="Pemesanan mulai 0,5 kg"
-              value={`Mulai ${formatPricePerKg(houseblendFrom)}`}
-            />
-          </dl>
+          {/* D-13: tiga kartu PriceStat dicabut dari hero. Harga sudah hidup
+              di setiap kartu produk dan di /katalog, jadi mengulangnya di sini
+              hanya menunda pengunjung melihat produk pertama. */}
         </Container>
       </section>
 
@@ -85,115 +56,61 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="Indonesia Timur"
           title="Single Origin Signature"
-          lead="Empat titik asal dari Kupang dan Papua, dikemas 200 gr. Paket 3 pack berisi tiga kemasan dari origin yang sama."
+          lead="Empat titik asal dari Kupang dan Papua, dikemas 200 gr."
         />
         <div className="mt-6">
           <ProductGrid products={featuredSignature} priorityCount={2} />
         </div>
-        <p className="mt-6">
+        {/* D-13: seksi "Tiga lini houseblend" diganti satu tautan. Beranda
+            memajang satu sorotan saja; lininya dijelaskan di /houseblend. */}
+        <p className="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-6">
           <Link
             href="/katalog"
             className={`inline-flex min-h-11 items-center rounded-md text-rust underline underline-offset-4 ${FOCUS_RING}`}
           >
             Lihat seluruh katalog single origin
           </Link>
+          <Link
+            href="/houseblend"
+            className={`inline-flex min-h-11 items-center rounded-md text-rust underline underline-offset-4 ${FOCUS_RING}`}
+          >
+            Lihat tiga lini houseblend
+          </Link>
         </p>
       </Container>
 
-      {/* Tiga lini houseblend — FR-08, FR-27 */}
-      <section className="bg-surface">
-        <Container className="py-12 sm:py-16">
-          <SectionHeading
-            eyebrow="Untuk kedai dan rumah"
-            title="Tiga lini houseblend"
-            lead="Dijual per kilogram dengan pemesanan mulai 0,5 kg. Harga 0,5 kg tepat setengah harga per kg."
-          />
-          <ul className="mt-6 grid gap-4 sm:grid-cols-3">
-            {houseblendProducts.map((line) => {
-              const perKg = pricePerKgFrom(line);
-              return (
-                <li key={line.slug} className={`relative flex flex-col ${CARD} p-5`}>
-                  <h3 className="font-display text-lg font-semibold text-primary">
-                    <Link
-                      href={productHref(line)}
-                      className={`rounded-sm after:absolute after:inset-0 after:content-[''] ${FOCUS_RING}`}
-                    >
-                      {line.name}
-                    </Link>
-                  </h3>
-                  <p className="mt-2 flex-1 text-[0.95rem] text-olive">
-                    {line.summary}
-                  </p>
-                  {perKg !== null ? (
-                    <p className="mt-4 font-semibold text-coffee">
-                      Mulai {formatPricePerKg(perKg)}
-                    </p>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </Container>
-      </section>
-
-      {/* Cara pesan — FR-26 */}
+      {/* Ajakan memesan — FR-26 */}
+      {/* D-13: <OrderSteps /> tidak lagi dipasang di beranda. Blok itu utuh di
+          /kontak, dan menaruhnya di dua tempat membuat beranda menjelaskan
+          alur sebelum pengunjung memilih kopinya. */}
       <Container className="py-12 sm:py-16">
-        <div className="grid gap-10 lg:grid-cols-2">
-          <OrderSteps />
-          <div className={`h-fit ${CARD} p-6`}>
-            <h2 className="font-display text-xl font-semibold text-primary">
-              Pesan sekarang
-            </h2>
-            <p className="mt-2 text-olive">
-              Pesanan diselesaikan lewat WhatsApp. Tersedia juga di Shopee.
-            </p>
-            <div className="mt-5 flex flex-col gap-3">
-              {/*
-                Tombol utama memakai bg-rust (cream di rust = 5,74:1, LULUS).
-                Kerangka lama memakai bg-gold dengan label cream berukuran
-                normal — 3,88:1 dan GAGAL WCAG AA; itu diperbaiki di sini
-                sesuai Bagian 11.4 aturan 2.
-              */}
-              <a
-                href={waLink(`Halo ${site.name}, saya ingin memesan kopi.`)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonClass("primary", "lg")}
-              >
-                Pesan lewat WhatsApp
-              </a>
-              <ShopeeLink />
-              <Link href="/kontak" className={buttonClass("outline", "lg")}>
-                Lihat semua kanal resmi
-              </Link>
-            </div>
+        <div className={`max-w-xl ${CARD} p-6`}>
+          <h2 className="font-display text-xl font-semibold text-primary">
+            Pesan sekarang
+          </h2>
+          <p className="mt-2 text-olive">Pesanan diselesaikan lewat WhatsApp.</p>
+          <div className="mt-5 flex flex-col gap-3">
+            {/*
+              Tombol utama memakai bg-rust (cream di rust = 5,74:1, LULUS).
+              Kerangka lama memakai bg-gold dengan label cream berukuran
+              normal — 3,88:1 dan GAGAL WCAG AA; itu diperbaiki di sini
+              sesuai Bagian 11.4 aturan 2.
+            */}
+            <a
+              href={waLink(`Halo ${site.name}, saya ingin memesan kopi.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonClass("primary", "lg")}
+            >
+              Pesan lewat WhatsApp
+            </a>
+            <ShopeeLink />
+            <Link href="/kontak" className={buttonClass("outline", "lg")}>
+              Lihat semua kanal resmi
+            </Link>
           </div>
         </div>
       </Container>
     </>
-  );
-}
-
-function PriceStat({
-  term,
-  detail,
-  value,
-}: {
-  term: string;
-  detail: string;
-  value: string;
-}) {
-  return (
-    <div className={`${CARD} p-4`}>
-      <dt className="font-heading text-sm font-semibold uppercase tracking-wide text-primary">
-        {term}
-      </dt>
-      <dd>
-        <p className="mt-1 font-display text-xl font-semibold text-coffee">
-          {value}
-        </p>
-        <p className="mt-1 text-sm text-olive">{detail}</p>
-      </dd>
-    </div>
   );
 }

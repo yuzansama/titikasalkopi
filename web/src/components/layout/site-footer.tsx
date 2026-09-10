@@ -101,9 +101,15 @@ export function SiteFooter({ replyHoursSlot }: { replyHoursSlot: ReactNode }) {
           </div>
         </div>
 
+        {/* D-13 — baris ini dipendekkan menjadi hak cipta saja. Kalimat
+            "Pemesanan diselesaikan lewat WhatsApp; pembayaran tidak dilakukan
+            di website ini." dibuang dari sini karena footer tayang di SETIAP
+            halaman, sehingga kalimat itu terbaca puluhan kali oleh pembeli yang
+            belum memesan. Ia tetap hidup di /kontak: langkah ke-4 `OrderSteps`
+            ("Pembayaran tidak dilakukan di website ini.") dan catatan coffee di
+            bawahnya. Jangan kembalikan ke sini tanpa mencabut D-13. */}
         <p className="mt-10 border-t border-cream/20 pt-6 text-sm text-cream/80">
-          © {site.name} — {site.domain}. Pemesanan diselesaikan lewat WhatsApp;
-          pembayaran tidak dilakukan di website ini.
+          © {site.name} — {site.domain}.
         </p>
       </div>
     </footer>

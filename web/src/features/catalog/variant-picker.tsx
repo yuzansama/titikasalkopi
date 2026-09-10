@@ -13,7 +13,7 @@
  */
 
 import { useId } from "react";
-import { formatIDR, formatPricePerKg, unitLabel } from "@/lib/format";
+import { formatIDR, unitLabel } from "@/lib/format";
 import type { VariantOption } from "./variant-option";
 
 export function VariantPicker({
@@ -69,17 +69,13 @@ export function VariantPicker({
                   titik keputusan terbaca sebagai ragu, bukan jelas. Varian yang
                   belum dipilih tetap menampilkan harga — di situlah pembeli
                   membandingkan.
-                  KECUALI houseblend: `pricePerKg` BUKAN angka yang sama dengan
-                  total (total mengikuti jumlah kilogram), dan harga per kg
-                  adalah satuan harga resmi katalog (BR-01). Menyembunyikannya
-                  akan menghapus fakta, bukan menghapus pengulangan. */}
-              {checked && !variant.pricePerKg ? null : (
-                <span
-                  className={`text-sm ${checked ? "text-cream" : "text-olive"}`}
-                >
-                  {variant.pricePerKg
-                    ? formatPricePerKg(variant.pricePerKg)
-                    : `${formatIDR(variant.unitPrice)} ${unitLabel(variant.unit)}`}
+                  Tidak ada lagi pengecualian houseblend di sini. Dulu varian
+                  houseblend menampilkan tarif per kg yang bukan angka yang
+                  ditagih; sekarang setiap varian punya tepat satu harga, yaitu
+                  harga satu kemasan. */}
+              {checked ? null : (
+                <span className="text-sm text-olive">
+                  {formatIDR(variant.unitPrice)} {unitLabel(variant.unit)}
                 </span>
               )}
               {notes?.[variant.id] ? (

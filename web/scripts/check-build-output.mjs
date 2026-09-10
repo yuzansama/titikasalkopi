@@ -95,6 +95,12 @@ for (const file of files) {
   if (!pages.has(route)) pages.set(route, { file, html: readFileSync(file, "utf8") });
 }
 
+/* Katalog dan format dimuat di sini, bukan di tengah berkas, karena
+   pemeriksaan harga di bawah menurunkan angkanya dari katalog alih-alih
+   menuliskannya sebagai teks. */
+const catalogModule = await loadTs("src/data/catalog.ts");
+const { formatIDR } = await loadTs("src/lib/format.ts");
+
 /** Rute publik Fase 1a — yang wajib ada dan wajib terindeks. */
 const PUBLIC_ROUTES = [
   "",
@@ -112,6 +118,7 @@ const PUBLIC_ROUTES = [
   "produk/palimping",
   "produk/kerinci",
   "produk/pondok-baru",
+  "produk/sindoro",
 ];
 
 const CART_ROUTE = "keranjang";
@@ -189,6 +196,7 @@ check("FR-44: judul halaman produk menyebut daerah asal", () => {
     "produk/palimping": "Garut",
     "produk/kerinci": "Kerinci",
     "produk/pondok-baru": "Aceh",
+    "produk/sindoro": "Jawa Tengah",
   };
   for (const [route, needle] of Object.entries(expectations)) {
     const title = titleOf(pages.get(route).html);
@@ -296,11 +304,11 @@ check("FR-49: beranda memuat Organization dengan jam balas 08:00–21:00", () =>
   assert.equal(hours?.dayOfWeek?.length, 7, "jam balas harus berlaku 7 hari");
 });
 
-check("FR-49: kesepuluh halaman produk memuat Product + Offer + BreadcrumbList", () => {
+check("FR-49: kesebelas halaman produk memuat Product + Offer + BreadcrumbList", () => {
   const productRoutes = PUBLIC_ROUTES.filter(
     (route) => route.startsWith("produk/") || route.startsWith("houseblend/"),
   );
-  assert.equal(productRoutes.length, 10);
+  assert.equal(productRoutes.length, 11);
   for (const route of productRoutes) {
     const blocks = jsonLdOf(pages.get(route).html).map((raw) => JSON.parse(raw));
     const product = blocks.find((block) => block["@type"] === "Product");
@@ -337,34 +345,90 @@ check("BR-02: tidak ada 'Rp' diikuti spasi di SELURUH HTML hasil build", () => {
   assert.deepEqual(offenders, [], `pelanggaran BR-02: ${offenders.join(", ")}`);
 });
 
-check("BR-01: sembilan harga per kg houseblend tayang persis seperti brand brief", () => {
+/* Harga di bawah ini TIDAK ditulis sebagai angka harfiah, dan itu disengaja.
+   Berkas ini ikut berjalan pada alur penerbitan setelah sinkronisasi katalog
+   meng-commit harga baru dari sheet owner; angka harfiah di sini berarti setiap
+   perubahan harga yang sah membuat penerbitan gagal, dan janji "owner urus
+   harga sendiri" memblokir dirinya sendiri.
+
+   Yang diperiksa adalah PIPA RENDER-nya: setiap harga yang ada di katalog wajib
+   benar-benar sampai ke HTML, dan tidak ada harga di HTML yang bukan berasal
+   dari katalog. Itu bukan membandingkan data dengan dirinya sendiri — data ada
+   di satu sisi, hasil build ada di sisi lain. */
+
+check("BR-01: setiap harga kemasan houseblend sampai ke HTML /houseblend", () => {
   const html = pages.get("houseblend").html;
-  for (const price of [
-    "Rp210.000",
-    "Rp200.000",
-    "Rp195.000",
-    "Rp190.000",
-    "Rp185.000",
-    "Rp175.000",
-    "Rp260.000",
-    "Rp230.000",
-  ]) {
-    assert.ok(html.includes(price), `${price} tidak tayang di /houseblend`);
+  for (const product of catalogModule.houseblendProducts) {
+    for (const variant of product.variants) {
+      const price = formatIDR(variant.unitPrice);
+      assert.ok(
+        html.includes(price),
+        `${variant.id} berharga ${price} tetapi tidak tayang di /houseblend`,
+      );
+    }
   }
 });
 
-check("BR-09: harga single origin tayang persis Rp125.000/Rp350.000 dan Rp110.000/Rp310.000", () => {
-  const signature = pages.get("produk/abmisibil").html;
-  assert.ok(signature.includes("Rp125.000"));
-  assert.ok(signature.includes("Rp350.000"));
-  const reguler = pages.get("produk/kerinci").html;
-  assert.ok(reguler.includes("Rp110.000"));
-  assert.ok(reguler.includes("Rp310.000"));
+check("BR-09: setiap harga varian single origin sampai ke halaman produknya", () => {
+  for (const product of catalogModule.singleOriginProducts) {
+    const html = pages.get(`produk/${product.slug}`).html;
+    for (const variant of product.variants) {
+      const price = formatIDR(variant.unitPrice);
+      assert.ok(
+        html.includes(price),
+        `${product.slug}/${variant.id} berharga ${price} tetapi tidak tayang`,
+      );
+    }
+  }
+});
+
+check("FR-14: penanda stok kosong tayang, dan tombol pesan ikut menolak", () => {
+  // Dijalankan atas keadaan katalog apa adanya. Bila SELURUH produk tersedia,
+  // yang dibuktikan hanya bahwa halaman tidak mengarang penanda; begitu owner
+  // menandai satu produk kosong di sheet, pemeriksaan ini langsung menuntut
+  // penandanya benar-benar tayang.
+  const soldOut = catalogModule.products.filter(
+    (product) => product.status === "out-of-stock",
+  );
+  for (const product of soldOut) {
+    const route = catalogModule.productHref(product).replace(/^\//, "");
+    const html = pages.get(route).html;
+    assert.ok(
+      html.includes("Stok sedang kosong"),
+      `${product.slug} kosong tetapi tombol pesannya masih menerima pesanan`,
+    );
+    assert.ok(
+      pages.get("katalog").html.includes("Stok kosong"),
+      `${product.slug} kosong tetapi tidak ditandai di halaman katalog`,
+    );
+  }
+  for (const product of catalogModule.products) {
+    if (product.status === "out-of-stock") continue;
+    const route = catalogModule.productHref(product).replace(/^\//, "");
+    assert.ok(
+      !pages.get(route).html.includes("Stok sedang kosong"),
+      `${product.slug} tersedia tetapi halamannya menyatakan kosong`,
+    );
+  }
+});
+
+check("Sindoro tidak menawarkan kemasan mini yang tidak dijual", () => {
+  // Lembar "Product" tidak memberi Sindoro kemasan mini; menayangkannya berarti
+  // menerima pesanan yang tidak bisa dipenuhi. Dicari id variannya, bukan teks
+  // "100 gr": kartu produk terkait di kaki halaman memang menyebut kemasan mini
+  // milik biji LAIN, dan itu benar.
+  assert.ok(!pages.get("produk/sindoro").html.includes("sindoro-mini1"));
 });
 
 check("BR-10: penghematan bundling dihitung, bukan ditulis manual", () => {
-  assert.ok(pages.get("produk/abmisibil").html.includes("Rp25.000"));
-  assert.ok(pages.get("produk/kerinci").html.includes("Rp20.000"));
+  for (const product of catalogModule.singleOriginProducts) {
+    const saving = catalogModule.bundleSaving(product);
+    assert.ok(saving > 0, `${product.slug}: penghematan paket ${saving}`);
+    assert.ok(
+      pages.get(`produk/${product.slug}`).html.includes(formatIDR(saving)),
+      `${product.slug}: penghematan ${formatIDR(saving)} tidak tayang`,
+    );
+  }
 });
 
 /* ------------------------------------------------------------------ */
@@ -555,7 +619,7 @@ check("FR-45: sitemap.xml dibangun", () => {
   assert.ok(readSitemap(), "sitemap.xml tidak ditemukan di folder build");
 });
 
-check("FR-45: sitemap memuat PERSIS 15 URL yang diharapkan", () => {
+check("FR-45: sitemap memuat PERSIS 16 URL yang diharapkan", () => {
   const xml = readSitemap();
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
     m[1].replace(/\/$/, ""),
@@ -678,11 +742,11 @@ check(
   "NFR-12/BR-01: Offer houseblend menyebut harga per kg, bukan harga 0,5 kg tanpa satuan",
   () => {
     // Google menampilkan `price` apa adanya sebagai harga produk. Untuk
-    // houseblend, `unitPrice` adalah harga 0,5 kg — separuh harga katalog —
-    // sementara `name` Offer hanya menyebut rasio tanpa satuan. Hasilnya rich
-    // result mengiklankan Rp105.000 untuk BOLD 70:30 yang harga resminya
-    // Rp210.000/kg. Lolos bila harga per kg dipakai, atau bila satuan
-    // dinyatakan eksplisit lewat `referenceQuantity`/`unitText`.
+    // houseblend, `unitPrice` adalah harga satu kemasan 0,5 kg — bukan harga
+    // katalog per kilogram — sementara `name` Offer hanya menyebut rasio tanpa
+    // satuan. Hasilnya rich result mengiklankan Rp120.000 untuk BOLD 70:30 yang
+    // harga resminya Rp215.000/kg. Lolos bila harga per kg dipakai, atau bila
+    // satuan dinyatakan eksplisit lewat `referenceQuantity`/`unitText`.
     const blocks = jsonLdOf(pages.get("houseblend/bold").html).map((raw) =>
       JSON.parse(raw),
     );
@@ -693,9 +757,10 @@ check(
       offer.eligibleQuantity !== undefined ||
       /kg/i.test(offer.name ?? "");
     assert.ok(
-      offer.price === 210000 || declaresUnit,
-      `Offer BOLD 70:30 berharga ${offer.price} tanpa menyebut satuan; ` +
-        `harga resmi katalog Rp210.000/kg (BR-01, NFR-12)`,
+      declaresUnit,
+      `Offer BOLD 70:30 berharga ${offer.price} tanpa menyebut satuan. ` +
+        `Houseblend punya dua ukuran kemasan berharga berbeda, jadi angka ` +
+        `telanjang tidak pernah cukup (BR-01, NFR-12).`,
     );
   },
 );
@@ -731,20 +796,22 @@ check(
 /* 15. Silang dengan katalog: jumlah produk dan varian                 */
 /* ------------------------------------------------------------------ */
 
-const catalog = await loadTs("src/data/catalog.ts");
+const catalog = catalogModule;
 
-check("BRD Bagian 12: katalog tayang berisi 10 produk dan 23 varian jual", () => {
+check("BRD Bagian 12: katalog tayang berisi 11 produk dan 41 varian jual", () => {
   const products = catalog.allProducts ?? catalog.products;
   assert.ok(Array.isArray(products), "daftar produk tidak ditemukan di catalog");
-  assert.equal(products.length, 10);
+  assert.equal(products.length, 11);
   const variantCount = products.reduce(
     (total, product) => total + product.variants.length,
     0,
   );
-  assert.equal(variantCount, 23);
+  // 7 biji x 3 kemasan + Sindoro tanpa mini x 2 = 23, ditambah
+  // 9 rasio houseblend x 2 ukuran kemasan = 18.
+  assert.equal(variantCount, 41);
 });
 
-check("BRD Bagian 12: halaman katalog menampilkan kesepuluh nama produk", () => {
+check("BRD Bagian 12: halaman katalog menampilkan kesebelas nama produk", () => {
   const html = pages.get("katalog").html;
   const products = catalog.allProducts ?? catalog.products;
   for (const product of products) {
@@ -753,45 +820,6 @@ check("BRD Bagian 12: halaman katalog menampilkan kesepuluh nama produk", () => 
 });
 
 /* ------------------------------------------------------------------ */
-/* ------------------------------------------------------------------ */
-/* 14b. KD-07 — Katalog Kopi 100 gram                                  */
-/* ------------------------------------------------------------------ */
-
-check(
-  "KD-07: kedelapan belas biji Katalog Kopi 100 gram tayang beserta harganya",
-  () => {
-    const html = pages.get("katalog").html;
-    const expected = [
-      ["Bali Kintamani", "Rp80.000"],
-      ["Gayo Lecie", "Rp120.000"],
-      ["Panama", "Rp270.000"],
-      ["Kenya", "Rp195.000"],
-      ["Luwak", "Rp140.000"],
-      ["Halu Banana Anaerob", "Rp90.000"],
-      ["Situjuah", "Rp80.000"],
-      ["Lawu", "Rp65.000"],
-    ];
-    const missing = expected.filter(
-      ([name, price]) => !html.includes(name) || !html.includes(price),
-    );
-    assert.deepEqual(
-      missing.map(([name]) => name),
-      [],
-      `biji atau harganya tidak tayang: ${missing.map(([n]) => n).join(", ")}`,
-    );
-  },
-);
-
-check("KD-07: kedua lini tayang berdampingan tanpa saling menutupi", () => {
-  // Dua lini hidup di halaman yang sama dengan harga berbeda untuk berat
-  // berbeda. Kerinci ada di KEDUANYA; menyembunyikan salah satunya berarti
-  // memilihkan jawaban yang belum owner berikan.
-  const html = pages.get("katalog").html;
-  assert.ok(html.includes("100 gr"), "label 100 gr hilang dari halaman");
-  assert.ok(html.includes("Rp85.000"), "harga Kerinci 100 gr hilang");
-  assert.ok(html.includes("Rp110.000"), "harga Reguler 200 gr hilang");
-});
-
 /* ------------------------------------------------------------------ */
 /* 14c. Ikon tab                                                       */
 /* ------------------------------------------------------------------ */
@@ -900,7 +928,6 @@ check(
 /* ------------------------------------------------------------------ */
 
 const siteFacts = await loadTs("src/lib/site.ts");
-const { formatIDR } = await loadTs("src/lib/format.ts");
 
 check(
   "Ongkir: perkiraan tayang di /keranjang dan /kontak, dan TIDAK ADA rute yang " +

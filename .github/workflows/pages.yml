@@ -54,6 +54,22 @@ jobs:
       # Apps Script, which keeps this URL. A brand new deployment mints a new
       # URL and needs this line changed.
       NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbzGbe4W2zxmPp9fErxcbG9MN2ZSau4qAjmyNNrmSke56_FJvakzr_HAyECwoVWdMQ74RQ/exec
+      #
+      # The two lines below are the whole of what stands between this site and
+      # having any measurement at all. The code for both is written and idle,
+      # waiting on a value only the owner can create (docs/12-tugas-owner.md
+      # items 4 and 6). Uncomment and fill each one in as it arrives.
+      #
+      # Without NEXT_PUBLIC_GA_ID the analytics module loads nothing and every
+      # event is discarded. Six of the ten project KPIs have no source, and the
+      # gap cannot be backfilled - the first weeks after opening are exactly
+      # the ones worth reading, and they are only recorded if this is set
+      # before launch, not after.
+      # NEXT_PUBLIC_GA_ID: G-XXXXXXXXXX
+      #
+      # Search Console verification. Must be generated under the final origin,
+      # so this waits on the domain rather than on anything in the code.
+      # GOOGLE_SITE_VERIFICATION: ""
     steps:
       - uses: actions/checkout@v4
 

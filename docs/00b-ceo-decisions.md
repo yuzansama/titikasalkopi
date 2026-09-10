@@ -5,28 +5,58 @@ Tanggal: 7 September 2026. Menutup OQ-01, OQ-02, OQ-07 pada `02-BRD.md`. Semua a
 ## D-01 — Paket 3 pack wajib satu origin (menutup OQ-01)
 Satu paket 3 pack berisi tiga kemasan 200 gr dari **origin yang sama**. Paket campur antar-origin **tidak ditawarkan** di website. Permintaan campur diarahkan ke percakapan WhatsApp sebagai penanganan manual.
 
-Konsekuensi: `BR-11` pada BRD dikonfirmasi apa adanya. UI produk tidak boleh menampilkan pemilih origin campur. Salinan teks pada kartu 3 pack menonjolkan penghematan (Signature hemat Rp25.000, Reguler hemat Rp20.000), bukan variasi.
+Konsekuensi: `BR-11` pada BRD dikonfirmasi apa adanya. UI produk tidak boleh menampilkan pemilih origin campur. Salinan teks pada kartu 3 pack menonjolkan penghematan, bukan variasi. Angkanya **dihitung dari harga resmi, tidak diketik**; sejak harga single origin 9 September 2026 nilainya menjadi Signature hemat Rp28.000 dan Reguler hemat Rp23.000 (sebelumnya Rp25.000 dan Rp20.000).
 
-## D-02 — Houseblend boleh kelipatan 0,5 kg (menutup OQ-02)
+## D-02 — Houseblend dijual dalam dua ukuran kemasan (menutup OQ-02)
+
 Minimum order houseblend **0,5 kg**, dengan kelipatan **0,5 kg** (0,5 / 1 / 1,5 / 2 ...). `BR-13` pada BRD **direvisi** dari "minimum 1 kg, kelipatan 1 kg".
 
-Aturan harga 0,5 kg: **tepat setengah harga per kg**. Tidak ada premium kemasan kecil dan tidak ada pembulatan sistem — seluruh harga katalog habis dibagi dua ke kelipatan Rp500:
+Keputusan ini sudah direvisi **dua kali**. Riwayatnya ditulis utuh di bawah, bukan ditimpa, karena versi pertamanya sempat masuk ke kode, ke rencana uji, dan ke dokumen turunan. Siapa pun yang membaca versi lama tanpa tahu bahwa ia sudah batal akan "memperbaiki" kode kembali ke perilaku yang salah — dan berkas ini menurut barisnya sendiri mengalahkan BRD, sehingga kesalahan itu akan menyebar, bukan tertahan.
 
-| Varian | per kg | per 0,5 kg |
+### Aturan semula — sebelum 7 September 2026
+
+`BR-13` versi awal: houseblend dijual **minimum 1 kg dengan kelipatan 1 kg**. Tidak ada kemasan di bawah satu kilogram sama sekali, sehingga tidak ada harga 0,5 kg yang perlu ditetapkan.
+
+### Revisi pertama — 7 September 2026: minimum turun ke 0,5 kg, harganya dihitung
+
+Minimum dan kelipatan turun ke **0,5 kg**. Harga 0,5 kg ditetapkan **tepat setengah harga per kg**: tidak ada premium kemasan kecil dan tidak ada pembulatan sistem, sehingga seluruh harga katalog saat itu habis dibagi dua ke kelipatan Rp500. Konsekuensi implementasinya ditulis tegas: harga per kg adalah **satu-satunya** angka yang boleh disimpan, harga 0,5 kg wajib dihitung dan **tidak boleh ditulis sebagai data terpisah**, karena dua angka yang bisa saling bertentangan berarti dua sumber kebenaran. Validator `V-06` menegakkan kesamaan `unitPrice === pricePerKg / 2`.
+
+**Aturan itu sekarang BATAL seluruhnya**, termasuk tabel harganya. Ia tidak boleh dipakai sebagai rujukan untuk apa pun selain membaca riwayat ini.
+
+### Revisi kedua — 9 September 2026: dua ukuran kemasan, dua harga tersimpan
+
+Sumber: lembar **"Product"** pada `assets/brand/Kopi from heart.xlsx`, dari owner.
+
+Houseblend tidak dijual dalam satu ukuran kemasan yang boleh dipesan berkelipatan. Ia dijual dalam **dua ukuran kemasan**, dan lembar itu menamai kolomnya secara harfiah: **"Main Packs (1kg)"** dan **"Mini Packs (500gr)"**. Keduanya punya harga sendiri yang ditetapkan owner.
+
+Alasan angkanya tidak sejalan: **kemasan mini membawa marginnya sendiri**. BOLD 70:30 dijual Rp215.000 per kg tetapi Rp120.000 per 0,5 kg — bukan Rp107.500. Selisih itu menutup biaya kemasan dan penanganan yang tidak ikut mengecil ketika isinya dibagi dua. Harga semacam itu **bukan turunan**, jadi ia tidak bisa dihitung; memaksanya tetap turunan berarti menayangkan harga yang tidak pernah owner tetapkan.
+
+Tabel harga yang berlaku:
+
+| Varian | per kg (Main Pack) | per 0,5 kg (Mini Pack) |
 |---|---|---|
-| BOLD 70:30 | Rp210.000 | Rp105.000 |
-| BOLD 60:40 | Rp200.000 | Rp100.000 |
-| BOLD 50:50 | Rp195.000 | Rp97.500 |
-| BOLD 40:60 | Rp190.000 | Rp95.000 |
-| BOLD 30:70 | Rp185.000 | Rp92.500 |
-| BOLD 20:80 | Rp175.000 | Rp87.500 |
-| BRIGHT Signature | Rp260.000 | Rp130.000 |
-| BRIGHT Reguler | Rp230.000 | Rp115.000 |
-| Full Robusta | Rp175.000 | Rp87.500 |
+| BOLD 70:30 | Rp215.000 | Rp120.000 |
+| BOLD 60:40 | Rp205.000 | Rp115.000 |
+| BOLD 50:50 | Rp200.000 | Rp110.000 |
+| BOLD 40:60 | Rp195.000 | Rp105.000 |
+| BOLD 30:70 | Rp190.000 | Rp100.000 |
+| BOLD 20:80 | Rp185.000 | Rp95.000 |
+| BRIGHT Signature | Rp280.000 | Rp150.000 |
+| BRIGHT Reguler | Rp240.000 | Rp130.000 |
+| Full Robusta | Rp180.000 | Rp100.000 |
 
-Implementasi: harga per kg tetap satu-satunya angka yang disimpan di `products.ts`. Harga 0,5 kg **dihitung**, jangan ditulis ulang sebagai data terpisah — hindari dua sumber kebenaran. Kuantitas disimpan sebagai bilangan bulat "jumlah setengah kilo" (`halfKgUnits`) supaya tidak ada aritmetika pecahan pada uang.
+Implementasi: **kedua** harga disimpan sebagai data. Kekhawatiran yang melahirkan larangan lama tetap sah — dua angka yang bisa saling bertentangan — dan jawabannya bukan menghapus salah satunya, melainkan memindahkan keduanya ke **satu permukaan sunting**: Google Sheet milik owner lewat `D-08`. Owner mengubah satu baris, keduanya ikut terbawa, dan tidak ada berkas kedua yang bisa lupa diperbarui.
 
-Konsekuensi: konfigurator FR-21 memakai stepper 0,5 kg. Minimum order B2B pada `BR-17` ikut turun ke 0,5 kg per varian.
+Kuantitas tetap disimpan sebagai bilangan bulat "jumlah setengah kilo" (`halfKgUnits`) supaya tidak ada aritmetika pecahan pada uang. Bagian itu tidak berubah.
+
+**`V-06` tidak lagi memeriksa kesamaan.** Ia sekarang memeriksa dua batas kewarasan pada setiap varian houseblend:
+
+1. **Dua kemasan 0,5 kg wajib lebih mahal daripada satu kemasan 1 kg** — harga 0,5 kg tidak boleh turun sampai setengah harga per kg. Kalau ia turun ke situ atau lebih rendah, kemasan 1 kg kehilangan alasan untuk ada dan pembeli yang menghitung akan selalu memesan dua kemasan kecil.
+2. **Satu kemasan 0,5 kg wajib lebih murah daripada kemasan 1 kg.** Sama atau di atas itu, halaman yang sama menawarkan kemasan lebih kecil dengan harga lebih tinggi, dan pembeli wajar menyimpulkan situsnya salah harga.
+
+Salah ketik satu nol tetap menggagalkan build. Yang hilang hanyalah asumsi bahwa satu angka bisa menyimpulkan angka yang lain.
+
+Konsekuensi: konfigurator FR-21 tetap memakai stepper 0,5 kg. Minimum order B2B pada `BR-17` tetap 0,5 kg per varian. Jumlah varian houseblend sedang berubah mengikuti pemisahan dua ukuran kemasan ini dan **tidak dituliskan sebagai angka di dokumen mana pun** — angka yang berlaku ada di `web/src/data/validate.ts`.
 
 ## D-03 — Jam balas WhatsApp: setiap hari 08.00–21.00 WIB (menutup OQ-07)
 Website menuliskan janji balas **setiap hari, 08.00–21.00 WIB**. Ditampilkan di halaman Kontak, blok checkout keranjang, dan footer.
@@ -34,7 +64,14 @@ Website menuliskan janji balas **setiap hari, 08.00–21.00 WIB**. Ditampilkan d
 Risiko yang diterima CEO: janji ini berat bila admin hanya satu orang. Mitigasi wajib diimplementasikan: di luar jam tersebut, UI menampilkan status "di luar jam balas — pesan tetap masuk, dibalas mulai pukul 08.00 WIB" berdasarkan waktu lokal pengunjung yang dikonversi ke WIB (UTC+7). Status ini dihitung di klien setelah hydration agar halaman statis tetap bisa di-cache.
 
 ## Catatan untuk QA
-Ketiga keputusan ini wajib punya test case sendiri: paket campur tidak boleh bisa dibentuk lewat UI, harga 0,5 kg harus tepat setengah untuk kesembilan varian, dan indikator jam balas harus benar di kedua sisi batas 08.00 dan 21.00 WIB.
+
+> **Diperbarui 9 September 2026.** Instruksi lama di tempat ini menyuruh QA memverifikasi bahwa harga 0,5 kg tepat setengah harga per kg. Instruksi itu **dicabut** — aturannya sudah dibatalkan oleh revisi kedua `D-02`, dan test case yang menegakkannya akan gagal pada katalog yang benar.
+
+Ketiga keputusan ini wajib punya test case sendiri:
+
+1. Paket campur antar-origin tidak boleh bisa dibentuk lewat UI (`D-01`).
+2. Harga 0,5 kg diambil dari data, **bukan dihitung**, dan setiap varian houseblend memenuhi dua batas `V-06`: harga 0,5 kg tidak lebih murah dari setengah harga per kg, dan tidak mencapai harga per kg penuh (`D-02` revisi kedua). Jumlah varian yang diuji diambil dari `web/src/data/validate.ts`, tidak ditulis sebagai angka tetap di rencana uji.
+3. Indikator jam balas benar di kedua sisi batas 08.00 dan 21.00 WIB (`D-03`).
 
 ## D-04 — NFR-03 direvisi dari 150 KB menjadi 185 KB (JS muat awal)
 
@@ -135,15 +172,56 @@ Endpoint ini terbuka untuk siapa pun, dan itu tidak bisa dihindari karena peramb
 Pencatatan **tidak boleh menunda atau menggagalkan pembukaan WhatsApp**. Ia dikirim sekali jalan lewat `sendBeacon`, tanpa ditunggu, dan kegagalannya diabaikan. Bila endpoint mati, pembeli tetap memesan dan owner tetap menerima chatnya persis seperti sebelum fitur ini ada. Pesanan lebih penting daripada pembukuannya.
 
 
-## D-07 — Katalog Kopi 100 gram sebagai lini kedua
+## D-07 — Katalog Kopi 100 gram sebagai lini kedua — **DICABUT 9 September 2026**
 
 Tanggal: 8 September 2026. Dirujuk sebagai **KD-07** dari `02-BRD.md`. Membuka FR-52.
 
-Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping tujuh single origin 200 gram; keduanya tayang berdampingan dan tidak saling menggantikan. Ke-18 biji **bisa dipesan lewat keranjang**.
+> **STATUS: DICABUT SELURUHNYA pada 9 September 2026 oleh `D-09`.** Lini "Katalog
+> Kopi 100 gram" — daftar 17–18 kopi dari poster cetak owner — **tidak ada lagi**,
+> tidak di situs, tidak di data, tidak di sheet. Alasannya satu kalimat: seluruh
+> produk situs kini wajib berasal dari **satu sumber**, lembar `Product` pada
+> `assets/brand/Kopi from heart.xlsx`, dan lini poster tidak ada di sana.
+>
+> Bagian ini **tidak dihapus** karena lini itu sempat tayang, sempat masuk kode,
+> rencana uji, dan dokumen owner. Siapa pun yang menemukan sisa-sisanya harus bisa
+> membaca di sini mengapa ia pernah ada dan mengapa ia berhenti ada — bukan
+> menyimpulkan bahwa ia hilang karena cacat, lalu mengembalikannya.
+>
+> **Yang BERTAHAN dari keputusan ini, dan tidak boleh ikut dibuang:**
+>
+> 1. **Satuan pesan `gram-100`.** Ia lahir untuk lini poster, tetapi sekarang
+>    melayani **kemasan mini 100 gr pada single origin** (`BR-08`). Satuan itu
+>    tetap hidup di keranjang, pesan WhatsApp, dan format harga.
+> 2. **Gagasan kemasan 100 gram itu sendiri** — sebagai kemasan mini single
+>    origin dari lembar `Product`, berharga **per tier** (Signature Rp85.000,
+>    Reguler Rp70.000), bukan per biji.
+>
+> **Jangan pernah menyamakan keduanya.** Ada dua hal berbeda yang sama-sama
+> pernah disebut "100 gram": **kemasan mini** single origin, yang TETAP ADA dan
+> merupakan bagian normal katalog; dan **lini "Katalog Kopi 100 gram"** dari
+> poster, yang SUDAH TIDAK ADA. Dokumen mana pun yang mencampur keduanya salah.
+
+### Isi keputusan aslinya, disimpan sebagai riwayat
+
+Owner menyerahkan poster "KATALOG KOPI" berisi 18 kopi dalam kemasan 100 gram. Lini ini **tambahan**, berdiri sendiri di samping single origin 200 gram (delapan biji sejak Sindoro masuk, 9 September 2026); keduanya tayang berdampingan dan tidak saling menggantikan. Seluruh biji lini ini **bisa dipesan lewat keranjang**.
+
+> **Revisi 9 September 2026 — tinggal 17 biji.** Kerinci dihapus dari lini ini.
+> Sampai 8 September ia hidup di kedua lini dan itu masih bisa dijelaskan:
+> beratnya berbeda, 200 gr terhadap 100 gr. Kemasan mini 100 gram yang masuk
+> bersama lembar `Product` menghapus penjelasan itu — kedua lini menjual
+> Kerinci dalam ukuran **yang sama** seharga Rp70.000 dan Rp85.000, pada satu
+> halaman katalog. Pada toko yang dibayar di muka lewat transfer, dua harga
+> untuk satu barang terbaca sebagai kesalahan atau itikad buruk.
+>
+> Yang dipertahankan adalah versi single origin, karena ia punya halaman
+> produk dan data asal; baris poster hanya punya nama dan harga. Ditegakkan
+> `check-picks.mjs`, yang menolak nama apa pun yang muncul di kedua lini dan
+> berjalan di dalam alur sinkronisasi katalog — jadi barisnya tidak bisa
+> kembali lewat sheet tanpa disadari.
 
 ### `BR-09` sengaja tidak berlaku di lini ini
 
-`BR-09` menetapkan harga single origin ditentukan **tier**, bukan biji — hanya dua angka untuk seluruh katalog: Signature Rp125.000 dan Reguler Rp110.000 per 200 gram. Lini baru memberi harga **per biji**, dari Rp65.000 sampai Rp270.000. Dua tier tidak mungkin menampung 18 harga berbeda.
+`BR-09` menetapkan harga single origin ditentukan **tier**, bukan biji — hanya dua angka per ukuran kemasan untuk seluruh katalog: sejak 9 September 2026, Signature Rp140.000 dan Reguler Rp125.000 per 200 gram. Lini baru memberi harga **per biji**, dari Rp65.000 sampai Rp270.000. Dua tier tidak mungkin menampung 18 harga berbeda.
 
 Karena itu lini ini tidak memakai `Tier`, dan `BR-09` tetap berlaku penuh untuk lini 200 gram. Bukan pengecualian yang dibiarkan, melainkan batas yang ditarik sengaja.
 
@@ -151,13 +229,21 @@ Karena itu lini ini tidak memakai `Tier`, dan `BR-09` tetap berlaku penuh untuk 
 
 Yang diketahui hanya **nama dan harga**. Asal desa, wilayah, provinsi, proses, ketinggian, varietas, dan catatan rasa tidak ada.
 
-`Product.origin` mewajibkan `province` terisi dan merakit judul metadata SEO dari sana. Memaksa 18 kopi ini ke dalamnya menuntut 18 provinsi karangan — dan untuk **Panama** serta **Kenya**, kolom itu salah secara konsep, bukan sekadar kosong. Karena itu lini ini punya bentuk datanya sendiri yang hanya memuat apa yang benar-benar diketahui.
+`Product.origin` mewajibkan `province` terisi dan merakit judul metadata SEO dari sana. Memaksa kopi-kopi ini ke dalamnya menuntut belasan provinsi karangan — dan untuk **Panama** serta **Kenya**, kolom itu salah secara konsep, bukan sekadar kosong. Karena itu lini ini punya bentuk datanya sendiri yang hanya memuat apa yang benar-benar diketahui.
 
 Konsekuensi yang diterima: tidak ada halaman produk per biji, jadi tidak ada halaman yang tampak lengkap padahal isinya karangan. Sebuah biji boleh naik menjadi `Product` penuh begitu owner menyerahkan data asalnya. Halaman katalog menyatakan terus terang bahwa data itu belum ada dan mengarahkan pertanyaan ke WhatsApp.
 
-Bentuknya daftar padat, bukan kartu seperti lini 200 gram. Kartu menjanjikan foto dan catatan rasa; delapan belas kartu berisi nama dan harga saja akan terbaca sebagai katalog yang rusak.
+Bentuknya daftar padat, bukan kartu seperti lini 200 gram. Kartu menjanjikan foto dan catatan rasa; belasan kartu berisi nama dan harga saja akan terbaca sebagai katalog yang rusak.
 
-### Dua bentrokan yang MASIH menunggu jawaban owner
+### Dua bentrokan yang dulu menunggu jawaban owner — keduanya SELESAI 9 September 2026
+
+> Keduanya lahir dari keberadaan lini poster, dan keduanya hilang bersamanya.
+> **Kerinci** kini hanya punya satu harga karena hanya ada satu lini: single
+> origin, kemasan mini 100 gr Rp70.000 (tier Reguler). Slug `kerinci-100` tidak
+> ada lagi. **Gayo** hanya pernah ada di lini poster, jadi tidak ada lagi yang
+> bisa tertukar dengan **Pondok Baru**; Pondok Baru tetap tayang sebagai single
+> origin. Paragraf di bawah disimpan sebagai riwayat, bukan sebagai pekerjaan
+> yang tersisa.
 
 Keduanya tayang apa adanya. Tidak ada angka yang diselaraskan diam-diam, karena menyelaraskan berarti memilihkan jawaban yang belum owner berikan.
 
@@ -165,10 +251,11 @@ Keduanya tayang apa adanya. Tidak ada angka yang diselaraskan diam-diam, karena 
 
 | | Harga | Setara 100 gr |
 |---|---|---|
-| Single origin 200 gr, tier Reguler | Rp110.000 | Rp55.000 |
+| Single origin 200 gr, tier Reguler | Rp125.000 | Rp62.500 |
+| Single origin kemasan mini 100 gr, tier Reguler | Rp70.000 | Rp70.000 |
 | Katalog Kopi 100 gr | Rp85.000 | Rp85.000 |
 
-Selisih 55%. Entah dua lot berbeda, entah salah satunya keliru. Slug-nya dibedakan (`kerinci` versus `kerinci-100`) sehingga keduanya tidak pernah tertukar di keranjang, dan sebuah assertion menjaga pemisahan itu.
+Selisih 36% terhadap kemasan 200 gr, dan 21% terhadap kemasan mini 100 gr. Bentrokannya **bertambah tajam** sejak 9 September 2026: kemasan mini 100 gr pada lini single origin membuat kedua lini kini menjual Kerinci dalam ukuran yang persis sama dengan dua harga berbeda di satu situs. Entah dua lot berbeda, entah salah satunya keliru. Slug-nya dibedakan (`kerinci` versus `kerinci-100`) sehingga keduanya tidak pernah tertukar di keranjang, dan sebuah assertion menjaga pemisahan itu.
 
 **Gayo dan Pondok Baru bisa jadi kopi yang sama.** Pondok Baru berada di Bener Meriah, Aceh — dataran tinggi Gayo. Menayangkan keduanya sebagai produk terpisah berisiko membingungkan bila keduanya berasal dari lot yang sama.
 
@@ -185,7 +272,14 @@ Tanggal: 8 September 2026. Dirujuk sebagai **KD-08** dari `02-BRD.md`. Membuka F
 
 Owner meminta katalog mudah dikelola. Sebelum ini, mengubah satu harga menuntut menyunting berkas TypeScript, commit, dan push — alur kerja developer, bukan alur kerja pemilik toko.
 
-**Keputusan.** Harga, status stok, dan seluruh lini 100 gram pindah ke tiga tab pada spreadsheet yang sudah dipakai untuk buku order. Owner menyunting di sana, menekan satu tombol di GitHub Actions, dan situs terbit ulang. Ada pula jadwal harian pukul 01.00 WIB.
+**Keputusan.** Harga dan status stok pindah ke tab pada spreadsheet yang sudah dipakai untuk buku order. Owner menyunting di sana, menekan satu tombol di GitHub Actions, dan situs terbit ulang. Ada pula jadwal harian pukul 01.00 WIB.
+
+> **Diperbarui 9 September 2026.** Keputusan ini semula memindahkan **tiga** tab:
+> `harga`, `stok`, dan `katalog100`. Tab ketiga melayani lini poster yang dicabut
+> `D-09`, jadi ia **tidak dibaca lagi sama sekali**. Yang dibutuhkan sekarang
+> **dua tab**: `harga` (24 baris) dan `stok` (11 baris). Tab `katalog100` yang
+> terlanjur dibuat owner boleh ditinggalkan begitu saja — ia diabaikan dan tidak
+> menggagalkan apa pun.
 
 **Yang TIDAK ikut pindah**: asal, proses, ketinggian, varietas, catatan rasa, dan foto. Batasnya bukan teknis — semuanya klaim tentang produk, bukan angka, pada toko yang dibayar di muka lewat transfer. Klaim yang salah merusak kepercayaan pada seluruh katalog, termasuk bagian yang benar.
 
@@ -195,19 +289,75 @@ Harga TIDAK diambil saat pengunjung membuka halaman. Sinkronisasi menulis ulang 
 
 Alasannya: mengambil harga saat halaman dibuka berarti sheet yang mati atau lambat menjadi halaman produk tanpa harga, dan seluruh situs berhenti bisa di-cache. Harga adalah data paling kritis di sini — ia harus statis, tervalidasi, dan punya riwayat. Cara ini memberi ketiganya sekaligus: setiap perubahan harga masuk riwayat git dengan tanggal dan isinya.
 
-Berkas hasil itu **satu-satunya** sumber harga, stok, dan lini 100 gram. Tidak ada nilai cadangan di berkas lain, karena dua sumber kebenaran untuk harga berarti suatu hari situs menayangkan angka yang tidak seorang pun merasa menuliskannya.
+Berkas hasil itu **satu-satunya** sumber harga dan stok. Tidak ada nilai cadangan di berkas lain, karena dua sumber kebenaran untuk harga berarti suatu hari situs menayangkan angka yang tidak seorang pun merasa menuliskannya.
 
 ### Gagal tertutup, di empat lapis
 
 Menerbitkan harga yang salah jauh lebih merugikan daripada menerbitkan harga kemarin. Karena itu setiap keraguan menghentikan penerbitan, dan katalog yang sudah ter-commit tetap tayang:
 
 1. Apps Script membedakan tab yang **tidak ada** (`null`) dari tab yang **kosong**. Yang pertama berarti salah nama tab, yang kedua berarti owner mengosongkan isinya; keduanya ditolak dengan pesan berbeda.
-2. `validateCatalogPayload()` menolak tab hilang, harga hilang, kunci tak dikenal, slug bentrok, dan daftar 100 gram kosong — tanpa menyentuh berkas apa pun.
+2. `validateCatalogPayload()` menolak tab hilang, harga hilang, harga di luar batas wajar, kunci tak dikenal, dan status stok tak dikenal — tanpa menyentuh berkas apa pun.
 3. Validator katalog berjalan saat modul dievaluasi, sehingga data rusak menggagalkan build alih-alih tayang.
-4. Workflow menjalankan `tsc` dan tiga skrip pemeriksaan sebelum commit.
+4. Workflow menjalankan `tsc` dan dua skrip pemeriksaan sebelum commit — `check-cart.mjs` dan `check-sync-katalog.mjs`. Yang pertama menyimpan salinan ketik-ulang daftar produk lembar `Product`, sehingga katalog yang diam-diam bertambah atau berkurang satu produk, atau kemasan mini yang muncul pada biji yang tidak punya barisnya, langsung merah.
 
 Ditambah satu hal kecil yang menentukan: `managedPrice()` **melempar** bila kuncinya hilang, bukan mengembalikan 0. Nol akan tampil sebagai "Rp0" di halaman produk dan ikut ke pesan WhatsApp sebagai penawaran sungguhan.
 
 ### Batas kewarasan harga Rp10.000 sampai Rp5.000.000
 
 Bukan aturan bisnis, melainkan jaring pengaman terhadap salah ketik. Satu nol kelebihan mengubah Rp125.000 menjadi Rp1.250.000; satu nol kurang menjadikannya Rp12.500. Keduanya bilangan bulat positif yang sah, jadi pemeriksaan tipe saja tidak akan pernah melihatnya. Bila katalog suatu saat sungguh memuat harga di luar rentang itu, ubah batasnya secara sadar — jangan hapus pemeriksaannya.
+
+
+## D-09 — Satu sumber untuk seluruh produk: lembar `Product`
+
+Tanggal: 9 September 2026. Dirujuk sebagai **KD-09** dari `02-BRD.md`. Mencabut `D-07` seluruhnya dan menutup FR-52. Menutup pula DEF-17 pada `06-qa-test-plan.md` dan butir 0.5 pada `11-timeline-rilis.md` — bukan dengan menjawab pertanyaannya, melainkan dengan menghapus keadaan yang melahirkannya.
+
+**Keputusan.** Setiap produk yang dijual situs wajib berasal dari **satu** sumber: lembar **"Product"** pada `assets/brand/Kopi from heart.xlsx`. Tidak ada lini kedua, tidak ada daftar tambahan, tidak ada baris yang masuk dari tempat lain.
+
+Konsekuensi langsungnya: lini **"Katalog Kopi 100 gram"** — daftar dari poster cetak owner, yang `D-07` jadikan lini kedua — **dihapus seluruhnya**. Ia tidak ada di lembar itu.
+
+### Mengapa
+
+`D-07` sudah menuliskan sendiri harga yang ia bayar: lini itu tidak memakai `Tier`, tidak memakai tipe `Product`, tidak punya halaman produk, dan punya bentuk datanya sendiri. Setiap aturan katalog karena itu harus ditulis dua kali, dan setiap kali salah satunya lupa ditulis, situs menayangkan dua perlakuan berbeda untuk hal yang sama.
+
+Bentrokan Kerinci adalah wujud pertamanya, dan penyelesaiannya waktu itu — mengeluarkan satu nama dari satu daftar — hanya menutup gejalanya. Selama ada dua daftar, nama berikutnya akan bentrok lagi, dan yang berikutnya lagi. **Yang salah bukan namanya, melainkan adanya daftar kedua.**
+
+Pada toko yang dibayar di muka lewat transfer, satu daftar yang bisa dibaca ulang terhadap dokumen owner lebih berharga daripada belasan baris katalog tambahan yang tidak punya data asal, tidak punya halaman, dan tidak bisa diperiksa terhadap apa pun.
+
+### Katalog yang berlaku, dan tidak ada yang lain
+
+- **8 single origin**: Oelbiteno, Sabin, Abmisibil, Pyramid, Palimping, Kerinci, Pondok Baru, Sindoro.
+- **Tujuh di antaranya juga menjual kemasan mini 100 gr**, berharga **per tier** (`BR-09`): Signature Rp85.000, Reguler Rp70.000. Lembar itu **melewatkan Sindoro** pada kolom kemasan mini, jadi Sindoro tidak punya kemasan mini. Ketiadaan itu **sah dan disengaja** (`BR-08`); ia tidak boleh "dilengkapi" sendiri.
+- **3 lini houseblend**, setiap rasio dalam **dua ukuran kemasan** (1 kg dan 0,5 kg), harganya masing-masing tersimpan (`D-02` revisi kedua).
+- Totalnya **11 produk** dan **41 varian jual**.
+- Kolom **"Tier 2"** pada lembar itu masih berisi catatan saja, tanpa satu pun nama biji dan tanpa harga. Selama masih begitu, **tidak ada apa pun yang boleh tayang atas namanya**.
+
+### Yang bertahan dari `D-07`
+
+Satuan pesan **`gram-100` tetap ada** — ia sekarang melayani kemasan mini single origin. Begitu pula gagasan kemasan 100 gram itu sendiri. Yang hilang hanyalah lini poster: nama, harga per biji, bentuk datanya, dan halaman daftarnya.
+
+Dua hal berbeda pernah sama-sama disebut "100 gram". **Kemasan mini** single origin TETAP ADA. **Lini "Katalog Kopi 100 gram"** dari poster SUDAH TIDAK ADA. Keduanya tidak boleh ditulis seolah satu hal.
+
+### Yang hilang dari kode, supaya tidak ada yang mencarinya
+
+`src/data/picks.ts`, `src/features/catalog/pick-list.tsx`, dan `scripts/check-picks.mjs` dihapus. Medan `picks` hilang dari `managed.generated.ts`, dari skrip sinkronisasi, dan dari `ops/order-tracker.gs`. Validator `assertPicksValid` (`V-20`) hilang bersama datanya. Halaman `/katalog` tidak lagi punya bagian kedua.
+
+Tab **`katalog100` tidak dibaca lagi sama sekali**; sheet owner cukup dua tab, `harga` dan `stok` (`D-08`). Tab lama yang terlanjur ada diabaikan dan tidak berbahaya.
+
+### Pagar penggantinya
+
+Pemeriksaan lama menjaga agar tidak ada nama yang muncul di **dua** lini. Karena lini kedua tidak ada, pagar itu kehilangan pekerjaannya — dan digantikan pagar yang menjaga hal yang sekarang benar-benar berisiko: **katalog menyimpang dari lembar `Product`**.
+
+`check-cart.mjs` menyimpan **salinan daftar produk yang diketik ulang dengan tangan** dari lembar itu, dan gagal bila katalog bertambah produk, kehilangan produk, atau menumbuhkan kemasan mini pada biji yang tidak punya barisnya. Salinannya sengaja diketik ulang, bukan diimpor: pemeriksaan yang membandingkan data dengan dirinya sendiri selalu lulus.
+
+### Catatan untuk QA
+
+Test case yang menguji lini poster **dicabut, bukan dihapus** — TC-313, TC-314, TC-403, dan TC-404, dirinci pada Bagian 4.10 `06-qa-test-plan.md`. Menghapusnya diam-diam membuat rujukan lama menunjuk ke ruang kosong; mencabutnya membuat pembaca tahu bahwa kasusnya pernah ada dan mengapa ia tidak dijalankan lagi.
+
+## D-10 sampai D-13 — Diet tampilan, 9 September 2026
+
+Isi lengkapnya di `docs/13-diet-tampilan.md`, termasuk diskusi lintas peran, angka jumlah kata tiap halaman, dan rencana deployment-nya. Ringkasnya, dan bagian ini yang mengikat:
+
+- **D-10** — Enam foto produk yang belum ada (Oelbiteno, Pyramid, Palimping, Kerinci, Full Robusta, Sindoro) **memblokir rilis**. Butir 9 pada `docs/12-tugas-owner.md` yang menyebut foto tidak memblokir rilis dicabut.
+- **D-11** — Ada plafon jumlah kata terlihat per rute, ditegakkan `web/scripts/check-copy-budget.mjs` di dalam `check-all.mjs`. Plafonnya hanya boleh naik lewat perubahan pada `docs/13-diet-tampilan.md`, tidak pernah dengan menyunting skripnya agar hijau.
+- **D-12** — Kartu produk dibekukan pada empat unsur: gambar, nama, baris asal, harga "mulai dari", ditambah penanda "Stok kosong" bila berlaku. Label kategori, pil catatan rasa, dan baris harga paket 3 pack pindah ke halaman produk. Penghematan tetap dihitung `bundleSaving()` dan `packSaving()` dan tetap tampil pada opsi varian di halaman produk.
+- **D-13** — Beranda tinggal tiga blok: hero, sorotan Signature, satu ajakan memesan. Blok "Cara pesan" pindah ke `/kontak`. Pernyataan bahwa pembayaran tidak dilakukan di website ini tetap ada di `/kontak` dan di panel pesan halaman produk, dan keluar dari footer.
