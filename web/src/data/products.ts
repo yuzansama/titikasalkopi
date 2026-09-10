@@ -24,6 +24,10 @@
  */
 
 import abmisibilArtwork from "@/images/produk/abmisibil.jpg";
+import kerinciArtwork from "@/images/produk/kerinci.jpg";
+import oelbitenoArtwork from "@/images/produk/oelbiteno.jpg";
+import palimpingArtwork from "@/images/produk/palimping.jpg";
+import pyramidArtwork from "@/images/produk/pyramid.jpg";
 import { managedPrice, managedStatus } from "./managed.generated";
 import boldPhoto from "@/images/produk/bold.jpg";
 import brightPhoto from "@/images/produk/bright.jpg";
@@ -378,7 +382,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: null,
     varietals: null,
     tastingNotes: null,
-    image: null,
+    image: {
+      src: oelbitenoArtwork,
+      alt: "Ilustrasi bukit savana Oelbiteno yang menurun ke teluk berpasir, dengan satu pohon berkanopi lebar di lereng.",
+    },
     hasMiniPack: true,
     status: managedStatus("oelbiteno"),
     searchTerms: ["kopi Kupang", "kopi NTT", "kopi Timor", "single origin NTT"],
@@ -453,7 +460,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: null,
     varietals: null,
     tastingNotes: null,
-    image: null,
+    image: {
+      src: pyramidArtwork,
+      alt: "Ilustrasi puncak-puncak batu Pegunungan Jayawijaya yang bersalju tipis, dengan awan tersangkut di lerengnya.",
+    },
     hasMiniPack: true,
     status: managedStatus("pyramid"),
     searchTerms: ["kopi Papua", "kopi Jayawijaya", "kopi Wamena", "arabica Papua"],
@@ -479,7 +489,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: null,
     varietals: null,
     tastingNotes: null,
-    image: null,
+    image: {
+      src: palimpingArtwork,
+      alt: "Ilustrasi gunung berhutan di Garut dengan petak kebun bertingkat dan kabut tipis di kaki lerengnya.",
+    },
     hasMiniPack: true,
     status: managedStatus("palimping"),
     searchTerms: ["kopi Garut", "kopi Jawa Barat", "arabica Garut"],
@@ -496,7 +509,10 @@ export const singleOriginBeans: SingleOriginBean[] = [
     altitudeMasl: null,
     varietals: null,
     tastingNotes: null,
-    image: null,
+    image: {
+      src: kerinciArtwork,
+      alt: "Ilustrasi puncak Kerinci berwarna kemerahan di atas hutan lebat, dengan danau memanjang di bagian depan.",
+    },
     hasMiniPack: true,
     status: managedStatus("kerinci"),
     searchTerms: ["kopi Kerinci", "kopi Jambi", "arabica Kerinci"],
