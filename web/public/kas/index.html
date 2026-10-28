@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Kas Titik Asal Kopi</title>
+<style>
+  /* Layout: satu kolom, ringkasan dulu lalu rincian. Dark theme, palet Okabe-Ito (ramah buta warna). */
+  :root {
+    --bg: #12151a; --panel: #1a1f27; --line: #2b323d;
+    --fg: #e9ecf0; --muted: #9ba5b1;
+    --terima: #56b4e9; --kurang: #e69f00; --lunas: #9ba5b1;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--sans); }
+  .wrap { max-width: 72rem; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 48px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 28px; }
+  h1 { margin: 0; font-size: 1.7rem; font-weight: 600; letter-spacing: -0.01em; }
+  h2 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+  h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .lead { margin: 6px 0 0; color: var(--muted); max-width: 64ch; }
+  .lead b { color: var(--fg); font-weight: 600; }
+  .stamp { margin: 4px 0 0; color: var(--muted); font-size: 0.8rem; }
+  .num { font-variant-numeric: tabular-nums; }
+  section { display: flex; flex-direction: column; gap: 12px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 12px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tile .lbl { color: var(--muted); font-size: 0.8rem; }
+  .tile .val { font-size: 1.45rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .sub { color: var(--muted); font-size: 0.78rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .note { margin: 0; color: var(--muted); font-size: 0.82rem; }
+  dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; margin: 0; font-variant-numeric: tabular-nums; }
+  dt { color: var(--muted); }
+  dd { margin: 0; text-align: right; white-space: nowrap; }
+  .tot { color: var(--fg); font-weight: 600; border-top: 1px solid var(--line); padding-top: 6px; }
+  .box { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 0.78rem; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.r, th.r { text-align: right; white-space: nowrap; }
+  td.w { min-width: 13rem; }
+  td.d { white-space: nowrap; }
+  .pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 0.78rem; white-space: nowrap; border: 1px solid currentColor; }
+  .pill.t { color: var(--terima); }
+  .pill.k { color: var(--kurang); border-style: dashed; }
+  .pill.l { color: var(--lunas); }
+  .bars { display: flex; flex-direction: column; gap: 8px; }
+  .bar { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) auto; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+  .bar .track { height: 14px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 4px; background: var(--terima); }
+  .bar .fill.k { background: repeating-linear-gradient(45deg, var(--kurang) 0 4px, #b37a00 4px 8px); }
+  .bar .v { color: var(--muted); text-align: right; min-width: 7rem; }
+  ol { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 4px; }
+  ol b { font-variant-numeric: tabular-nums; }
+  @media (max-width: 420px) { .bar { grid-template-columns: 5rem minmax(0, 1fr); } .bar .v { grid-column: 2; text-align: left; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Kas Titik Asal Kopi</h1>
+    <p class="lead" id="lead"></p>
+    <p class="stamp" id="stamp"></p>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section>
+    <h2>Total penjualan dan belanja</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Ringkasan</h3>
+        <dl id="ringkas"></dl>
+      </div>
+      <div class="card">
+        <h3>Belanja per kelompok</h3>
+        <p class="note">Kopi per invoice, peralatan per barang. Termasuk kopi pribadi.</p>
+        <div class="box"><table><thead><tr><th>Kelompok</th><th>Jenis</th><th class="r">Jumlah</th></tr></thead><tbody id="grup"></tbody></table></div>
+      </div>
+      <div class="card">
+        <h3>Cek batch 1</h3>
+        <p class="note">Batch 1 = semua kopi sebelum pesanan 7 kg (invoice 3 Okt di luar kopi pribadi + invoice 3 kg). Semuanya sudah terjual.</p>
+        <dl id="batch"></dl>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Posisi tiap investor</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Talangan yang harus balik</h3>
+        <p class="note">Uang yang sudah keluar (setoran + talangan) dikurangi kewajiban (modal Rp500.000 + kopi pribadi).</p>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="card">
+        <h3>Ringkas hitungan</h3>
+        <p class="note">Hitungan saja, belum ada transfer. Uang usaha dipegang Om Boy.</p>
+        <ol id="langkah"></ol>
+      </div>
+    </div>
+    <div class="card">
+      <div class="box"><table>
+        <thead><tr><th>Nama</th><th class="r">Modal</th><th class="r">Kopi pribadi</th><th class="r">Kewajiban</th><th class="r">Setoran</th><th class="r">Talangan</th><th class="r">Sudah keluar</th><th class="r">Selisih</th><th>Status</th></tr></thead>
+        <tbody id="rekap"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Penjualan</h2>
+    <div class="card"><div class="box"><table>
+      <thead><tr><th>No</th><th>Tanggal</th><th>Pesanan</th><th class="r">Total</th><th>Bayar via</th></tr></thead>
+      <tbody id="jual"></tbody>
+    </table></div></div>
+  </section>
+
+  <section>
+    <h2>Belanja</h2>
+    <div class="card"><div class="box"><table>
+      <thead><tr><th>No</th><th>Item</th><th>Sumber</th><th>Batch</th><th class="r">Qty</th><th class="r">Harga</th><th class="r">Jumlah</th><th>Dibayar oleh</th><th>Untuk</th></tr></thead>
+      <tbody id="belanja"></tbody>
+    </table></div></div>
+  </section>
+
+  <section>
+    <h2>Setoran modal</h2>
+    <div class="card"><div class="box"><table>
+      <thead><tr><th>No</th><th>Nama</th><th class="r">Jumlah</th><th>Keterangan</th></tr></thead>
+      <tbody id="setoran"></tbody>
+    </table></div></div>
+  </section>
+</main>
+
+<script id="kas-data" type="application/json">{"belanja": [{"no": "1", "item": "Single Origin Sabin 200g", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 110000, "jumlah": 110000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "2", "item": "Single Origin Pondok Baru", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 3, "harga": 110000, "jumlah": 330000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "3", "item": "Single Origin Pondok Baru", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 110000, "jumlah": 110000, "dibayar_oleh": "Bagus", "dibebankan_ke": "Bagus", "masuk_hitungan": "Ya", "catatan": "Dibayar sendiri ke Om Boy"}, {"no": "4", "item": "Single Origin Peneli", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 110000, "jumlah": 110000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "5", "item": "Single Origin Peneli", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 110000, "jumlah": 110000, "dibayar_oleh": "Om Blek", "dibebankan_ke": "Om Blek", "masuk_hitungan": "Ya", "catatan": "Dibayar sendiri ke Om Boy"}, {"no": "6", "item": "Single Origin Peneli", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 110000, "jumlah": 110000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Om Boy", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "7", "item": "House Blend Bright Arabica", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 230000, "jumlah": 230000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "8", "item": "House Blend Bold 70:30", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 165000, "jumlah": 165000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "9", "item": "Add giling", "sumber": "Santana INVRSV44069", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 10000, "jumlah": 10000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "10", "item": "Mesin sealer OMICKO impulse 20cm", "sumber": "Shopee (Bintang Mandiri Elektric)", "kategori": "Peralatan & kemasan", "batch": "-", "qty": 1, "harga": 143750, "jumlah": 143750, "dibayar_oleh": "Mbak Kiki", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "11", "item": "Wadah 200 gram (flat bottom valve 12x18, 20 pcs)", "sumber": "Shopee (Gajah Pack)", "kategori": "Peralatan & kemasan", "batch": "-", "qty": 1, "harga": 36000, "jumlah": 36000, "dibayar_oleh": "Mbak Kiki", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "12", "item": "Packaging", "sumber": "Putrama Packaging", "kategori": "Peralatan & kemasan", "batch": "-", "qty": 1, "harga": 89700, "jumlah": 89700, "dibayar_oleh": "Bagus", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "13", "item": "House Blend Bright Arabica", "sumber": "Santana INVRSV44104", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 230000, "jumlah": 230000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "14", "item": "House Blend 50:50", "sumber": "Santana INVRSV44104", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 175000, "jumlah": 175000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "15", "item": "House Blend Bold 70:30", "sumber": "Santana INVRSV44104", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 165000, "jumlah": 165000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "16", "item": "Add giling", "sumber": "Santana INVRSV44104", "kategori": "Kopi", "batch": "1", "qty": 1, "harga": 10000, "jumlah": 10000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "17", "item": "House Blend Bright Arabica", "sumber": "Santana INVRSV44105", "kategori": "Kopi", "batch": "2", "qty": 4, "harga": 230000, "jumlah": 920000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "18", "item": "House Blend 50:50", "sumber": "Santana INVRSV44105", "kategori": "Kopi", "batch": "2", "qty": 2, "harga": 175000, "jumlah": 350000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "19", "item": "House Blend Bold 70:30", "sumber": "Santana INVRSV44105", "kategori": "Kopi", "batch": "2", "qty": 1, "harga": 165000, "jumlah": 165000, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}, {"no": "20", "item": "Sticker label botol (100 pcs)", "sumber": "Belanja online 25 Agu", "kategori": "Peralatan & kemasan", "batch": "-", "qty": 1, "harga": 164800, "jumlah": 164800, "dibayar_oleh": "Om Boy", "dibebankan_ke": "Bersama", "masuk_hitungan": "Ya", "catatan": ""}], "setoran": [{"no": "1", "nama": "Bagus", "jumlah": 400000, "keterangan": "Setoran modal (pertama)"}, {"no": "2", "nama": "Bagus", "jumlah": 100000, "keterangan": "Setoran modal tambahan, 15 Okt"}, {"no": "3", "nama": "Om Blek", "jumlah": 500000, "keterangan": "Setoran modal"}, {"no": "4", "nama": "Om Hendra", "jumlah": 500000, "keterangan": "Setoran modal, 15 Okt"}, {"no": "5", "nama": "Mbak Kiki", "jumlah": 500000, "keterangan": "Setoran modal, 16 Okt"}, {"no": "6", "nama": "Om Boy", "jumlah": 500000, "keterangan": "Setoran modal"}], "penjualan": [{"no": "1", "tanggal": "2026-10-02", "rincian": "Houseblend 200g + Bold hitam", "total": 125000, "metode": "Transfer BCA", "catatan": ""}, {"no": "2", "tanggal": "2026-10-08", "rincian": "1 Arabica 200g, 2 Robusta 100g, 1 Arabica 100g", "total": 240000, "metode": "m-Transfer BCA", "catatan": ""}, {"no": "3", "tanggal": "2026-10-09", "rincian": "Houseblend 70-30 Beans Temanggung 1kg (230rb), Houseblend Bold Robusta 100g (45rb), Giling (10rb)", "total": 285000, "metode": "GoPay", "catatan": ""}, {"no": "4", "tanggal": "2026-10-10", "rincian": "Single Origin Papua 200g (135rb), Houseblend Basic Beans Temanggung 100g (45rb)", "total": 180000, "metode": "m-Transfer BCA", "catatan": ""}, {"no": "5", "tanggal": "2026-10-12", "rincian": "Robusta 100g, Arabica 100g", "total": 100000, "metode": "m-Transfer BCA", "catatan": ""}, {"no": "6", "tanggal": "2026-10-14", "rincian": "Arabica 100g, House blend 200g", "total": 140000, "metode": "m-Transfer BCA", "catatan": ""}, {"no": "7", "tanggal": "2026-10-14", "rincian": "Houseblend 200g", "total": 85000, "metode": "m-Transfer BCA", "catatan": "Harga teman"}, {"no": "8", "tanggal": "2026-10-18", "rincian": "Kopi Bold 100g", "total": 45000, "metode": "m-Transfer BCA", "catatan": ""}, {"no": "9", "tanggal": "2026-10-20", "rincian": "Kopi", "total": 95000, "metode": "Transfer", "catatan": ""}, {"no": "10", "tanggal": "2026-10-20", "rincian": "Kopi", "total": 95000, "metode": "Transfer", "catatan": ""}, {"no": "11", "tanggal": "2026-10-20", "rincian": "Kopi", "total": 140000, "metode": "Transfer", "catatan": ""}, {"no": "12", "tanggal": "2026-10-20", "rincian": "Kopi", "total": 95000, "metode": "Transfer", "catatan": ""}, {"no": "13", "tanggal": "2026-10-21", "rincian": "Kopi", "total": 195000, "metode": "Transfer", "catatan": ""}], "diperbarui": "28 Okt 2026"}</script>
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById('kas-data').textContent);
+  var INVESTOR = ['Bagus', 'Om Blek', 'Om Boy', 'Mbak Kiki', 'Om Hendra'];
+  var MODAL = 500000;
+  var nf = new Intl.NumberFormat('id-ID');
+  var idr = function (n) { return 'Rp' + nf.format(Math.round(n)); };
+  var sg = function (n) { return (n > 0 ? '+' : n < 0 ? '−' : '') + idr(Math.abs(n)); };
+  var tgl = function (s) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(s)); };
+  var sum = function (a, k) { return a.reduce(function (s, r) { return s + Number(r[k]); }, 0); };
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, text, cls) { var e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
+  function row(tbody, cells) { var tr = el('tr'); cells.forEach(function (c) { var td = el('td', c[0], c[1]); tr.appendChild(td); }); tbody.appendChild(tr); return tr; }
+  function pill(text, cls) { return el('span', text, 'pill ' + cls); }
+
+  var B = D.belanja.filter(function (b) { return b.masuk_hitungan === 'Ya'; });
+  var bersama = B.filter(function (b) { return b.dibebankan_ke === 'Bersama'; });
+  var jual = sum(D.penjualan, 'total');
+  var setor = sum(D.setoran, 'jumlah');
+  var usaha = sum(bersama, 'jumlah');
+  var uang = setor + jual - sum(B.filter(function (b) { return b.dibayar_oleh === 'Kas'; }), 'jumlah');
+
+  var rekap = INVESTOR.map(function (nama) {
+    var pribadi = sum(B.filter(function (b) { return b.dibebankan_ke === nama; }), 'jumlah');
+    var st = sum(D.setoran.filter(function (s) { return s.nama === nama; }), 'jumlah');
+    var tal = sum(B.filter(function (b) { return b.dibayar_oleh === nama; }), 'jumlah');
+    var wajib = MODAL + pribadi, keluar = st + tal, selisih = keluar - wajib;
+    return { nama: nama, pribadi: pribadi, wajib: wajib, setor: st, tal: tal, keluar: keluar, selisih: selisih,
+      status: selisih > 0 ? 'Terima' : selisih < 0 ? 'Kurang setor' : 'Lunas' };
+  });
+  var piutang = rekap.reduce(function (s, r) { return s + Math.max(0, r.selisih); }, 0);
+  var kurang = rekap.reduce(function (s, r) { return s + Math.max(0, -r.selisih); }, 0);
+  var saldo = uang + kurang - piutang;
+
+  var kopi = B.filter(function (b) { return b.kategori === 'Kopi'; });
+  var kopi1 = sum(bersama.filter(function (b) { return b.kategori === 'Kopi' && b.batch === '1'; }), 'jumlah');
+  var stok2 = sum(kopi.filter(function (b) { return b.batch === '2'; }), 'jumlah');
+  var alat = sum(B.filter(function (b) { return b.kategori !== 'Kopi'; }), 'jumlah');
+
+  // Header
+  $('lead').innerHTML = '';
+  $('lead').append('Tiap investor modalnya sama, ', el('b', idr(MODAL)), ', dan omzet penjualan dipakai jadi modal berikutnya. Semua uang usaha dipegang Om Boy. Setelah semua talangan dihitung balik, saldo usaha ', el('b', sg(saldo)), '.');
+  $('stamp').textContent = 'Diperbarui ' + D.diperbarui + '. Hitungan saja, belum ada transfer.';
+
+  // Tiles
+  [['Total belanja usaha', idr(usaha), 'Belanja bersama untuk jualan'],
+   ['Modal investor', idr(MODAL * INVESTOR.length), idr(MODAL) + ' per orang'],
+   ['Penjualan', idr(jual), D.penjualan.length + ' transaksi'],
+   ['Uang di tangan', idr(uang), 'Setoran + penjualan, dipegang Om Boy'],
+   ['Saldo usaha', sg(saldo), 'Setelah semua talangan balik']].forEach(function (t) {
+    var d = el('div', null, 'tile'); d.append(el('span', t[0], 'lbl'), el('span', t[1], 'val'), el('span', t[2], 'sub')); $('tiles').appendChild(d);
+  });
+
+  function dl(id, items) {
+    items.forEach(function (it) { var dt = el('dt', it[0]), dd = el('dd', it[1]); if (it[2]) { dt.className = dd.className = 'tot'; } $(id).append(dt, dd); });
+  }
+  dl('ringkas', [
+    ['Penjualan (' + D.penjualan.length + ' transaksi)', idr(jual)],
+    ['Belanja kopi', idr(sum(kopi, 'jumlah'))],
+    ['Belanja peralatan & kemasan', idr(alat)],
+    ['Total belanja', idr(sum(B, 'jumlah')), true],
+    ['Kopi pribadi (sudah dibayar sendiri)', idr(sum(B, 'jumlah') - usaha)],
+    ['Belanja usaha', idr(usaha), true]]);
+  dl('batch', [
+    ['Modal kopi batch 1', idr(kopi1)],
+    ['Penjualan tercatat', idr(jual)],
+    ['Untung kotor batch 1', sg(jual - kopi1), true],
+    ['Stok 7 kg, belum terjual', idr(stok2)],
+    ['Peralatan & kemasan (aset)', idr(alat)]]);
+
+  // Belanja per kelompok
+  var g = {};
+  B.forEach(function (b) { var k = b.kategori === 'Kopi' ? 'Kopi ' + b.sumber : b.item; if (!g[k]) g[k] = { k: k, kat: b.kategori, j: 0 }; g[k].j += b.jumlah; });
+  Object.keys(g).map(function (k) { return g[k]; })
+    .sort(function (a, b) { return a.kat === b.kat ? b.j - a.j : (a.kat === 'Kopi' ? -1 : 1); })
+    .forEach(function (x) { row($('grup'), [[x.k], [x.kat], [idr(x.j), 'r']]); });
+
+  // Bars
+  var maxAbs = Math.max.apply(null, rekap.map(function (r) { return Math.abs(r.selisih); })) || 1;
+  rekap.forEach(function (r) {
+    var b = el('div', null, 'bar'), tr = el('div', null, 'track'), f = el('div', null, 'fill' + (r.selisih < 0 ? ' k' : ''));
+    f.style.width = Math.max(r.selisih ? 1 : 0, Math.abs(r.selisih) / maxAbs * 100) + '%';
+    tr.appendChild(f); b.append(el('span', r.nama), tr, el('span', r.selisih ? sg(r.selisih) + (r.selisih > 0 ? ' terima' : ' kurang') : 'lunas', 'v'));
+    $('bars').appendChild(b);
+  });
+
+  // Langkah
+  function li(parts) { var l = el('li'); parts.forEach(function (p) { l.append(typeof p === 'string' ? p : el('b', p.v)); }); $('langkah').appendChild(l); }
+  rekap.filter(function (r) { return r.selisih < 0; }).forEach(function (r) { li([r.nama + ' setor ', { v: idr(-r.selisih) }, '.']); });
+  li(['Uang di tangan ', { v: idr(uang + kurang) }, ' (setoran + penjualan).']);
+  rekap.filter(function (r) { return r.selisih > 0; }).sort(function (a, b) { return b.selisih - a.selisih; })
+    .forEach(function (r) { li(['Talangan ' + r.nama + ' yang balik ', { v: idr(r.selisih) }, '.']); });
+  li([saldo >= 0 ? 'Sisa saldo usaha ' : 'Kurang, dibayar dari omzet berikutnya ', { v: idr(Math.abs(saldo)) }, '.']);
+
+  // Rekap table
+  rekap.forEach(function (r) {
+    var tr = row($('rekap'), [[r.nama], [idr(MODAL), 'r'], [idr(r.pribadi), 'r'], [idr(r.wajib), 'r'], [idr(r.setor), 'r'], [idr(r.tal), 'r'], [idr(r.keluar), 'r'], [sg(r.selisih), 'r'], ['']]);
+    tr.lastChild.appendChild(pill(r.status, r.status === 'Terima' ? 't' : r.status === 'Lunas' ? 'l' : 'k'));
+  });
+
+  D.penjualan.forEach(function (p) { row($('jual'), [[p.no], [tgl(p.tanggal), 'd'], [p.rincian + (p.catatan ? ' (' + p.catatan + ')' : ''), 'w'], [idr(p.total), 'r'], [p.metode]]); });
+  B.forEach(function (b) { row($('belanja'), [[b.no], [b.item + (b.catatan ? ' (' + b.catatan + ')' : ''), 'w'], [b.sumber], [b.batch], [String(b.qty), 'r'], [idr(b.harga), 'r'], [idr(b.jumlah), 'r'], [b.dibayar_oleh], [b.dibebankan_ke]]); });
+  D.setoran.forEach(function (s) { row($('setoran'), [[s.no], [s.nama], [idr(s.jumlah), 'r'], [s.keterangan]]); });
+})();
+</script>
+</body>
+</html>
