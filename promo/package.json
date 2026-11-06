@@ -1,0 +1,20 @@
+{
+  "name": "titikasalkopi-promo",
+  "private": true,
+  "description": "Vertical promo videos (Instagram Reels / Stories / TikTok) generated from the site's catalog, one per product.",
+  "scripts": {
+    "studio": "remotion studio src/index.jsx",
+    "list": "remotion compositions src/index.jsx",
+    "render:all": "node render-all.mjs",
+    "render": "remotion render src/index.jsx"
+  },
+  "dependencies": {
+    "@fontsource/barlow-condensed": "5.3.0",
+    "@fontsource/fraunces": "5.3.0",
+    "@fontsource/plus-jakarta-sans": "5.3.0",
+    "@remotion/cli": "4.0.538",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "remotion": "4.0.538"
+  }
+}
