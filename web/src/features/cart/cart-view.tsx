@@ -85,15 +85,15 @@ export function CartView({
           Keranjang masih kosong
         </h2>
         <p className="mt-2 max-w-prose text-olive">
-          Pilih single origin dalam kemasan 200 gr atau houseblend per kilogram,
-          lalu kembali ke halaman ini untuk memesan lewat WhatsApp.
+          Pilih houseblend BOLD atau BRIGHT dalam kemasan 100 gr, 200 gr, atau 1
+          kg, lalu kembali ke halaman ini untuk memesan lewat WhatsApp.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link href="/katalog" className={buttonClass("primary", "lg")}>
             Lihat katalog
           </Link>
           <Link href="/houseblend" className={buttonClass("outline", "lg")}>
-            Houseblend per kg
+            Houseblend BOLD &amp; BRIGHT
           </Link>
         </div>
         {/* DEF-12. Keranjang kosong bukan alasan menyembunyikan janji balas:

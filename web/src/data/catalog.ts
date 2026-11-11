@@ -28,6 +28,7 @@ import {
   singleOriginBeans,
   singleOriginPricing,
   type HouseblendLine,
+  type HouseblendSizedLine,
   type SingleOriginBean,
 } from "./products";
 import type {
@@ -215,21 +216,51 @@ function sizePair(
   ];
 }
 
+/**
+ * Tiga varian untuk BOLD dan BRIGHT: kemasan 100 gr, 200 gr, dan 1 kg.
+ *
+ * Sengaja TANPA `groupId`: tidak ada rasio yang dipilih, jadi tabel rasio
+ * tidak dirender dan halaman detail memakai pemilih varian biasa. V-06 juga
+ * hanya memeriksa kelompok 1 kg/0,5 kg, sementara urutan harga ketiga ukuran
+ * ini dijaga V-16.
+ */
+function sizedLineVariants(line: HouseblendSizedLine): Variant[] {
+  return [
+    {
+      id: `${line.id}-100g`,
+      label: "Kemasan 100 gr",
+      unit: "gram-100",
+      unitPrice: line.mini1,
+      minQty: 1,
+      step: 1,
+    },
+    {
+      id: `${line.id}-200g`,
+      label: "Kemasan 200 gr",
+      unit: "pack",
+      unitPrice: line.pack1,
+      packsPerUnit: 1,
+      minQty: 1,
+      step: 1,
+    },
+    {
+      id: `${line.id}-1kg`,
+      label: "Kemasan 1 kg",
+      unit: "kg",
+      unitPrice: line.kgPromo,
+      ...(line.kg > line.kgPromo ? { compareAtPrice: line.kg } : {}),
+      minQty: 1,
+      step: 1,
+    },
+  ];
+}
+
 function houseblendVariants(slug: HouseblendLineSlug): Variant[] {
   switch (slug) {
     case "bold":
-      return houseblendBold.flatMap((ratio) =>
-        sizePair(ratio.id, ratio.label, ratio.pricePerKg, ratio.pricePerHalfKg),
-      );
+      return sizedLineVariants(houseblendBold);
     case "bright":
-      return houseblendBright.flatMap((variant) =>
-        sizePair(
-          variant.id,
-          variant.label,
-          variant.pricePerKg,
-          variant.pricePerHalfKg,
-        ),
-      );
+      return sizedLineVariants(houseblendBright);
     case "full-robusta":
       return sizePair(
         houseblendFullRobusta.id,
@@ -446,18 +477,38 @@ export function relatedProducts(product: Product, limit = 4): Product[] {
   const others = singleOriginProducts.filter(
     (other) => other.slug !== product.slug,
   );
-  return [
+  const ordered = [
     ...others.filter((other) => other.tier === product.tier),
     ...others.filter((other) => other.tier !== product.tier),
-  ].slice(0, limit);
+  ];
+  // Yang bisa dibeli lebih dulu. Bila origin lain kebanyakan kosong (sejak
+  // 11 November 2026 seluruh single origin kosong), tawarkan houseblend yang
+  // tersedia supaya bagian ini tidak berisi deretan barang yang tidak bisa
+  // dipesan. Barang yang kosong tidak ikut ditawarkan selama masih ada yang
+  // tersedia.
+  const available = (other: Product) => other.status === "available";
+  const inStock = ordered.filter(available);
+  if (inStock.length >= limit) return inStock.slice(0, limit);
+  const fill = [...inStock, ...houseblendProducts.filter(available)];
+  // Barang kosong hanya ditawarkan bila tidak ada satu pun yang tersedia.
+  return (fill.length > 0 ? fill : ordered).slice(0, limit);
 }
 
 export function productsByTier(tier: Tier): Product[] {
   return singleOriginProducts.filter((product) => product.tier === tier);
 }
 
-/** Empat origin Signature untuk sorotan beranda (rute 1 pada Bagian 3.2). */
+/** Empat origin Signature (dulu sorotan beranda, rute 1 pada Bagian 3.2). */
 export const featuredSignature: Product[] = productsByTier("signature");
+
+/**
+ * Sorotan beranda sejak 11 November 2026: lini houseblend yang sedang dijual.
+ * Single origin ditandai kosong di sheet, jadi menyorotnya di beranda berarti
+ * menyambut pengunjung dengan barang yang tidak bisa dibeli.
+ */
+export const featuredHouseblend: Product[] = houseblendProducts.filter(
+  (product) => product.status === "available",
+);
 
 /** Kelompok siap render untuk `/katalog` (rute 2). */
 export const catalogGroups: Array<{
@@ -466,6 +517,15 @@ export const catalogGroups: Array<{
   subtitle: string;
   products: Product[];
 }> = [
+  // Houseblend lebih dulu: sejak 11 November 2026 hanya BOLD dan BRIGHT
+  // yang dijual, dan pembeli tidak perlu melewati delapan kartu "Stok kosong"
+  // untuk sampai ke sana.
+  {
+    id: "houseblend",
+    title: "Houseblend",
+    subtitle: "Kemasan 100 gr, 200 gr, dan 1 kg",
+    products: houseblendProducts,
+  },
   {
     id: "single-origin-signature",
     title: "Single Origin — Signature",
@@ -477,12 +537,6 @@ export const catalogGroups: Array<{
     title: "Single Origin — Reguler",
     subtitle: "Pilihan Nusantara: Sumatera dan Jawa",
     products: productsByTier("reguler"),
-  },
-  {
-    id: "houseblend",
-    title: "Houseblend",
-    subtitle: "Dua ukuran kemasan: 1 kg dan 0,5 kg",
-    products: houseblendProducts,
   },
 ];
 
@@ -542,6 +596,9 @@ export const cartCatalogIndex: CartCatalogIndex = Object.fromEntries(
         label: variant.label,
         unit: variant.unit,
         unitPrice: variant.unitPrice,
+        ...(variant.compareAtPrice !== undefined
+          ? { compareAtPrice: variant.compareAtPrice }
+          : {}),
         ...(variant.groupId !== undefined ? { groupId: variant.groupId } : {}),
         minQty: variant.minQty,
         step: variant.step,

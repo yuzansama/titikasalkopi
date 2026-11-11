@@ -14,7 +14,7 @@ const STEPS: Array<{ title: string; detail: string }> = [
   {
     title: "Pilih kopi dan variannya",
     detail:
-      "Tentukan single origin (1 pack atau 3 pack) atau houseblend per kilogram, lalu tambahkan ke keranjang.",
+      "Pilih houseblend BOLD atau BRIGHT dan ukuran kemasannya (100 gr, 200 gr, atau 1 kg), lalu tambahkan ke keranjang.",
   },
   {
     title: "Periksa keranjang",

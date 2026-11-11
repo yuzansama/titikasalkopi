@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container, SectionHeading } from "@/components/ui/container";
 import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
-import { featuredSignature } from "@/data/catalog";
+import { featuredHouseblend } from "@/data/catalog";
 import { ProductGrid } from "@/features/catalog/product-grid";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { homeMetadata, organizationJsonLd } from "@/lib/seo";
@@ -41,7 +41,7 @@ export default function HomePage() {
               Lihat katalog
             </Link>
             <Link href="/houseblend" className={buttonClass("outline", "lg")}>
-              Houseblend per kg
+              Houseblend BOLD &amp; BRIGHT
             </Link>
           </div>
 
@@ -51,15 +51,16 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* Sorotan single origin Signature — FR-03 */}
+      {/* Sorotan — FR-03. Sejak 11 November 2026 menyorot lini yang sedang
+          dijual, bukan single origin Signature yang stoknya kosong. */}
       <Container className="py-12 sm:py-16">
         <SectionHeading
-          eyebrow="Indonesia Timur"
-          title="Single Origin Signature"
-          lead="Empat titik asal dari Kupang dan Papua, dikemas 200 gr."
+          eyebrow="Sedang dijual"
+          title="Houseblend BOLD dan BRIGHT"
+          lead="Kemasan 100 gr, 200 gr, dan 1 kg."
         />
         <div className="mt-6">
-          <ProductGrid products={featuredSignature} priorityCount={2} />
+          <ProductGrid products={featuredHouseblend} priorityCount={2} />
         </div>
         {/* D-13: seksi "Tiga lini houseblend" diganti satu tautan. Beranda
             memajang satu sorotan saja; lininya dijelaskan di /houseblend. */}
@@ -68,13 +69,13 @@ export default function HomePage() {
             href="/katalog"
             className={`inline-flex min-h-11 items-center rounded-md text-rust underline underline-offset-4 ${FOCUS_RING}`}
           >
-            Lihat seluruh katalog single origin
+            Lihat seluruh katalog
           </Link>
           <Link
             href="/houseblend"
             className={`inline-flex min-h-11 items-center rounded-md text-rust underline underline-offset-4 ${FOCUS_RING}`}
           >
-            Lihat tiga lini houseblend
+            Lihat kemasan dan harga houseblend
           </Link>
         </p>
       </Container>

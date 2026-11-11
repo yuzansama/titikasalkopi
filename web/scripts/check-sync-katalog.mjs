@@ -26,22 +26,14 @@ const HARGA = {
   "single.reguler.pack1": 125_000,
   "single.reguler.pack3": 352_000,
   "single.reguler.mini1": 70_000,
-  "houseblend.bold-70-30": 215_000,
-  "houseblend.bold-70-30.half": 120_000,
-  "houseblend.bold-60-40": 205_000,
-  "houseblend.bold-60-40.half": 115_000,
-  "houseblend.bold-50-50": 200_000,
-  "houseblend.bold-50-50.half": 110_000,
-  "houseblend.bold-40-60": 195_000,
-  "houseblend.bold-40-60.half": 105_000,
-  "houseblend.bold-30-70": 190_000,
-  "houseblend.bold-30-70.half": 100_000,
-  "houseblend.bold-20-80": 185_000,
-  "houseblend.bold-20-80.half": 95_000,
-  "houseblend.bright-signature": 280_000,
-  "houseblend.bright-signature.half": 150_000,
-  "houseblend.bright-reguler": 240_000,
-  "houseblend.bright-reguler.half": 130_000,
+  "houseblend.bold.mini1": 45_000,
+  "houseblend.bold.pack1": 80_000,
+  "houseblend.bold.kg": 320_000,
+  "houseblend.bold.kg.promo": 300_000,
+  "houseblend.bright.mini1": 55_000,
+  "houseblend.bright.pack1": 95_000,
+  "houseblend.bright.kg": 400_000,
+  "houseblend.bright.kg.promo": 380_000,
   "houseblend.full-robusta": 180_000,
   "houseblend.full-robusta.half": 100_000,
 };
@@ -111,8 +103,8 @@ check("KD-08: jawaban rusak sama sekali tetap ditolak, bukan melempar", () => {
 
 check("KD-08: harga yang hilang ditolak, bukan diisi nol", () => {
   const payload = good();
-  delete payload.harga["houseblend.bold-70-30"];
-  failsWith(payload, /houseblend\.bold-70-30" tidak ada/);
+  delete payload.harga["houseblend.bold.kg"];
+  failsWith(payload, /houseblend\.bold\.kg" tidak ada/);
 });
 
 check("KD-08: salah ketik jumlah nol tertangkap di kedua arah", () => {
@@ -141,7 +133,7 @@ check("KD-08: kunci harga yang salah ketik dilaporkan, bukan diabaikan", () => {
   // Diabaikan diam-diam berarti owner mengubah harga, melihat sinkronisasi
   // sukses, dan situs tetap menayangkan angka lama.
   failsWith(
-    good({ harga: { ...HARGA, "houseblend.bold-70-31": 210_000 } }),
+    good({ harga: { ...HARGA, "houseblend.bold.kg2": 210_000 } }),
     /tidak dikenali kode/,
   );
 });

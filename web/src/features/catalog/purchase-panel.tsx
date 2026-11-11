@@ -59,8 +59,9 @@ export function PurchasePanel({
   soldOut?: boolean;
   /**
    * Baris tabel rasio, sudah dikelompokkan per ukuran kemasan oleh Server
-   * Component. Diisi hanya untuk lini BOLD, yang enam rasionya lebih terbaca
-   * sebagai tabel (FR-28, FR-29); lini lain memakai pemilih varian biasa.
+   * Component. Diisi hanya untuk lini yang punya kelompok 1 kg/0,5 kg
+   * (sekarang Full Robusta); BOLD dan BRIGHT sejak 11 November 2026 memakai
+   * pemilih varian biasa untuk tiga ukuran kemasannya.
    */
   ratioRows?: readonly RatioRow[];
   /** Keterangan per varian dari Server Component, mis. penghematan 3 pack. */
@@ -142,8 +143,19 @@ export function PurchasePanel({
           {weight ? ` · total ${weight}` : ""}
         </p>
         <p className="mt-1 font-display text-2xl font-semibold text-coffee">
+          {selected.compareAtPrice !== undefined ? (
+            <s className="mr-2 text-base font-normal text-olive">
+              <span className="sr-only">Harga normal </span>
+              {formatIDR(qty * selected.compareAtPrice)}
+            </s>
+          ) : null}
           {formatIDR(lineTotal)}
         </p>
+        {/* Harga coret hanya informasi. Yang ditagih, dan yang ikut ke
+            keranjang serta pesan WhatsApp, tetap angka di sebelahnya. */}
+        {selected.compareAtPrice !== undefined ? (
+          <p className="mt-1 text-sm font-semibold text-rust">Harga promo</p>
+        ) : null}
       </div>
 
       <AddToCartButton

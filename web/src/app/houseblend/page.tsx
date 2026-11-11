@@ -4,7 +4,6 @@ import { buttonClass, CARD, FOCUS_RING_INVERSE } from "@/components/ui/styles";
 import {
   houseblendComposition,
   houseblendProducts,
-  houseblendSizeGroups,
   productHref,
 } from "@/data/catalog";
 import { ViewEvent } from "@/features/analytics/view-event";
@@ -18,8 +17,9 @@ export const dynamic = "error";
 export const metadata = houseblendIndexMetadata();
 
 /**
- * FR-08, FR-27, FR-28 — penjelasan tiga lini dan tabel gabungan sembilan rasio
- * beserta harga kedua ukuran kemasannya.
+ * FR-08, FR-27, FR-28 — penjelasan lini houseblend dan tabel gabungan seluruh
+ * kemasan yang sedang dijual beserta harganya (sejak 11 November 2026: BOLD
+ * dan BRIGHT, masing-masing 100 gr, 200 gr, dan 1 kg).
  *
  * Tabel di sini SENGAJA statis (bukan `RatioTable` interaktif): halaman ini
  * membandingkan seluruh lini, sementara pemilihan rasio dilakukan di halaman
@@ -46,14 +46,17 @@ export default function HouseblendIndexPage() {
           Houseblend
         </h1>
         <p className="mt-3 max-w-2xl text-olive">
-          Tiga lini blend untuk kedai dan rumah, dalam kemasan 1 kg dan 0,5 kg.
+          BOLD dan BRIGHT untuk kedai dan rumah, dalam kemasan 100 gr, 200 gr,
+          dan 1 kg.
         </p>
 
         {/* FR-27 — karakter dan komposisi tiap lini */}
         <section className="mt-10" aria-labelledby="lini">
-          <SectionHeading id="lini" title="Tiga lini dan komposisinya" />
-          <ul className="mt-6 grid gap-4 lg:grid-cols-3">
-            {houseblendProducts.map((line) => (
+          <SectionHeading id="lini" title="Lini dan komposisinya" />
+          <ul className="mt-6 grid gap-4 lg:grid-cols-2">
+            {houseblendProducts
+              .filter((line) => line.status === "available")
+              .map((line) => (
               <li key={line.slug} className={`flex flex-col ${CARD} p-5`}>
                 <h3 className="font-display text-xl font-semibold text-primary">
                   {line.name}
@@ -92,18 +95,19 @@ export default function HouseblendIndexPage() {
           </ul>
         </section>
 
-        {/* FR-28 — tabel gabungan sembilan varian */}
+        {/* FR-28 — tabel gabungan seluruh kemasan yang sedang dijual. Lini
+            berstok kosong tidak dicantumkan: tabel ini daftar harga, dan harga
+            yang tidak bisa dibeli hanya membingungkan. */}
         <section className="mt-12" aria-labelledby="tabel-harga">
           <SectionHeading
             id="tabel-harga"
-            title="Seluruh varian dan harganya"
+            title="Kemasan dan harganya"
             lead="Geser tabel ke samping bila layar Anda sempit."
           />
           <div className="mt-6 overflow-x-auto rounded-lg border-l-2 border-gold">
-            <table className="w-full min-w-[26rem] border-collapse text-left">
+            <table className="w-full min-w-[18rem] border-collapse text-left">
               <caption className="sr-only">
-                Daftar sembilan rasio houseblend beserta harga kemasan 1 kg dan
-                kemasan 0,5 kg
+                Daftar kemasan houseblend yang sedang dijual beserta harganya
               </caption>
               <thead>
                 <tr className="border-b border-primary/20">
@@ -111,47 +115,46 @@ export default function HouseblendIndexPage() {
                     Lini
                   </th>
                   <th scope="col" className="px-3 py-2 text-sm font-semibold">
-                    Rasio
+                    Kemasan
                   </th>
                   <th
                     scope="col"
                     className="px-3 py-2 text-right text-sm font-semibold"
                   >
-                    Kemasan 1 kg
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-right text-sm font-semibold"
-                  >
-                    Kemasan 0,5 kg
+                    Harga
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {houseblendProducts.flatMap((line) =>
-                  houseblendSizeGroups(line).map((group) => (
-                    <tr
-                      key={group.id}
-                      className="border-b border-primary/10 last:border-0"
-                    >
-                      <td className="whitespace-nowrap px-3 py-2 text-sm text-olive">
-                        {line.name}
-                      </td>
-                      <th
-                        scope="row"
-                        className="px-3 py-2 text-left font-normal text-primary"
+                {houseblendProducts
+                  .filter((line) => line.status === "available")
+                  .flatMap((line) =>
+                    line.variants.map((variant) => (
+                      <tr
+                        key={variant.id}
+                        className="border-b border-primary/10 last:border-0"
                       >
-                        {group.label}
-                      </th>
-                      <td className="whitespace-nowrap px-3 py-2 text-right text-coffee">
-                        {formatIDR(group.kg.unitPrice)}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2 text-right text-olive">
-                        {formatIDR(group.halfKg.unitPrice)}
-                      </td>
-                    </tr>
-                  )),
-                )}
+                        <td className="whitespace-nowrap px-3 py-2 text-sm text-olive">
+                          {line.name.replace(/^Houseblend /, "")}
+                        </td>
+                        <th
+                          scope="row"
+                          className="whitespace-nowrap px-3 py-2 text-left font-normal text-primary"
+                        >
+                          {variant.label.replace(/^Kemasan /, "")}
+                        </th>
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-coffee">
+                          {variant.compareAtPrice !== undefined ? (
+                            <s className="mr-2 text-sm text-olive">
+                              <span className="sr-only">Harga normal </span>
+                              {formatIDR(variant.compareAtPrice)}
+                            </s>
+                          ) : null}
+                          {formatIDR(variant.unitPrice)}
+                        </td>
+                      </tr>
+                    )),
+                  )}
               </tbody>
             </table>
           </div>
@@ -166,7 +169,7 @@ export default function HouseblendIndexPage() {
           </h2>
           <p className="mt-2 max-w-2xl text-cream/80">
             Ceritakan mesin dan menu Anda lewat WhatsApp; kami bantu memilih
-            rasionya.
+            blend dan kemasannya.
           </p>
           <p className="mt-5">
             <a

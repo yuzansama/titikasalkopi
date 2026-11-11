@@ -356,9 +356,12 @@ check("BR-02: tidak ada 'Rp' diikuti spasi di SELURUH HTML hasil build", () => {
    dari katalog. Itu bukan membandingkan data dengan dirinya sendiri — data ada
    di satu sisi, hasil build ada di sisi lain. */
 
-check("BR-01: setiap harga kemasan houseblend sampai ke HTML /houseblend", () => {
+check("BR-01: setiap harga kemasan houseblend yang dijual sampai ke HTML /houseblend", () => {
   const html = pages.get("houseblend").html;
+  // Lini berstok kosong sengaja tidak dicantumkan di tabel harga /houseblend
+  // (11 November 2026); harganya tetap tayang di halaman lininya sendiri.
   for (const product of catalogModule.houseblendProducts) {
+    if (product.status !== "available") continue;
     for (const variant of product.variants) {
       const price = formatIDR(variant.unitPrice);
       assert.ok(
@@ -739,7 +742,7 @@ check(
 /* ------------------------------------------------------------------ */
 
 check(
-  "NFR-12/BR-01: Offer houseblend menyebut harga per kg, bukan harga 0,5 kg tanpa satuan",
+  "NFR-12/BR-01: setiap Offer houseblend menyebut ukuran kemasannya",
   () => {
     // Google menampilkan `price` apa adanya sebagai harga produk. Untuk
     // houseblend, `unitPrice` adalah harga satu kemasan 0,5 kg — bukan harga
@@ -751,17 +754,22 @@ check(
       JSON.parse(raw),
     );
     const product = blocks.find((block) => block["@type"] === "Product");
-    const offer = product.offers.find((entry) => /70%/.test(entry.name));
-    const declaresUnit =
-      offer.referenceQuantity !== undefined ||
-      offer.eligibleQuantity !== undefined ||
-      /kg/i.test(offer.name ?? "");
-    assert.ok(
-      declaresUnit,
-      `Offer BOLD 70:30 berharga ${offer.price} tanpa menyebut satuan. ` +
-        `Houseblend punya dua ukuran kemasan berharga berbeda, jadi angka ` +
-        `telanjang tidak pernah cukup (BR-01, NFR-12).`,
-    );
+    // Sejak 11 November 2026 BOLD dijual dalam kemasan 100 gr, 200 gr, dan
+    // 1 kg. Setiap Offer wajib menyebut ukurannya, karena ketiga harganya
+    // sama-sama benar untuk produk yang sama.
+    assert.ok(product.offers.length > 0, "Offer BOLD tidak ditemukan");
+    for (const offer of product.offers) {
+      const declaresUnit =
+        offer.referenceQuantity !== undefined ||
+        offer.eligibleQuantity !== undefined ||
+        /\b(kg|gr)\b/i.test(offer.name ?? "");
+      assert.ok(
+        declaresUnit,
+        `Offer BOLD "${offer.name}" berharga ${offer.price} tanpa menyebut ` +
+          `ukuran kemasan. Houseblend punya beberapa ukuran berharga berbeda, ` +
+          `jadi angka telanjang tidak pernah cukup (BR-01, NFR-12).`,
+      );
+    }
   },
 );
 
@@ -798,7 +806,7 @@ check(
 
 const catalog = catalogModule;
 
-check("BRD Bagian 12: katalog tayang berisi 11 produk dan 41 varian jual", () => {
+check("BRD Bagian 12: katalog tayang berisi 11 produk dan 31 varian jual", () => {
   const products = catalog.allProducts ?? catalog.products;
   assert.ok(Array.isArray(products), "daftar produk tidak ditemukan di catalog");
   assert.equal(products.length, 11);
@@ -807,8 +815,8 @@ check("BRD Bagian 12: katalog tayang berisi 11 produk dan 41 varian jual", () =>
     0,
   );
   // 7 biji x 3 kemasan + Sindoro tanpa mini x 2 = 23, ditambah
-  // 9 rasio houseblend x 2 ukuran kemasan = 18.
-  assert.equal(variantCount, 41);
+  // BOLD dan BRIGHT x 3 ukuran = 6, ditambah Full Robusta x 2 ukuran = 2.
+  assert.equal(variantCount, 31);
 });
 
 check("BRD Bagian 12: halaman katalog menampilkan kesebelas nama produk", () => {

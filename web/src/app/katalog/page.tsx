@@ -29,8 +29,8 @@ export default function KatalogPage() {
           Katalog kopi
         </h1>
         <p className="mt-3 max-w-2xl text-olive">
-          Single origin dalam kemasan 100 gr dan 200 gr, dan houseblend dalam
-          kemasan 1 kg dan 0,5 kg. Seluruh harga di halaman ini adalah harga
+          Saat ini kami menjual houseblend BOLD dan BRIGHT dalam kemasan 100
+          gr, 200 gr, dan 1 kg. Seluruh harga di halaman ini adalah harga
           resmi; ongkos kirim dikonfirmasi lewat WhatsApp.
         </p>
 

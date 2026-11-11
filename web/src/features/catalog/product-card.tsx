@@ -22,7 +22,14 @@ export function ProductCard({
   sizes: string;
   priority?: boolean;
 }) {
-  const perKg = pricePerKgFrom(product);
+  // "/kg" hanya untuk lini yang memang dijual per kilogram saja. BOLD dan
+  // BRIGHT punya kemasan 100 gr dan 200 gr, jadi kartunya menyebut harga
+  // kemasan termurah, bukan harga 1 kg.
+  const perKg = product.variants.every(
+    (variant) => variant.unit === "kg" || variant.unit === "half-kg",
+  )
+    ? pricePerKgFrom(product)
+    : null;
   const cheapest = product.variants.reduce((min, variant) =>
     variant.unitPrice < min.unitPrice ? variant : min,
   );

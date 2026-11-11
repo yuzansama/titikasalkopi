@@ -23,7 +23,7 @@ const VALID_TIERS: readonly Tier[] = ["signature", "reguler"];
 /** Hitungan pagar dari brand brief (V-15). */
 export const EXPECTED_SINGLE_ORIGIN_COUNT = 8;
 export const EXPECTED_HOUSEBLEND_LINE_COUNT = 3;
-export const EXPECTED_HOUSEBLEND_VARIANT_COUNT = 18;
+export const EXPECTED_HOUSEBLEND_VARIANT_COUNT = 8;
 
 function isPositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value > 0;
@@ -120,6 +120,19 @@ export function assertCatalogValid(products: Product[]): void {
           `${where} punya \`unitPrice\` = ${String(variant.unitPrice)}. Harga wajib bilangan bulat rupiah lebih besar dari nol (BR-03).`,
           "V-04",
         );
+      }
+
+      /* ---------------- V-16 harga coret ---------------- */
+      if (variant.compareAtPrice !== undefined) {
+        if (!isPositiveInteger(variant.compareAtPrice)) {
+          report(slug, `${where}: \`compareAtPrice\` wajib bilangan bulat > 0.`, "V-16");
+        } else if (variant.compareAtPrice <= variant.unitPrice) {
+          report(
+            slug,
+            `${where}: harga coret ${variant.compareAtPrice} wajib lebih tinggi daripada harga jual ${variant.unitPrice}.`,
+            "V-16",
+          );
+        }
       }
 
       /* ---------------- V-05 harga kemasan 1 kg kelipatan Rp1.000 ----------
@@ -238,6 +251,47 @@ export function assertCatalogValid(products: Product[]): void {
             `pada "${groupId}", kemasan 0,5 kg berharga ${halfKg.unitPrice} — tidak lebih murah daripada kemasan 1 kg (${kg.unitPrice}).`,
             "V-06",
           );
+        }
+      }
+
+      /* ---------------- V-16 lini tiga ukuran dan harga coret ----------
+         BOLD dan BRIGHT (sejak 11 November 2026) dijual dalam kemasan 100 gr,
+         200 gr, dan 1 kg tanpa `groupId`. Harga wajib naik mengikuti ukuran,
+         dan kemasan kecil yang dikalikan wajib lebih mahal daripada kemasan
+         besar — kalau tidak, pembeli yang menghitung selalu memesan yang kecil. */
+      const ungrouped = product.variants.filter((v) => !v.groupId);
+      if (ungrouped.length > 0) {
+        const mini = ungrouped.find((v) => v.unit === "gram-100");
+        const pack = ungrouped.find((v) => v.unit === "pack");
+        const kg = ungrouped.find((v) => v.unit === "kg");
+        if (!mini || !pack || !kg || ungrouped.length !== 3) {
+          report(
+            slug,
+            `lini tiga ukuran wajib berisi tepat satu kemasan 100 gr, 200 gr, dan 1 kg; ditemukan ${ungrouped.length} varian.`,
+            "V-16",
+          );
+        } else {
+          if (!(mini.unitPrice < pack.unitPrice && pack.unitPrice < kg.unitPrice)) {
+            report(
+              slug,
+              `harga wajib naik mengikuti ukuran: 100 gr ${mini.unitPrice}, 200 gr ${pack.unitPrice}, 1 kg ${kg.unitPrice}.`,
+              "V-16",
+            );
+          }
+          if (mini.unitPrice * 2 <= pack.unitPrice) {
+            report(
+              slug,
+              `dua kemasan 100 gr (${mini.unitPrice * 2}) tidak lebih mahal daripada satu kemasan 200 gr (${pack.unitPrice}).`,
+              "V-16",
+            );
+          }
+          if (pack.unitPrice * 5 <= kg.unitPrice) {
+            report(
+              slug,
+              `lima kemasan 200 gr (${pack.unitPrice * 5}) tidak lebih mahal daripada satu kemasan 1 kg (${kg.unitPrice}).`,
+              "V-16",
+            );
+          }
         }
       }
     } else {
@@ -366,7 +420,7 @@ export function assertCatalogValid(products: Product[]): void {
   }
   if (houseblendVariantCount !== EXPECTED_HOUSEBLEND_VARIANT_COUNT) {
     errors.push(
-      `[V-15] katalog: jumlah varian houseblend ${houseblendVariantCount}, seharusnya ${EXPECTED_HOUSEBLEND_VARIANT_COUNT} (6 rasio BOLD + 2 BRIGHT + 1 Full Robusta).`,
+      `[V-15] katalog: jumlah varian houseblend ${houseblendVariantCount}, seharusnya ${EXPECTED_HOUSEBLEND_VARIANT_COUNT} (BOLD dan BRIGHT masing-masing 100 gr, 200 gr, 1 kg + Full Robusta 1 kg dan 0,5 kg).`,
     );
   }
 

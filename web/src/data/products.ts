@@ -40,94 +40,39 @@ import type {
 export type { PriceIDR, Tier } from "./types";
 
 /* ------------------------------------------------------------------ */
-/* Houseblend — BOLD                                                   */
+/* Houseblend — BOLD dan BRIGHT                                        */
 /* ------------------------------------------------------------------ */
 
-export type HouseblendBoldRatio = {
+/**
+ * Sejak 11 November 2026 BOLD dan BRIGHT masing-masing dijual sebagai SATU
+ * blend dalam tiga ukuran kemasan: 100 gr, 200 gr, dan 1 kg. Pilihan rasio
+ * BOLD dan varian Signature/Reguler BRIGHT tidak dijual lagi.
+ *
+ * Kemasan 1 kg punya harga normal (`kg`) dan harga promo (`kgPromo`). Yang
+ * ditagih adalah `kgPromo`; `kg` tampil dicoret. Bila owner menyamakan
+ * keduanya di sheet, harga coret hilang dengan sendirinya.
+ */
+export type HouseblendSizedLine = {
   id: string;
-  /** Persentase arabica dalam blend, 0-100. */
-  arabicaPercent: number;
-  /** Persentase robusta dalam blend, 0-100. Selalu 100 - arabicaPercent. */
-  robustaPercent: number;
-  /** Label siap tampil, mis. "70% Arabica : 30% Robusta". */
-  label: string;
-  /** Harga satu kemasan 1 kg. */
-  pricePerKg: PriceIDR;
-  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
-  pricePerHalfKg: PriceIDR;
+  /** Harga satu kemasan 100 gr. */
+  mini1: PriceIDR;
+  /** Harga satu kemasan 200 gr. */
+  pack1: PriceIDR;
+  /** Harga normal satu kemasan 1 kg. */
+  kg: PriceIDR;
+  /** Harga promo satu kemasan 1 kg; yang ditagih. Tidak boleh di atas `kg`. */
+  kgPromo: PriceIDR;
 };
 
 /** Arabica Natural & Fine Robusta Natural. Notes: choco, almond, caramel. */
 export const HOUSEBLEND_BOLD_NOTES = ["choco", "almond", "caramel"] as const;
 
-export const houseblendBold: HouseblendBoldRatio[] = [
-  {
-    id: "bold-70-30",
-    arabicaPercent: 70,
-    robustaPercent: 30,
-    label: "70% Arabica : 30% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-70-30"),
-    pricePerHalfKg: managedPrice("houseblend.bold-70-30.half"),
-  },
-  {
-    id: "bold-60-40",
-    arabicaPercent: 60,
-    robustaPercent: 40,
-    label: "60% Arabica : 40% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-60-40"),
-    pricePerHalfKg: managedPrice("houseblend.bold-60-40.half"),
-  },
-  {
-    id: "bold-50-50",
-    arabicaPercent: 50,
-    robustaPercent: 50,
-    label: "50% Arabica : 50% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-50-50"),
-    pricePerHalfKg: managedPrice("houseblend.bold-50-50.half"),
-  },
-  {
-    id: "bold-40-60",
-    arabicaPercent: 40,
-    robustaPercent: 60,
-    label: "40% Arabica : 60% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-40-60"),
-    pricePerHalfKg: managedPrice("houseblend.bold-40-60.half"),
-  },
-  {
-    id: "bold-30-70",
-    arabicaPercent: 30,
-    robustaPercent: 70,
-    label: "30% Arabica : 70% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-30-70"),
-    pricePerHalfKg: managedPrice("houseblend.bold-30-70.half"),
-  },
-  {
-    id: "bold-20-80",
-    arabicaPercent: 20,
-    robustaPercent: 80,
-    label: "20% Arabica : 80% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-20-80"),
-    pricePerHalfKg: managedPrice("houseblend.bold-20-80.half"),
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/* Houseblend — BRIGHT                                                 */
-/* ------------------------------------------------------------------ */
-
-export type HouseblendBrightVariant = {
-  id: string;
-  /**
-   * PERHATIAN (BR-15): pada lini BRIGHT, "signature"/"reguler" adalah NAMA
-   * VARIAN BLEND, bukan tier harga single origin. Ia tidak boleh ikut dalam
-   * filter tier katalog. Validator V-07 menegakkan pemisahan ini.
-   */
-  tier: Tier;
-  /** Label siap tampil, mis. "Signature". */
-  label: string;
-  pricePerKg: PriceIDR;
-  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
-  pricePerHalfKg: PriceIDR;
+export const houseblendBold: HouseblendSizedLine = {
+  id: "bold",
+  mini1: managedPrice("houseblend.bold.mini1"),
+  pack1: managedPrice("houseblend.bold.pack1"),
+  kg: managedPrice("houseblend.bold.kg"),
+  kgPromo: managedPrice("houseblend.bold.kg.promo"),
 };
 
 /** Full Arabica, natural & washed. Notes: raisin, orange, lemon zest. */
@@ -137,22 +82,13 @@ export const HOUSEBLEND_BRIGHT_NOTES = [
   "lemon zest",
 ] as const;
 
-export const houseblendBright: HouseblendBrightVariant[] = [
-  {
-    id: "bright-signature",
-    tier: "signature",
-    label: "Signature",
-    pricePerKg: managedPrice("houseblend.bright-signature"),
-    pricePerHalfKg: managedPrice("houseblend.bright-signature.half"),
-  },
-  {
-    id: "bright-reguler",
-    tier: "reguler",
-    label: "Reguler",
-    pricePerKg: managedPrice("houseblend.bright-reguler"),
-    pricePerHalfKg: managedPrice("houseblend.bright-reguler.half"),
-  },
-];
+export const houseblendBright: HouseblendSizedLine = {
+  id: "bright",
+  mini1: managedPrice("houseblend.bright.mini1"),
+  pack1: managedPrice("houseblend.bright.pack1"),
+  kg: managedPrice("houseblend.bright.kg"),
+  kgPromo: managedPrice("houseblend.bright.kg.promo"),
+};
 
 /* ------------------------------------------------------------------ */
 /* Houseblend — Full Robusta                                           */
