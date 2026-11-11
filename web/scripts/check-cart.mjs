@@ -42,12 +42,13 @@ console.log("Pemeriksaan keranjang — reducer, penyimpanan, resolusi harga\n");
 
 const houseblendVariants = catalog.houseblendProducts.flatMap((p) => p.variants);
 
-check("katalog memuat 18 varian houseblend: 9 rasio x 2 ukuran kemasan", () => {
-  assert.equal(houseblendVariants.length, 18);
-  const kg = houseblendVariants.filter((v) => v.unit === "kg");
-  const half = houseblendVariants.filter((v) => v.unit === "half-kg");
-  assert.equal(kg.length, 9);
-  assert.equal(half.length, 9);
+check("katalog memuat 8 varian houseblend: BOLD dan BRIGHT 3 ukuran, Full Robusta 2", () => {
+  assert.equal(houseblendVariants.length, 8);
+  const count = (unit) => houseblendVariants.filter((v) => v.unit === unit).length;
+  assert.equal(count("gram-100"), 2);
+  assert.equal(count("pack"), 2);
+  assert.equal(count("kg"), 3);
+  assert.equal(count("half-kg"), 1);
 });
 
 check("setiap varian houseblend punya TEPAT SATU harga", () => {
@@ -67,7 +68,20 @@ check("setiap varian houseblend punya TEPAT SATU harga", () => {
 check("kedua ukuran kemasan setiap rasio saling masuk akal", () => {
   for (const product of catalog.houseblendProducts) {
     const groups = catalog.houseblendSizeGroups(product);
-    assert.ok(groups.length > 0, `${product.slug} tidak punya kelompok ukuran`);
+    if (groups.length === 0) {
+      // Lini tiga ukuran (BOLD, BRIGHT sejak 11 November 2026): harga naik
+      // mengikuti ukuran, dan harga coret selalu di atas harga jual.
+      const byUnit = (unit) => product.variants.find((v) => v.unit === unit);
+      const mini = byUnit("gram-100"), pack = byUnit("pack"), kg = byUnit("kg");
+      assert.ok(mini && pack && kg, `${product.slug} tidak punya ketiga ukuran`);
+      assert.ok(mini.unitPrice < pack.unitPrice && pack.unitPrice < kg.unitPrice);
+      assert.ok(mini.unitPrice * 2 > pack.unitPrice);
+      assert.ok(pack.unitPrice * 5 > kg.unitPrice);
+      for (const v of product.variants) {
+        if (v.compareAtPrice !== undefined) assert.ok(v.compareAtPrice > v.unitPrice);
+      }
+      continue;
+    }
     for (const group of groups) {
       // Kemasan kecil lebih murah daripada kemasan besar...
       assert.ok(
@@ -112,7 +126,7 @@ const PRICE_PER_GRAM_BAND = {
   paket: [400, 1200],
   kg: [120, 400],
   "half-kg": [150, 500],
-  "gram-100": [500, 1200],
+  "gram-100": [400, 1200],
 };
 
 check("harga per gram setiap varian berada di pita wajar jenis kemasannya", () => {
@@ -397,7 +411,7 @@ check("kuantitas pecahan dan NaN dijepit ke bilangan bulat 1..99", () => {
   const fractional = cartReducer(EMPTY_CART, {
     type: "ADD_ITEM",
     slug: "bold",
-    variantId: "bold-60-40",
+    variantId: "bold-1kg",
     qty: 2.7,
   });
   assert.equal(fractional.items[0].qty, 2);
@@ -405,7 +419,7 @@ check("kuantitas pecahan dan NaN dijepit ke bilangan bulat 1..99", () => {
   const nan = cartReducer(EMPTY_CART, {
     type: "ADD_ITEM",
     slug: "bold",
-    variantId: "bold-60-40",
+    variantId: "bold-1kg",
     qty: Number.NaN,
   });
   assert.equal(nan.items[0].qty, 1);
@@ -413,7 +427,7 @@ check("kuantitas pecahan dan NaN dijepit ke bilangan bulat 1..99", () => {
   const huge = cartReducer(EMPTY_CART, {
     type: "ADD_ITEM",
     slug: "bold",
-    variantId: "bold-60-40",
+    variantId: "bold-1kg",
     qty: 5000,
   });
   assert.equal(huge.items[0].qty, MAX_QTY_PER_LINE);
@@ -515,7 +529,7 @@ check("FR-20: keranjang lebih dari 7 hari dikosongkan", () => {
 check("item bentuknya salah dibuang, item sah dipertahankan", () => {
   const mixed = fresh([
     { slug: "abmisibil", variantId: "abmisibil-pack1", qty: 1 },
-    { slug: "bold", variantId: "bold-60-40", qty: 1.5 },
+    { slug: "bold", variantId: "bold-1kg", qty: 1.5 },
     { slug: 42, variantId: "x", qty: 1 },
     { slug: "sabin", variantId: "sabin-pack1", qty: 0 },
     null,
@@ -529,7 +543,17 @@ check("item bentuknya salah dibuang, item sah dipertahankan", () => {
 /* Resolusi harga (ADR-04) — inti NFR-12                             */
 /* ---------------------------------------------------------------- */
 
-const index = catalog.cartCatalogIndex;
+/* Uji aritmetika memakai indeks dengan SEMUA produk tersedia. Status stok
+   adalah data owner yang berubah dari sheet (KD-08); kalau uji uang
+   bergantung padanya, menandai satu kopi kosong menggagalkan pemeriksaan
+   yang tidak ada hubungannya dengan stok. Perilaku stok kosong diuji
+   terpisah di blok FR-14/DEF-15 di atas. */
+const index = Object.fromEntries(
+  Object.entries(catalog.cartCatalogIndex).map(([slug, entry]) => [
+    slug,
+    { ...entry, status: "available" },
+  ]),
+);
 
 check("ADR-04: slug tidak dikenal dibuang tanpa melempar", () => {
   let resolved;
@@ -632,13 +656,14 @@ check("tidak ada baris keranjang yang membawa harga kedua", () => {
  * tetap lulus.
  *
  *   7 biji x 3 kemasan + Sindoro tanpa kemasan mini x 2 = 23,
- * + 9 rasio houseblend x 2 ukuran kemasan = 18.
+ * + BOLD dan BRIGHT x 3 ukuran (100 gr, 200 gr, 1 kg) = 6,
+ * + Full Robusta x 2 ukuran (1 kg, 0,5 kg) = 2.
  *
  * Tidak ada lini lain. Sejak 9 September 2026 seluruh produk situs berasal
  * dari `assets/brand/Kopi from heart.xlsx`; lini "Katalog Kopi 100 gram" dari
  * poster dihapus seluruhnya.
  */
-const EXPECTED_VARIANT_COUNT = 41;
+const EXPECTED_VARIANT_COUNT = 31;
 
 check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () => {
   const items = Object.values(index).flatMap((entry) =>

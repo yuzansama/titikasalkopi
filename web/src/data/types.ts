@@ -71,6 +71,14 @@ export type Variant = {
    */
   unitPrice: PriceIDR;
   /**
+   * Harga normal sebelum promo, tampil DICORET di sebelah `unitPrice`. Hanya
+   * informasi: angka yang ditagih tetap `unitPrice`, dan `qty * unitPrice`
+   * tetap subtotalnya. Diisi hanya bila lebih besar daripada `unitPrice`
+   * (ditegakkan validator V-16). Ditambahkan 11 November 2026 untuk harga
+   * promo kemasan 1 kg BOLD dan BRIGHT.
+   */
+  compareAtPrice?: PriceIDR;
+  /**
    * Menandai varian-varian yang merupakan UKURAN BERBEDA dari barang yang sama,
    * mis. `bold-60-40` untuk kemasan 1 kg dan 0,5 kg rasio itu. Dipakai tabel
    * rasio untuk menyusun satu baris per rasio, dan dipakai validator V-06 untuk
@@ -227,6 +235,7 @@ export type CartCatalogEntry = {
     label: string;
     unit: OrderUnit;
     unitPrice: PriceIDR;
+    compareAtPrice?: PriceIDR;
     groupId?: string;
     minQty: number;
     step: number;

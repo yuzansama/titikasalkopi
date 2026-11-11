@@ -46,6 +46,9 @@ function toVariantOption(variant: Product["variants"][number]): VariantOption {
     label: variant.label,
     unit: variant.unit,
     unitPrice: variant.unitPrice,
+    ...(variant.compareAtPrice !== undefined
+      ? { compareAtPrice: variant.compareAtPrice }
+      : {}),
     ...(variant.groupId !== undefined ? { groupId: variant.groupId } : {}),
     minQty: variant.minQty,
     step: variant.step,
@@ -252,8 +255,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 membuka tautan langsung tidak pernah melihatnya. */}
             {product.status === "out-of-stock" ? (
               <p className="mt-2 rounded-md bg-rust/10 px-3 py-2 text-sm text-coffee">
-                Stok {product.name} sedang kosong. Halaman ini tetap tayang agar
-                Anda bisa menandainya, tetapi pesanan belum bisa kami terima.
+                Stok {product.name} sedang kosong.
               </p>
             ) : null}
             <div className="mt-4">
@@ -302,7 +304,13 @@ export function ProductDetail({ product }: { product: Product }) {
           di sana. */}
       <RelatedProducts
         id="produk-lain"
-        title={isHouseblend ? "Lini houseblend lainnya" : "Origin lainnya"}
+        title={
+          isHouseblend
+            ? "Lini houseblend lainnya"
+            : related.some((other) => other.category === "houseblend")
+              ? "Kopi lainnya"
+              : "Origin lainnya"
+        }
         products={related}
       />
     </Container>

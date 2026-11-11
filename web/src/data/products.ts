@@ -40,94 +40,39 @@ import type {
 export type { PriceIDR, Tier } from "./types";
 
 /* ------------------------------------------------------------------ */
-/* Houseblend — BOLD                                                   */
+/* Houseblend — BOLD dan BRIGHT                                        */
 /* ------------------------------------------------------------------ */
 
-export type HouseblendBoldRatio = {
+/**
+ * Sejak 11 November 2026 BOLD dan BRIGHT masing-masing dijual sebagai SATU
+ * blend dalam tiga ukuran kemasan: 100 gr, 200 gr, dan 1 kg. Pilihan rasio
+ * BOLD dan varian Signature/Reguler BRIGHT tidak dijual lagi.
+ *
+ * Kemasan 1 kg punya harga normal (`kg`) dan harga promo (`kgPromo`). Yang
+ * ditagih adalah `kgPromo`; `kg` tampil dicoret. Bila owner menyamakan
+ * keduanya di sheet, harga coret hilang dengan sendirinya.
+ */
+export type HouseblendSizedLine = {
   id: string;
-  /** Persentase arabica dalam blend, 0-100. */
-  arabicaPercent: number;
-  /** Persentase robusta dalam blend, 0-100. Selalu 100 - arabicaPercent. */
-  robustaPercent: number;
-  /** Label siap tampil, mis. "70% Arabica : 30% Robusta". */
-  label: string;
-  /** Harga satu kemasan 1 kg. */
-  pricePerKg: PriceIDR;
-  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
-  pricePerHalfKg: PriceIDR;
+  /** Harga satu kemasan 100 gr. */
+  mini1: PriceIDR;
+  /** Harga satu kemasan 200 gr. */
+  pack1: PriceIDR;
+  /** Harga normal satu kemasan 1 kg. */
+  kg: PriceIDR;
+  /** Harga promo satu kemasan 1 kg; yang ditagih. Tidak boleh di atas `kg`. */
+  kgPromo: PriceIDR;
 };
 
 /** Arabica Natural & Fine Robusta Natural. Notes: choco, almond, caramel. */
 export const HOUSEBLEND_BOLD_NOTES = ["choco", "almond", "caramel"] as const;
 
-export const houseblendBold: HouseblendBoldRatio[] = [
-  {
-    id: "bold-70-30",
-    arabicaPercent: 70,
-    robustaPercent: 30,
-    label: "70% Arabica : 30% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-70-30"),
-    pricePerHalfKg: managedPrice("houseblend.bold-70-30.half"),
-  },
-  {
-    id: "bold-60-40",
-    arabicaPercent: 60,
-    robustaPercent: 40,
-    label: "60% Arabica : 40% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-60-40"),
-    pricePerHalfKg: managedPrice("houseblend.bold-60-40.half"),
-  },
-  {
-    id: "bold-50-50",
-    arabicaPercent: 50,
-    robustaPercent: 50,
-    label: "50% Arabica : 50% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-50-50"),
-    pricePerHalfKg: managedPrice("houseblend.bold-50-50.half"),
-  },
-  {
-    id: "bold-40-60",
-    arabicaPercent: 40,
-    robustaPercent: 60,
-    label: "40% Arabica : 60% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-40-60"),
-    pricePerHalfKg: managedPrice("houseblend.bold-40-60.half"),
-  },
-  {
-    id: "bold-30-70",
-    arabicaPercent: 30,
-    robustaPercent: 70,
-    label: "30% Arabica : 70% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-30-70"),
-    pricePerHalfKg: managedPrice("houseblend.bold-30-70.half"),
-  },
-  {
-    id: "bold-20-80",
-    arabicaPercent: 20,
-    robustaPercent: 80,
-    label: "20% Arabica : 80% Robusta",
-    pricePerKg: managedPrice("houseblend.bold-20-80"),
-    pricePerHalfKg: managedPrice("houseblend.bold-20-80.half"),
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/* Houseblend — BRIGHT                                                 */
-/* ------------------------------------------------------------------ */
-
-export type HouseblendBrightVariant = {
-  id: string;
-  /**
-   * PERHATIAN (BR-15): pada lini BRIGHT, "signature"/"reguler" adalah NAMA
-   * VARIAN BLEND, bukan tier harga single origin. Ia tidak boleh ikut dalam
-   * filter tier katalog. Validator V-07 menegakkan pemisahan ini.
-   */
-  tier: Tier;
-  /** Label siap tampil, mis. "Signature". */
-  label: string;
-  pricePerKg: PriceIDR;
-  /** Harga satu kemasan 0,5 kg. BUKAN setengah harga kemasan 1 kg. */
-  pricePerHalfKg: PriceIDR;
+export const houseblendBold: HouseblendSizedLine = {
+  id: "bold",
+  mini1: managedPrice("houseblend.bold.mini1"),
+  pack1: managedPrice("houseblend.bold.pack1"),
+  kg: managedPrice("houseblend.bold.kg"),
+  kgPromo: managedPrice("houseblend.bold.kg.promo"),
 };
 
 /** Full Arabica, natural & washed. Notes: raisin, orange, lemon zest. */
@@ -137,22 +82,13 @@ export const HOUSEBLEND_BRIGHT_NOTES = [
   "lemon zest",
 ] as const;
 
-export const houseblendBright: HouseblendBrightVariant[] = [
-  {
-    id: "bright-signature",
-    tier: "signature",
-    label: "Signature",
-    pricePerKg: managedPrice("houseblend.bright-signature"),
-    pricePerHalfKg: managedPrice("houseblend.bright-signature.half"),
-  },
-  {
-    id: "bright-reguler",
-    tier: "reguler",
-    label: "Reguler",
-    pricePerKg: managedPrice("houseblend.bright-reguler"),
-    pricePerHalfKg: managedPrice("houseblend.bright-reguler.half"),
-  },
-];
+export const houseblendBright: HouseblendSizedLine = {
+  id: "bright",
+  mini1: managedPrice("houseblend.bright.mini1"),
+  pack1: managedPrice("houseblend.bright.pack1"),
+  kg: managedPrice("houseblend.bright.kg"),
+  kgPromo: managedPrice("houseblend.bright.kg.promo"),
+};
 
 /* ------------------------------------------------------------------ */
 /* Houseblend — Full Robusta                                           */
@@ -202,9 +138,9 @@ export const houseblendLines: HouseblendLine[] = [
     name: "Houseblend BOLD",
     composition: "Arabica Natural & Fine Robusta Natural",
     summary:
-      "Houseblend BOLD — campuran Arabica Natural dan Fine Robusta Natural dalam enam rasio, kemasan 1 kg mulai Rp185.000.",
+      "Houseblend BOLD — campuran Arabica Natural dan Fine Robusta Natural, dalam kemasan 100 gr, 200 gr, dan 1 kg.",
     description:
-      "Houseblend BOLD memadukan Arabica Natural dan Fine Robusta Natural. Tersedia dalam enam rasio Arabica:Robusta sehingga kedai dapat memilih titik keseimbangan body dan manis yang paling cocok dengan mesin dan menunya. Rasio paling robusta, 20:80, masih memuat seperlima arabica — bila Anda menginginkan robusta penuh tanpa arabica sama sekali, lini Full Robusta yang dimaksud. Setiap rasio tersedia dalam kemasan 1 kg dan 0,5 kg.",
+      "Houseblend BOLD memadukan Arabica Natural dan Fine Robusta Natural. Tersedia dalam kemasan 100 gr dan 200 gr untuk di rumah, serta kemasan 1 kg untuk kedai.",
     tastingNotes: [...HOUSEBLEND_BOLD_NOTES],
     image: {
       src: boldPhoto,
@@ -223,9 +159,9 @@ export const houseblendLines: HouseblendLine[] = [
     name: "Houseblend BRIGHT",
     composition: "Full Arabica, natural & washed",
     summary:
-      "Houseblend BRIGHT — full Arabica natural dan washed, tersedia varian Signature dan Reguler, dalam kemasan 1 kg dan 0,5 kg.",
+      "Houseblend BRIGHT — full Arabica natural dan washed, dalam kemasan 100 gr, 200 gr, dan 1 kg.",
     description:
-      "Houseblend BRIGHT adalah blend full Arabica yang menggabungkan proses natural dan washed. Tersedia dalam dua varian, Signature dan Reguler. Pada lini ini Signature dan Reguler adalah nama varian blend, bukan tier harga single origin. Kedua varian tersedia dalam kemasan 1 kg dan 0,5 kg.",
+      "Houseblend BRIGHT adalah blend full Arabica yang menggabungkan proses natural dan washed. Tersedia dalam kemasan 100 gr dan 200 gr untuk di rumah, serta kemasan 1 kg untuk kedai.",
     tastingNotes: [...HOUSEBLEND_BRIGHT_NOTES],
     image: {
       src: brightPhoto,
@@ -242,17 +178,13 @@ export const houseblendLines: HouseblendLine[] = [
     slug: "full-robusta",
     name: "Houseblend Full Robusta",
     composition: "Full Robusta",
-    // BR-16 — membedakan lini ini dari BOLD 20:80, yang harganya kini hanya
-    // Rp5.000 lebih tinggi. Premis lama BR-16 (harga keduanya identik) sudah
-    // batal, tetapi kebutuhannya tetap: selisih Rp5.000 terlalu tipis untuk
-    // menjelaskan apa pun, jadi pembedanya harus komposisi, bukan harga.
-    // Yang ditulis di bawah hanya turunan dari komposisi yang memang tercatat
-    // — 100% robusta terhadap 20% arabica — bukan klaim rasa yang belum
-    // pernah dicicip pada lot ini (FR-07).
+    // BR-16 dulu membedakan lini ini dari BOLD 20:80. Rasio BOLD tidak dijual
+    // lagi sejak 11 November 2026, jadi pembedanya cukup komposisi: robusta
+    // penuh, tanpa arabica. Tidak ada klaim rasa yang belum dicicip (FR-07).
     summary:
-      "Houseblend Full Robusta — 100% robusta, tanpa arabica sama sekali. Kemasan 1 kg Rp180.000.",
+      "Houseblend Full Robusta — 100% robusta, tanpa arabica sama sekali, dalam kemasan 1 kg dan 0,5 kg.",
     description:
-      "Houseblend Full Robusta adalah blend robusta penuh untuk kedai yang mengutamakan body tebal dan biaya per cangkir yang terjaga. Bedanya dengan BOLD 20:80 bukan terletak pada harga, yang hanya berselisih Rp5.000 per kilogram, melainkan pada komposisi: BOLD 20:80 masih memuat seperlima arabica, sementara lini ini tidak memuatnya sama sekali. Pilih lini ini bila resep espresso Anda sudah dikunci di sekitar karakter robusta dan tambahan arabica justru menggeser rasa yang sudah pas. Tersedia dalam kemasan 1 kg dan 0,5 kg.",
+      "Houseblend Full Robusta adalah blend robusta penuh, tanpa arabica sama sekali, untuk kedai yang mengutamakan body tebal dan biaya per cangkir yang terjaga. Tersedia dalam kemasan 1 kg dan 0,5 kg.",
     tastingNotes: null,
     // Tidak ada artwork yang jujur mewakili lini ini: lembar HOUSEBLEND hanya
     // memotret BOLD dan BRIGHT. Memakai foto BOLD di sini berarti menampilkan

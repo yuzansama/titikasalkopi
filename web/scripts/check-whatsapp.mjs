@@ -23,7 +23,14 @@ const { createOrderCode, ORDER_CODE_PATTERN } = orderCode;
 const { sanitizeNote } = sanitize;
 const { resolveCart } = selectors;
 
-const index = catalog.cartCatalogIndex;
+/* Semua produk dianggap tersedia: yang diuji di sini bentuk dan aritmetika
+   pesan, bukan status stok dari sheet owner (KD-08). Lihat check-cart.mjs. */
+const index = Object.fromEntries(
+  Object.entries(catalog.cartCatalogIndex).map(([slug, entry]) => [
+    slug,
+    { ...entry, status: "available" },
+  ]),
+);
 
 /**
  * CATATAN DEFEK (dilaporkan ke BE, bukan diperbaiki di sini).
@@ -114,7 +121,7 @@ function buildFrom(items, note = "") {
 const twoLine = buildFrom(
   [
     { slug: "abmisibil", variantId: "abmisibil-pack3", qty: 1 },
-    { slug: "bold", variantId: "bold-60-40-1kg", qty: 5 },
+    { slug: "bold", variantId: "bold-1kg", qty: 5 },
   ],
   "tolong digiling untuk V60, kirim ke Bandung.",
 );

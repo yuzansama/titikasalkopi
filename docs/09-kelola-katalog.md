@@ -56,26 +56,20 @@ Dua kolom. `kunci` tidak boleh diubah — itu nama yang dikenali kode. Yang Anda
 | single.reguler.pack1 | Reguler, 1 pack 200 gr | 125000 |
 | single.reguler.pack3 | Reguler, 3 pack | 352000 |
 | single.reguler.mini1 | Reguler, 1 kemasan 100 gr | 70000 |
-| houseblend.bold-70-30 | BOLD 70:30 per kg | 215000 |
-| houseblend.bold-70-30.half | BOLD 70:30 per 0,5 kg | 120000 |
-| houseblend.bold-60-40 | BOLD 60:40 per kg | 205000 |
-| houseblend.bold-60-40.half | BOLD 60:40 per 0,5 kg | 115000 |
-| houseblend.bold-50-50 | BOLD 50:50 per kg | 200000 |
-| houseblend.bold-50-50.half | BOLD 50:50 per 0,5 kg | 110000 |
-| houseblend.bold-40-60 | BOLD 40:60 per kg | 195000 |
-| houseblend.bold-40-60.half | BOLD 40:60 per 0,5 kg | 105000 |
-| houseblend.bold-30-70 | BOLD 30:70 per kg | 190000 |
-| houseblend.bold-30-70.half | BOLD 30:70 per 0,5 kg | 100000 |
-| houseblend.bold-20-80 | BOLD 20:80 per kg | 185000 |
-| houseblend.bold-20-80.half | BOLD 20:80 per 0,5 kg | 95000 |
-| houseblend.bright-signature | BRIGHT Signature per kg | 280000 |
-| houseblend.bright-signature.half | BRIGHT Signature per 0,5 kg | 150000 |
-| houseblend.bright-reguler | BRIGHT Reguler per kg | 240000 |
-| houseblend.bright-reguler.half | BRIGHT Reguler per 0,5 kg | 130000 |
+| houseblend.bold.mini1 | BOLD, kemasan 100 gr | 45000 |
+| houseblend.bold.pack1 | BOLD, kemasan 200 gr | 80000 |
+| houseblend.bold.kg | BOLD, kemasan 1 kg, harga normal (tampil dicoret) | 320000 |
+| houseblend.bold.kg.promo | BOLD, kemasan 1 kg, harga promo (yang ditagih) | 300000 |
+| houseblend.bright.mini1 | BRIGHT, kemasan 100 gr | 55000 |
+| houseblend.bright.pack1 | BRIGHT, kemasan 200 gr | 95000 |
+| houseblend.bright.kg | BRIGHT, kemasan 1 kg, harga normal (tampil dicoret) | 400000 |
+| houseblend.bright.kg.promo | BRIGHT, kemasan 1 kg, harga promo (yang ditagih) | 380000 |
 | houseblend.full-robusta | Full Robusta per kg | 180000 |
 | houseblend.full-robusta.half | Full Robusta per 0,5 kg | 100000 |
 
-Kolom `keterangan` untuk Anda sendiri; isinya diabaikan sistem. Kedua puluh empat baris **wajib ada** — satu saja hilang, sinkronisasi membatalkan diri.
+Kolom `keterangan` untuk Anda sendiri; isinya diabaikan sistem. Keenam belas baris **wajib ada** — satu saja hilang, sinkronisasi membatalkan diri.
+
+> **Perubahan 11 November 2026.** BOLD dan BRIGHT sekarang dijual sebagai satu blend dalam kemasan 100 gr, 200 gr, dan 1 kg. Kunci rasio BOLD (`houseblend.bold-70-30` dan seterusnya) serta `houseblend.bright-signature`/`houseblend.bright-reguler` **dihapus**; ganti delapan baris itu di tab `harga` dengan delapan kunci baru di atas. Kemasan 1 kg punya dua harga: `.kg` tampil dicoret, `.kg.promo` yang ditagih. Isi keduanya sama bila tidak sedang promo — harga coret hilang dengan sendirinya. Di tab `stok`, single origin dan `full-robusta` ditandai `out-of-stock`.
 
 Harga boleh ditulis `125000`, `125.000`, atau `Rp125.000`. Ketiganya dibaca sama.
 

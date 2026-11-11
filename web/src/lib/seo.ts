@@ -146,9 +146,9 @@ export function homeMetadata(): Metadata {
 /** Rute 2 — `/katalog`. */
 export function katalogMetadata(): Metadata {
   return buildPageMetadata({
-    title: "Katalog Kopi — Single Origin & Houseblend per Kg",
+    title: "Katalog Kopi — Houseblend BOLD & BRIGHT",
     description:
-      "Katalog lengkap Titik Asal Kopi: single origin dari Papua, Kupang, Aceh, Garut, dan Kerinci dalam kemasan 200 gr, serta houseblend BOLD, BRIGHT, dan Full Robusta yang dijual per kilogram.",
+      "Katalog Titik Asal Kopi: houseblend BOLD dan BRIGHT dalam kemasan 100 gr, 200 gr, dan 1 kg. Single origin dari Papua, Kupang, Aceh, Garut, dan Kerinci sedang kosong.",
     path: "/katalog",
     keywords: [
       "katalog kopi",
@@ -164,9 +164,9 @@ export function katalogMetadata(): Metadata {
 /** Rute 10 — `/houseblend`. */
 export function houseblendIndexMetadata(): Metadata {
   return buildPageMetadata({
-    title: "Houseblend Kopi per Kg — BOLD, BRIGHT, Full Robusta",
+    title: "Houseblend Kopi — BOLD & BRIGHT",
     description:
-      "Tiga lini houseblend Titik Asal Kopi untuk kedai dan rumah: BOLD dalam enam rasio Arabica:Robusta, BRIGHT full Arabica, dan Full Robusta. Dijual per kilogram, pemesanan mulai 0,5 kg.",
+      "Houseblend BOLD dan BRIGHT dari Titik Asal Kopi untuk kedai dan rumah, dalam kemasan 100 gr, 200 gr, dan 1 kg. Kemasan 1 kg sedang harga promo.",
     path: "/houseblend",
     keywords: [
       "houseblend kopi per kg",

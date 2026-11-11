@@ -75,6 +75,15 @@ export function VariantPicker({
                   harga satu kemasan. */}
               {checked ? null : (
                 <span className="text-sm text-olive">
+                  {variant.compareAtPrice !== undefined ? (
+                    <>
+                      <s className="mr-1">
+                        <span className="sr-only">Harga normal </span>
+                        {formatIDR(variant.compareAtPrice)}
+                      </s>
+                      <span className="sr-only">, harga promo </span>
+                    </>
+                  ) : null}
                   {formatIDR(variant.unitPrice)} {unitLabel(variant.unit)}
                 </span>
               )}
