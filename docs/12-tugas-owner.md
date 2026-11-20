@@ -198,7 +198,7 @@ eksplisit.
 - **Kirim pesanan WhatsApp sungguhan** dari Android, iOS, dan WhatsApp Web ke
   nomor tujuan sungguhan, lalu baca apa yang sampai. Ini mitigasi R-04 dan item
   bernilai tertinggi di Sprint 2.
-- **Konfirmasi nomor tujuan** `6287777939567` memang benar.
+- **Konfirmasi nomor tujuan** `6285121559488` memang benar.
 - **Buka situs di Android kelas menengah dan Safari iOS.**
 
 Untuk pengujian yang cuma butuh peramban — konfigurator, keranjang,

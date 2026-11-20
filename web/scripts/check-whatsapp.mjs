@@ -227,7 +227,7 @@ check("pesan memuat kelima blok wajib BRD 11.2", () => {
 
 check("FR-24: penanda sumber ada di BADAN pesan, bukan sebagai query UTM", () => {
   assert.ok(!twoLine.url.includes("utm_"));
-  assert.ok(twoLine.url.startsWith("https://wa.me/6287777939567?text="));
+  assert.ok(twoLine.url.startsWith("https://wa.me/6285121559488?text="));
   assert.ok(decodeURIComponent(twoLine.url.split("?text=")[1]).includes("Dikirim dari"));
 });
 

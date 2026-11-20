@@ -79,11 +79,11 @@ export function assetUrl(path: string): string {
 
 export const whatsapp = {
   /** Format lokal untuk ditampilkan ke pengunjung. */
-  display: "087777939567",
+  display: "085121559488",
   /** Format internasional tanpa tanda plus, dipakai wa.me. */
-  international: "6287777939567",
+  international: "6285121559488",
   /** Deeplink dasar. Pakai waLink() bila ingin menyertakan pesan. */
-  link: "https://wa.me/6287777939567",
+  link: "https://wa.me/6285121559488",
 } as const;
 
 /** Bangun deeplink WhatsApp, opsional dengan pesan yang sudah di-encode. */

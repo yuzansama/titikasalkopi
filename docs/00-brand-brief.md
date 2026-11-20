@@ -7,7 +7,7 @@ Semua agent WAJIB baca file ini sebelum bekerja. Sumber kebenaran untuk brand, p
 - Domain: titikasalkopi.id
 - Tagline: "Pilih rasa, temukan asalnya, nikmati setiap momen."
 - Positioning: kopi single origin & houseblend dari titik terbaik di Indonesia (fokus Indonesia Timur + Nusantara).
-- Kontak: WhatsApp 087777939567 | Instagram @Titikasalkopi | Shopee: Titikasalkopi
+- Kontak: WhatsApp 085121559488 | Instagram @Titikasalkopi | Shopee: Titikasalkopi
 - Bahasa utama situs: Bahasa Indonesia.
 
 ## Palet warna (hasil sampling dari aset marketing di assets/brand/)

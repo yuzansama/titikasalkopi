@@ -68,9 +68,9 @@ flowchart LR
     U -->|"hydrate"| CC["Client Component<br/>VariantPicker, CartProvider,<br/>ReplyHoursStatus, CartBadge"]
     CC <-->|"baca / tulis tak.cart.v1"| LS[("localStorage<br/>peramban")]
     CC -->|"event gtag"| GA["GA4"]
-    CC -->|"klik Pesan via WhatsApp"| WA["wa.me/6287777939567<br/>?text=pesan terkode URL"]
+    CC -->|"klik Pesan via WhatsApp"| WA["wa.me/6285121559488<br/>?text=pesan terkode URL"]
     CC -->|"klik alternatif"| SH["Shopee"]
-    WA --> OWN["WhatsApp Owner<br/>087777939567"]
+    WA --> OWN["WhatsApp Owner<br/>085121559488"]
     OWN --> BOOK[("Buku order<br/>spreadsheet owner")]
 
     classDef server fill:#0E251F,color:#F9F4EE,stroke:#0E251F
@@ -138,7 +138,7 @@ sequenceDiagram
     KR->>MSG: {lines, note, orderCode, sourceUrl}
     MSG-->>KR: {text, url, encodedLength, truncated}
     KR->>GA: click_whatsapp_order {order_code, cart_value, cart_items, source_page}
-    KR->>WA: window.open(url) ke wa.me/6287777939567?text=...
+    KR->>WA: window.open(url) ke wa.me/6285121559488?text=...
     WA-->>P: aplikasi WhatsApp terbuka dengan pesan terisi
     P->>WA: menekan kirim (selalu manual, tidak pernah otomatis)
     Note over WA: Owner menyalin kode order TAK-YYMMDD-XXXX ke buku order.<br/>Ini satu-satunya jembatan antara data GA4 dan data penjualan.
@@ -1517,7 +1517,7 @@ export const WA_MAX_ENCODED_LENGTH = 1500;
 export type WhatsAppMessage = {
   /** Teks mentah, sebelum pengodean. Dipakai juga untuk pratinjau saat pengujian. */
   text: string;
-  /** URL siap buka: https://wa.me/6287777939567?text=... */
+  /** URL siap buka: https://wa.me/6285121559488?text=... */
   url: string;
   /** Panjang setelah encodeURIComponent — inilah angka yang diuji NFR-15. */
   encodedLength: number;

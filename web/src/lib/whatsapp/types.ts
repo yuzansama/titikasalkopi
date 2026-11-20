@@ -46,7 +46,7 @@ export type B2BInquiryPayload = {
 export type WhatsAppMessage = {
   /** Teks mentah sebelum pengodean. Dipakai juga untuk pratinjau saat diuji. */
   text: string;
-  /** URL siap buka: https://wa.me/6287777939567?text=... */
+  /** URL siap buka: https://wa.me/6285121559488?text=... */
   url: string;
   /** Panjang setelah `encodeURIComponent` — angka yang diuji NFR-15. */
   encodedLength: number;

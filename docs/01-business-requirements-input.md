@@ -19,7 +19,7 @@ Titik Asal Kopi adalah roaster kopi specialty Indonesia dengan positioning "kopi
 
 Sampai hari ini seluruh penjualan berjalan lewat tiga kanal:
 
-1. **WhatsApp (087777939567)** — kanal utama. Semua order masuk lewat chat, termasuk order houseblend per kilogram dari kedai.
+1. **WhatsApp (085121559488)** — kanal utama. Semua order masuk lewat chat, termasuk order houseblend per kilogram dari kedai.
 2. **Instagram (@Titikasalkopi)** — kanal awareness dan etalase visual. Calon pembeli menemukan brand di sini, lalu berpindah ke WhatsApp untuk menanyakan harga dan stok.
 3. **Shopee (Titikasalkopi)** — kanal transaksi ritel dengan pembayaran dan pengiriman yang sudah ditangani marketplace.
 
@@ -282,7 +282,7 @@ Sebagai pembeli yang terganggu di tengah belanja, saya ingin isi keranjang saya 
 **US-14 — Mengirim pesanan via WhatsApp** · **Must**
 Sebagai pembeli, saya ingin mengirim isi keranjang ke WhatsApp penjual dalam satu ketukan, sehingga saya tidak perlu mengetik ulang pesanan.
 *Acceptance criteria:*
-- Tombol "Pesan via WhatsApp" membuka WhatsApp ke nomor 087777939567 dengan pesan yang sudah terisi.
+- Tombol "Pesan via WhatsApp" membuka WhatsApp ke nomor 085121559488 dengan pesan yang sudah terisi.
 - Pesan memuat: daftar produk, varian, jumlah, harga satuan, subtotal per baris, total, dan penanda bahwa pesanan berasal dari titikasalkopi.id.
 - Pesan tetap terbaca rapi di aplikasi WhatsApp seluler maupun WhatsApp Web.
 - Tombol berfungsi baik dari HP maupun desktop.
@@ -443,7 +443,7 @@ Aturan bisnis: rilis Fase 1 tidak boleh diumumkan sebelum seluruh **Must** seles
 | **Cara Seduh** | Mengurangi pertanyaan berulang dan meningkatkan kepuasan pasca-beli | Minimal tiga metode dengan rasio, gilingan, suhu, langkah; rekomendasi produk per metode | Video pendek; tips penyimpanan biji | Should |
 | **FAQ** | Memangkas waktu owner menjawab | Cara pesan; pembayaran; pengiriman dan ongkir; kesegaran; pilihan gilingan; order per kg untuk kedai; order jumlah banyak; kemitraan reseller | Pertanyaan tentang perbedaan Arabica dan Robusta | Must |
 | **Kebijakan Pengiriman** | Menghilangkan keraguan pembeli luar kota | Wilayah layanan; kurir; estimasi proses dan waktu kirim; cara hitung ongkir; kebijakan barang rusak dalam pengiriman | Estimasi waktu per zona | Must |
-| **Kontak** | Menjadi pintu masuk semua percakapan | WhatsApp 087777939567; Instagram @Titikasalkopi; Shopee Titikasalkopi; jam operasional balasan `[ASUMSI]`; blok pesanan jumlah banyak; blok kemitraan reseller | Peta lokasi `[ASUMSI]` alamat workshop belum ditentukan untuk dipublikasikan | Must |
+| **Kontak** | Menjadi pintu masuk semua percakapan | WhatsApp 085121559488; Instagram @Titikasalkopi; Shopee Titikasalkopi; jam operasional balasan `[ASUMSI]`; blok pesanan jumlah banyak; blok kemitraan reseller | Peta lokasi `[ASUMSI]` alamat workshop belum ditentukan untuk dipublikasikan | Must |
 | **Keranjang** | Menutup transaksi ke WhatsApp | Daftar item dengan varian, jumlah, harga; total; tombol pesan via WhatsApp; alternatif Shopee; catatan bahwa ongkir dihitung saat konfirmasi | Kolom catatan tambahan untuk penjual | Must |
 
 ### 6.1 Prinsip penulisan konten
@@ -513,7 +513,7 @@ Hal-hal berikut **tidak dikerjakan** di Fase 1. Ditulis eksplisit agar ruang lin
 | A-05 | `[ASUMSI]` Stok single origin Signature (Oelbiteno, Abmisibil, Sabin, Pyramid) tersedia berkelanjutan. | Produk unggulan sering kosong; pengunjung kecewa. | Konfirmasi kesiapan pasokan; sediakan penanda "sedang kosong". |
 | A-06 | `[ASUMSI]` Owner bersedia dan mampu menyunting berkas data produk mengikuti panduan tertulis. | NF-03 gagal; ketergantungan pada developer berlanjut. | Sesi latihan singkat dan uji coba: owner mengubah satu harga sendiri sebelum rilis. |
 | A-07 | `[ASUMSI]` Instagram tetap menjadi sumber trafik awal utama sampai SEO tumbuh. | Website sepi pengunjung di bulan-bulan awal. | Pasang tautan website di bio Instagram dan sebutkan di setiap unggahan. |
-| A-08 | `[ASUMSI]` Nomor WhatsApp 087777939567 dipakai untuk bisnis dan sanggup menampung kenaikan chat. | Chat menumpuk dan tercampur dengan pesan pribadi. | Pertimbangkan WhatsApp Business dengan pesan otomatis dan katalog. |
+| A-08 | `[ASUMSI]` Nomor WhatsApp 085121559488 dipakai untuk bisnis dan sanggup menampung kenaikan chat. | Chat menumpuk dan tercampur dengan pesan pribadi. | Pertimbangkan WhatsApp Business dengan pesan otomatis dan katalog. |
 | A-09 | `[ASUMSI]` Detail origin yang belum lengkap di brand brief (Oelbiteno, Pyramid, Palimping, Kerinci) akan dilengkapi owner. | Halaman detail terasa timpang antar produk. | Minta owner melengkapi proses, ketinggian, dan varietas; sampai itu tersedia, kolom dikosongkan, bukan dikarang. |
 | A-10 | `[ASUMSI]` Parameter resep pada halaman cara seduh akan disediakan owner/roaster. | Halaman cara seduh tidak bisa tayang atau berisi resep yang tidak sesuai profil produk. | Kumpulkan resep dari owner sebelum penulisan konten. |
 | A-11 | `[ASUMSI]` Domain titikasalkopi.id sudah dimiliki atau akan didaftarkan sebelum rilis. | Rilis tertunda. | Konfirmasi status domain ke owner sejak awal. |
