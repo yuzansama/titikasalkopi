@@ -50,6 +50,7 @@ const HEADERS = [
  */
 function makeScript(headers = HEADERS, rows = []) {
   const values = [headers.slice(), ...rows.map((row) => row.slice())];
+  const cache = new Map();
 
   const sheet = {
     getDataRange: () => ({ getValues: () => values }),
@@ -60,6 +61,12 @@ function makeScript(headers = HEADERS, rows = []) {
     SpreadsheetApp: {
       getActive: () => ({
         getSheetByName: (name) => (name === "pesanan" ? sheet : null),
+      }),
+    },
+    CacheService: {
+      getScriptCache: () => ({
+        get: (key) => (cache.has(key) ? cache.get(key) : null),
+        put: (key, value) => cache.set(key, String(value)),
       }),
     },
     LockService: {
@@ -87,7 +94,7 @@ function makeScript(headers = HEADERS, rows = []) {
     `${source}\nreturn { doGet, doPost, normalizeCode, sanitizeCell_ };`,
   );
   const api = factory(...names.map((name) => globals[name]));
-  return { ...api, values, rows: () => values.slice(1) };
+  return { ...api, values, cache, rows: () => values.slice(1) };
 }
 
 const body = (payload) => ({ postData: { contents: JSON.stringify(payload) } });
@@ -130,7 +137,7 @@ check("KD-06: kode yang sudah ada TIDAK PERNAH ditimpa", () => {
   const result = parse(
     gs.doPost(body({ code: "TAK-260908-K7Q2", last4: "0000", items: "baru" })),
   );
-  assert.deepEqual(result, { ok: true, duplicate: true });
+  assert.deepEqual(result, { ok: true }, "kode lama harus dijawab persis seperti kode baru");
 
   const rows = gs.rows();
   assert.equal(rows.length, 1, "tidak boleh menambah baris");
@@ -157,6 +164,33 @@ check("KEAMANAN: kuota harian menutup endpoint setelah batasnya", () => {
   assert.equal(accepted, 50, `diterima ${accepted}, seharusnya berhenti di 50`);
   assert.ok(capped > 0, "kuota tidak pernah menolak apa pun");
   assert.equal(gs.rows().length, 50);
+});
+
+check("KEAMANAN: doPost tidak membedakan kode nyata dari kode karangan", () => {
+  // Audit 22 Nov 2026. Bila jawabannya berbeda, doPost menjadi alat untuk
+  // memastikan kode order mana yang ada, lalu last4-nya tinggal ditebak.
+  const nyata = "TAK-260908-K7Q2";
+  const karangan = "TAK-260908-K7QA";
+  const gs = makeScript(HEADERS, [
+    ["TAK-260908-K7Q2", "2026-09-01", "9567", "dikirim", "2026-09-02", "JNE", "JX1", "lama", "", ""],
+  ]);
+  assert.equal(
+    gs.doPost(body({ code: nyata, last4: "1111", items: "x" })).getContent(),
+    gs.doPost(body({ code: karangan, last4: "1111", items: "x" })).getContent(),
+  );
+
+  // Sesudah kuota habis pun tidak boleh ada beda: kuota diperiksa lebih dulu.
+  const penuh = makeScript(HEADERS, [
+    ["TAK-260908-K7Q2", "2026-09-01", "9567", "dikirim", "2026-09-02", "JNE", "JX1", "lama", "", ""],
+    ...Array.from({ length: 50 }, (_, i) => [
+      `TAK-260909-A${"ABCDEFGHJKMNPQRSTUVWXYZ23456789"[i % 31]}${"ABCDEFGHJK"[Math.floor(i / 31)]}B`,
+      today, "", "menunggu-konfirmasi", today, "", "", "x", "web", "",
+    ]),
+  ]);
+  assert.equal(
+    penuh.doPost(body({ code: nyata, last4: "1111", items: "x" })).getContent(),
+    penuh.doPost(body({ code: karangan, last4: "1111", items: "x" })).getContent(),
+  );
 });
 
 check("KEAMANAN: rumus dari luar tidak pernah masuk sel apa adanya", () => {
@@ -283,6 +317,42 @@ check("FR-51: last4 yang kehilangan nol di depan tetap cocok", () => {
     gs.doGet({ parameter: { code: "TAK-260908-K7Q2", last4: "0567" } }),
   );
   assert.equal(result.found, true);
+});
+
+check("KEAMANAN: last4 tidak bisa ditebak habis — kode dikunci setelah 10 gagal", () => {
+  // Audit 22 Nov 2026. Tanpa batas, 10.000 kemungkinan last4 untuk satu kode
+  // bisa dicoba semua.
+  const gs = makeScript(HEADERS, SEEDED);
+  const cari = (code, last4) => parse(gs.doGet({ parameter: { code, last4 } }));
+  for (let i = 0; i < 10; i += 1) {
+    assert.deepEqual(cari("TAK-260908-K7Q2", String(1000 + i)), { found: false });
+  }
+  assert.deepEqual(
+    cari("TAK-260908-K7Q2", "9567"),
+    { found: false },
+    "last4 benar masih diterima setelah 10 tebakan salah",
+  );
+  // Kode lain tidak ikut terkunci.
+  const lain = makeScript(HEADERS, SEEDED);
+  assert.equal(parse(lain.doGet({ parameter: { code: "TAK-260908-K7Q2", last4: "9567" } })).found, true);
+});
+
+check("KEAMANAN: penguncian berlaku juga untuk kode yang tidak ada", () => {
+  // Kalau hanya kode nyata yang terkunci, penguncian itu sendiri jadi penanda.
+  const gs = makeScript(HEADERS, SEEDED);
+  for (let i = 0; i < 10; i += 1) {
+    gs.doGet({ parameter: { code: "TAK-260908-K7QA", last4: String(1000 + i) } });
+  }
+  assert.equal(gs.cache.get("lacak-gagal:TAK-260908-K7QA"), "10");
+  assert.equal(gs.cache.get("lacak-gagal:TAK-260908-K7Q2") ?? null, null);
+});
+
+check("KEAMANAN: pembeli yang salah ketik beberapa kali tetap bisa melacak", () => {
+  const gs = makeScript(HEADERS, SEEDED);
+  for (let i = 0; i < 9; i += 1) {
+    gs.doGet({ parameter: { code: "TAK-260908-K7Q2", last4: String(1000 + i) } });
+  }
+  assert.equal(parse(gs.doGet({ parameter: { code: "TAK-260908-K7Q2", last4: "9567" } })).found, true);
 });
 
 check("FR-51: sheet kosong menjawab tidak ketemu, bukan melempar", () => {

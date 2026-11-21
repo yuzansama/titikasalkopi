@@ -387,8 +387,15 @@ check("KEAMANAN: Apps Script menjaga ketiga pagar tulisnya", () => {
   assert.ok(/DAILY_WEB_ROW_CAP/.test(gs), "kuota harian hilang dari doPost");
   assert.ok(/LockService/.test(gs), "kunci serentak hilang; dua POST bisa sama-sama menulis");
   assert.ok(
-    /duplicate: true/.test(gs),
+    /if \(exists\) return json\(\{ ok: true \}\);/.test(gs),
     "penjaga kode ganda hilang; baris yang sudah disunting bisa tertimpa",
+  );
+  // Audit 22 Nov 2026: jawaban {duplicate:true} membocorkan kode mana yang
+  // nyata. Kode lama wajib dijawab persis seperti kode baru.
+  assert.ok(!/duplicate\s*:/.test(gs), "doPost kembali membedakan kode lama dari kode baru");
+  assert.ok(
+    /MAX_FAILED_LOOKUPS/.test(gs) && /CacheService/.test(gs),
+    "batas percobaan last4 per kode hilang dari doGet",
   );
   assert.ok(
     /sanitizeCell_/.test(gs),

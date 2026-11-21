@@ -91,6 +91,13 @@ URL dari langkah 6 dipasang sebagai variabel lingkungan `NEXT_PUBLIC_TRACKING_EN
 
 Setiap kali Anda mengubah isi skrip, tekan **Deploy > Manage deployments > Edit > Version: New version**. Tanpa itu, perubahan tidak tayang.
 
+> **Pembaruan keamanan 22 Nov 2026 — wajib dipasang.**
+> Setelah audit keamanan, skrip mendapat dua pagar baru:
+> - Satu kode order hanya boleh salah empat digit **10 kali dalam 6 jam**. Sesudahnya kode itu terkunci sementara dan halaman lacak menjawab "tidak ketemu", bahkan bila angkanya benar. Kalau ada pembeli yang mengeluh tidak bisa melacak setelah berkali-kali salah ketik, minta ia mencoba lagi beberapa jam kemudian, atau kirimkan statusnya lewat WhatsApp.
+> - Pencatatan otomatis tidak lagi membocorkan apakah sebuah kode order sudah ada.
+>
+> Langkahnya sama: tempel ulang seluruh isi `ops/order-tracker.gs`, jalankan `selfCheck`, lalu **Deploy > Manage deployments > Edit > Version: New version**. URL-nya tidak berubah.
+
 > **Wajib dilakukan sekarang bila Anda sudah memasang versi sebelumnya.**
 > Skripnya berubah cukup besar sejak KD-06: ia sekarang punya `doPost` yang menulis baris otomatis, dan satu bug diperbaiki — versi pertama menolak menulis ke sheet yang baru punya baris judul tanpa data, sehingga **pesanan pertama Anda akan gagal tercatat**. Bug itu ditemukan oleh `web/scripts/check-order-tracker-gs.mjs`, bukan oleh pembeli.
 >

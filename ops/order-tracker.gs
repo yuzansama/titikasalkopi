@@ -16,7 +16,14 @@
  * 2. Kode salah dan last4 salah menghasilkan jawaban yang PERSIS SAMA
  *    ({found:false}). Membedakan keduanya mengubah endpoint ini menjadi alat
  *    untuk menebak: penyerang bisa memastikan sebuah kode order valid lalu
- *    mencoba 10.000 kemungkinan empat digit.
+ *    mencoba 10.000 kemungkinan empat digit. Dua pagar lain menjaga hal yang
+ *    sama dari arah berbeda:
+ *    - doPost menjawab kode lama dan kode baru dengan bentuk yang sama, jadi
+ *      ia tidak bisa dipakai untuk memastikan sebuah kode ada.
+ *    - doGet membatasi percobaan per kode (MAX_FAILED_LOOKUPS). Sesudah batas
+ *      itu, jawaban SELALU {found:false}, benar atau salah last4-nya.
+ *    Audit keamanan 22 Nov 2026 (black-box) menandai penegakan last4 sebagai
+ *    risiko utama; dua pagar di atas ditambahkan setelah membaca kodenya.
  *
  * 3. Web app dideploy dengan "Execute as: Me" dan "Who has access: Anyone".
  *    Sheet-nya sendiri TETAP privat — hanya skrip ini yang membacanya, dan ia
@@ -79,6 +86,15 @@ var DAILY_WEB_ROW_CAP = 50;
 /** Batas panjang ringkasan, disamakan dengan MAX_RECORD_ITEMS_LENGTH di situs. */
 var MAX_ITEMS_LENGTH = 200;
 
+/**
+ * Pencarian gagal yang diizinkan per kode sebelum kode itu dikunci sementara.
+ * 10 kali dalam 6 jam cukup untuk pembeli yang salah ketik, dan membuat
+ * 10.000 kemungkinan last4 butuh lebih dari satu tahun untuk dicoba semua.
+ * 6 jam adalah umur terlama yang diizinkan CacheService.
+ */
+var MAX_FAILED_LOOKUPS = 10;
+var LOOKUP_LOCK_SECONDS = 6 * 60 * 60;
+
 function doGet(e) {
   try {
     var params = (e && e.parameter) || {};
@@ -95,8 +111,19 @@ function doGet(e) {
       return json({ found: false });
     }
 
+    // Dihitung per kode, termasuk kode yang tidak ada, supaya penguncian itu
+    // sendiri tidak membedakan kode nyata dari kode karangan.
+    var cache = CacheService.getScriptCache();
+    var failKey = 'lacak-gagal:' + code;
+    var failures = Number(cache.get(failKey) || 0);
+    if (failures >= MAX_FAILED_LOOKUPS) return json({ found: false });
+
     var row = findOrder_(code, last4);
-    return json(row ? buildPublicPayload_(row) : { found: false });
+    if (!row) {
+      cache.put(failKey, String(failures + 1), LOOKUP_LOCK_SECONDS);
+      return json({ found: false });
+    }
+    return json(buildPublicPayload_(row));
   } catch (err) {
     // Jangan pernah membocorkan jejak galat ke publik. Catat di log eksekusi
     // Apps Script, balas dengan bentuk yang sama seperti tidak ketemu.
@@ -323,14 +350,12 @@ function doPost(e) {
 
     var stamp = today_();
     var webRowsToday = 0;
+    var exists = false;
 
     for (var i = 0; i < table.rows.length; i += 1) {
       var row = table.rows[i];
-      // Kode yang sudah ada tidak pernah ditimpa. Ini yang membuat pengiriman
-      // ganda tidak berbahaya, sekaligus melindungi baris yang sudah Anda
-      // sunting sendiri.
       if (cell_(table.headers, row, CODE_COLUMN).toUpperCase() === code) {
-        return json({ ok: true, duplicate: true });
+        exists = true;
       }
       if (
         cell_(table.headers, row, SOURCE_COLUMN) === WEB_SOURCE &&
@@ -340,10 +365,18 @@ function doPost(e) {
       }
     }
 
+    // Kuota diperiksa SEBELUM keberadaan kode, dan kode lama dijawab persis
+    // seperti kode baru. Versi sebelumnya menjawab kode lama dengan
+    // penanda "duplikat", bahkan sesudah kuota habis, sehingga siapa pun bisa
+    // memastikan kode mana yang nyata tanpa menulis apa pun (aturan 2).
     if (webRowsToday >= DAILY_WEB_ROW_CAP) {
       console.warn('Kuota baris otomatis harian tercapai: ' + webRowsToday);
       return json({ ok: false, capped: true });
     }
+    // Kode yang sudah ada tidak pernah ditimpa. Ini yang membuat pengiriman
+    // ganda tidak berbahaya, sekaligus melindungi baris yang sudah Anda
+    // sunting sendiri.
+    if (exists) return json({ ok: true });
 
     var values = {};
     values[CODE_COLUMN] = code;
