@@ -195,6 +195,31 @@ try {
     await owner.getByText("titikasalkopi.vercel.app/q/bold-100g").waitFor();
     await shot(owner, "50-owner-label");
   });
+  await uji("kas: belanja dari Kas mengurangi uang di tangan, dan bisa dihapus", async () => {
+    await owner.getByRole("link", { name: "Kas", exact: true }).click();
+    const awal = await owner.locator("#k-uang").textContent();
+    const angka = (s) => Number(s.replace(/[^\d]/g, "")) * (s.includes("−") ? -1 : 1);
+    await owner.getByRole("button", { name: "Belanja", exact: true }).click();
+    await owner.getByLabel("Barang").fill("Belanja uji E2E");
+    await owner.getByLabel("Qty").fill("2");
+    await owner.getByLabel("Harga satuan").fill("12345");
+    await owner.getByRole("button", { name: "Simpan belanja" }).click();
+    await owner.locator("#toast", { hasText: "Rp24.690" }).waitFor();
+    await owner.getByRole("button", { name: "Ringkasan", exact: true }).click();
+    const setelah = await owner.locator("#k-uang").textContent();
+    assert.equal(angka(setelah), angka(awal) - 24690, `awal ${awal}, setelah ${setelah}`);
+    await shot(owner, "45-owner-kas");
+    await owner.getByRole("button", { name: "Belanja", exact: true }).click();
+    owner.once("dialog", (d) => d.accept());
+    await owner.getByRole("button", { name: "Hapus Belanja uji E2E" }).click();
+    await owner.locator("#toast", { hasText: "Dihapus" }).waitFor();
+    await owner.getByRole("button", { name: "Ringkasan", exact: true }).click();
+    assert.equal(await owner.locator("#k-uang").textContent(), awal);
+  });
+  await uji("kas tertutup untuk sales", async () => {
+    await sales.goto(`${APP}/#/owner/kas`);
+    await sales.waitForURL(/#\/sales\/scan$/);
+  });
   await uji("owner menonaktifkan gudang dan gudang kehilangan akses", async () => {
     await owner.getByRole("link", { name: "Atur" }).click();
     // Hanya baris anggota uji. Database ini dipakai sungguhan: baris lain milik orang asli.
@@ -222,11 +247,16 @@ try {
     , a as (delete from public.penjualan where oleh in (select id from u) returning 1)
     , b as (delete from public.barang_masuk where oleh in (select id from u) returning 1)
     , c as (delete from public.undangan where nama like '% E2E' or dibuat_oleh in (select id from u) returning 1)
-    select (select count(*) from a) + (select count(*) from b) + (select count(*) from c) as dihapus;
+    , d as (delete from public.belanja where oleh in (select id from u) returning 1)
+    , e as (delete from public.setoran where oleh in (select id from u) returning 1)
+    , f as (delete from public.pengembalian where oleh in (select id from u) returning 1)
+    select (select count(*) from a) + (select count(*) from b) + (select count(*) from c)
+         + (select count(*) from d) + (select count(*) from e) + (select count(*) from f) as dihapus;
   `);
   await sql(`delete from auth.users where email like 'e2e-%-${run}@example.com'`);
   const sisa = await sql(`select (select count(*) from auth.users) as users, (select count(*) from public.penjualan) as jual,
-    (select count(*) from public.barang_masuk) as masuk, (select count(*) from public.undangan) as undangan`);
+    (select count(*) from public.barang_masuk) as masuk, (select count(*) from public.undangan) as undangan,
+    (select count(*) from public.belanja) as belanja`);
   langkah.push(`Bersih-bersih: ${JSON.stringify(sisa[0])}`);
   console.log(langkah.join("\n"));
   process.exit(gagal ? 1 : 0);

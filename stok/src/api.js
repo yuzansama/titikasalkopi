@@ -108,6 +108,31 @@ export const api = {
     return ok(await sb.from("varian").insert(v).select());
   },
 
+  /** Semua data untuk layar Kas (hanya owner; RLS menolak peran lain). */
+  async kas() {
+    const [penjualan, belanja, setoran, pengembalian, pemodal, po] = await Promise.all([
+      sb.from("penjualan").select("id,uang_diterima,waktu,catatan,impor").order("waktu", { ascending: false }).limit(5000),
+      sb.from("belanja").select("*").order("id", { ascending: false }),
+      sb.from("setoran").select("*").order("id", { ascending: false }),
+      sb.from("pengembalian").select("*").order("id", { ascending: false }),
+      sb.from("pemodal").select("*").order("urutan"),
+      sb.from("po").select("*").order("urutan"),
+    ]);
+    return {
+      penjualan: ok(penjualan), belanja: ok(belanja), setoran: ok(setoran),
+      pengembalian: ok(pengembalian), pemodal: ok(pemodal), po: ok(po),
+    };
+  },
+  async tambah(tabel, baris) {
+    return ok(await sb.from(tabel).insert(baris).select());
+  },
+  async ubah(tabel, kunci, nilai, perubahan) {
+    return ok(await sb.from(tabel).update(perubahan).eq(kunci, nilai).select());
+  },
+  async hapus(tabel, id) {
+    return ok(await sb.from(tabel).delete().eq("id", id));
+  },
+
   /** Pembaruan langsung bila ada barang masuk atau penjualan baru. Mengembalikan fungsi berhenti. */
   dengarkan(onChange) {
     const ch = sb

@@ -6,7 +6,22 @@ https://stok-titikasalkopi.vercel.app (project Vercel terpisah dari web toko, ro
 - **PIC Gudang** scan QR kemasan untuk mencatat barang masuk, dan melihat stok.
 - **PIC Sales** scan QR atau catat manual kopi yang terjual, beserta uang yang diterima.
 - **Owner** melihat penjualan harian, total uang masuk, stok sisa, peringatan pesan ulang;
-  mencetak label QR; mengatur tim, harga, dan batas stok.
+  mencetak label QR; mengatur tim, harga, dan batas stok; dan mengurus **Kas**.
+
+## Kas
+
+Menu Kas hanya untuk owner (owner = pemodal; undang pemodal lain sebagai Owner). Isinya
+belanja, setoran modal, pengembalian talangan, daftar pemodal, dan daftar PO. Penjualan
+diambil otomatis dari app. Rumusnya sama dengan halaman /kas lama (`hitungKas()` di
+`src/lib.js`):
+
+- uang di tangan = setoran + penjualan − belanja dibayar dari Kas − talangan yang sudah dikembalikan;
+- posisi pemodal = (setoran + talangan) − (modal + kopi pribadi) − dikembalikan
+  (plus = talangan belum balik, minus = kurang setor);
+- saldo usaha = uang di tangan + total kurang setor − total talangan belum balik.
+
+Halaman /kas di web toko sudah dihapus (isinya terbuka untuk umum) setelah datanya diimpor
+dan setiap angka utamanya dicocokkan dengan layar Kas.
 
 ## QR kemasan
 
@@ -27,19 +42,21 @@ Mengubah skema: edit `supabase/schema.sql` (ditulis supaya aman dijalankan ulang
 SQL editor Supabase, lalu jalankan `supabase/test_rls.sql` — ia menguji setiap peran dan selalu
 di-ROLLBACK.
 
-## Penjualan lama dari /kas
+## Data lama dari /kas
 
-Penjualan sebelum app dipakai diimpor dari `web/public/kas/index.html`:
+Penjualan dan kas sebelum app dipakai diimpor dari halaman /kas lama. Halamannya sudah
+dihapus; untuk menjalankan ulang, ambil dari riwayat git:
 
 ```bash
-node scripts/impor-kas.mjs > impor.sql   # laporan pemetaan tampil di layar
+git show 3e2dd65:web/public/kas/index.html > /tmp/kas.html
+node scripts/impor-kas.mjs /tmp/kas.html > impor.sql   # laporan pemetaan tampil di layar
 ```
 
-Jalankan `impor.sql` di SQL editor Supabase. Bisa diulang: impor lama dihapus dulu. Penjualan
-impor ditandai `impor = true`: uang dan bungkusnya ikut di ringkasan, tetapi tidak mengurangi
-stok, karena kopinya dari batch yang barang masuknya tidak pernah dicatat. Nama lama dipetakan
-lewat harga (Arabica/Full Arabica = BRIGHT, Blend/Houseblend/Robusta = BOLD); rincian yang
-bukan 4 varian (1 kg, single origin, "Kopi") hanya diimpor uangnya.
+Jalankan `impor.sql` di SQL editor Supabase. Bisa diulang: semua baris `impor = true` dihapus
+dulu, data yang dicatat lewat app tidak tersentuh. Untuk tiap varian, stok awal impor = jumlah
+yang terjual di /kas, jadi stok setelah impor tepat 0. Nama lama dipetakan lewat harga
+(Arabica/Full Arabica = BRIGHT, Blend/Houseblend/Robusta = BOLD) dan single origin lewat namanya
+("Papua" = Sabin); rincian yang tidak dikenali (1 kg, "Kopi") hanya diimpor uangnya.
 
 ## Pengembangan
 

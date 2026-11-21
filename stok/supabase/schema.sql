@@ -97,6 +97,68 @@ create table if not exists public.penjualan_item (
 create index if not exists penjualan_item_penjualan_idx on public.penjualan_item (penjualan_id);
 
 -- ------------------------------------------------------------------
+-- Kas (hanya owner). Owner = pemodal. Rumusnya sama dengan halaman /kas
+-- lama; lihat hitungKas() di src/lib.js.
+-- ------------------------------------------------------------------
+
+create table if not exists public.pemodal (
+  nama    text primary key check (char_length(nama) between 1 and 40 and nama not in ('Kas', 'Bersama')),
+  modal   integer not null default 500000 check (modal >= 0),
+  urutan  integer not null default 0
+);
+
+create table if not exists public.belanja (
+  id              bigint generated always as identity primary key,
+  tanggal         date,
+  item            text not null check (char_length(item) between 1 and 120),
+  sumber          text check (sumber is null or char_length(sumber) <= 120),
+  kategori        text not null check (kategori in ('Kopi', 'Peralatan & kemasan', 'Lainnya')),
+  batch           text check (batch is null or char_length(batch) <= 20),
+  qty             integer not null default 1 check (qty between 1 and 100000),
+  harga           integer not null check (harga between 0 and 1000000000),
+  jumlah          integer generated always as (qty * harga) stored,
+  -- Nama pemodal yang membayar, atau 'Kas' bila dibayar dari uang usaha.
+  dibayar_oleh    text not null check (char_length(dibayar_oleh) between 1 and 40),
+  -- 'Bersama' untuk belanja usaha, atau nama pemodal untuk kopi pribadi.
+  dibebankan_ke   text not null default 'Bersama' check (char_length(dibebankan_ke) between 1 and 40),
+  masuk_hitungan  boolean not null default true,
+  catatan         text check (catatan is null or char_length(catatan) <= 200),
+  impor           boolean not null default false,
+  oleh            uuid references auth.users (id) on delete set null default auth.uid(),
+  dibuat_at       timestamptz not null default now()
+);
+
+create table if not exists public.setoran (
+  id          bigint generated always as identity primary key,
+  tanggal     date,
+  nama        text not null references public.pemodal (nama) on update cascade,
+  jumlah      integer not null check (jumlah between 1 and 1000000000),
+  keterangan  text check (keterangan is null or char_length(keterangan) <= 200),
+  impor       boolean not null default false,
+  oleh        uuid references auth.users (id) on delete set null default auth.uid(),
+  dibuat_at   timestamptz not null default now()
+);
+
+-- Talangan yang sudah dikembalikan dari uang usaha ke pemodal.
+create table if not exists public.pengembalian (
+  id          bigint generated always as identity primary key,
+  tanggal     date,
+  nama        text not null references public.pemodal (nama) on update cascade,
+  jumlah      integer not null check (jumlah between 1 and 1000000000),
+  keterangan  text check (keterangan is null or char_length(keterangan) <= 200),
+  impor       boolean not null default false,
+  oleh        uuid references auth.users (id) on delete set null default auth.uid(),
+  dibuat_at   timestamptz not null default now()
+);
+
+create table if not exists public.po (
+  batch   text primary key check (char_length(batch) between 1 and 20),
+  kg      numeric(8, 2) not null check (kg > 0),
+  status  text not null check (status in ('Dalam proses', 'Berjalan', 'Habis terjual')),
+  urutan  integer not null default 0
+);
+
+-- ------------------------------------------------------------------
 -- Peran pengguna saat ini
 -- ------------------------------------------------------------------
 
@@ -159,6 +221,21 @@ create policy jual_baca on public.penjualan for select to authenticated
 drop policy if exists jual_item_baca on public.penjualan_item;
 create policy jual_item_baca on public.penjualan_item for select to authenticated
   using (exists (select 1 from public.penjualan p where p.id = penjualan_id));
+
+-- Kas: hanya owner, untuk semua perintah.
+alter table public.pemodal      enable row level security;
+alter table public.belanja      enable row level security;
+alter table public.setoran      enable row level security;
+alter table public.pengembalian enable row level security;
+alter table public.po           enable row level security;
+do $$ declare t text; begin
+  foreach t in array array['pemodal', 'belanja', 'setoran', 'pengembalian', 'po'] loop
+    execute format('drop policy if exists %I on public.%I', t || '_owner', t);
+    execute format(
+      'create policy %I on public.%I for all to authenticated using (public.peran_saya() = ''owner'') with check (public.peran_saya() = ''owner'')',
+      t || '_owner', t);
+  end loop;
+end $$;
 
 -- Penjualan hanya lewat catat_penjualan(): satu transaksi untuk kepala dan
 -- seluruh barisnya, dengan harga katalog diambil dari database.

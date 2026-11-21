@@ -115,6 +115,7 @@ label.lbl, .lbl { font-size: 13px; font-weight: 600; }
 .tile .k { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
 .tile .v { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--primary); line-height: 1.1; font-variant-numeric: tabular-nums; }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.grid2 .tile .v { font-size: clamp(16px, 4.6vw, 22px); white-space: nowrap; }
 
 .track { position: relative; height: 8px; border-radius: 4px; background: #ece3d6; }
 .track .fill { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--olive); }
@@ -140,6 +141,20 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .sheet { background: var(--surface); border-radius: 20px 20px 0 0; margin: -14px -20px 0; padding: 18px 20px 4px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
 
 .cart-line { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; }
+
+/* ---------- kas ---------- */
+dl.kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin: 0; font-size: 14px; }
+dl.kv dt { color: var(--ink-soft); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+dl.kv .tot { border-top: 1px solid var(--line); padding-top: 6px; font-weight: 700; color: var(--ink); }
+.pill.lunas { background: var(--primary-wash); color: var(--olive); }
+.pill.balik { background: var(--gold-wash); color: #7a4f04; }
+.pill.kurang { background: var(--rust-wash); color: var(--rust-ink); }
+.entry { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: start; font-size: 13px; }
+.entry .x { grid-row: span 2; }
+.btn.icon { width: 44px; min-height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.box { overflow-x: auto; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
 
 /* ---------- label QR ---------- */
 .labels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }

@@ -148,6 +148,34 @@ end $$;
 
 reset role;
 
+-- ---------------- kas: hanya owner ----------------
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a3","email":"sales@uji.test","role":"authenticated"}', true);
+set local role authenticated;
+do $$ begin
+  if (select count(*) from public.belanja) + (select count(*) from public.setoran)
+   + (select count(*) from public.pengembalian) + (select count(*) from public.pemodal) + (select count(*) from public.po) <> 0 then
+    raise exception 'GAGAL: sales melihat data kas';
+  end if;
+  begin
+    insert into public.belanja (item, kategori, harga, dibayar_oleh) values ('Nyusup', 'Kopi', 1, 'Kas');
+    raise exception 'GAGAL: sales bisa mencatat belanja';
+  exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","email":"owner@uji.test","role":"authenticated"}', true);
+set local role authenticated;
+do $$ begin
+  insert into public.pemodal (nama) values ('Pemodal Uji');
+  insert into public.setoran (nama, jumlah) values ('Pemodal Uji', 500000);
+  insert into public.belanja (item, kategori, qty, harga, dibayar_oleh) values ('Uji', 'Kopi', 3, 110000, 'Pemodal Uji');
+  if (select jumlah from public.belanja where item = 'Uji') <> 330000 then raise exception 'GAGAL: jumlah belanja bukan qty x harga'; end if;
+  insert into public.pengembalian (nama, jumlah) values ('Pemodal Uji', 330000);
+  delete from public.pengembalian where nama = 'Pemodal Uji';
+  if exists (select 1 from public.pengembalian where nama = 'Pemodal Uji') then raise exception 'GAGAL: owner tidak bisa menghapus'; end if;
+end $$;
+reset role;
+
 -- ---------------- anon ----------------
 set local role anon;
 do $$ begin

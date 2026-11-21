@@ -160,3 +160,72 @@ export function pesanGalat(error) {
   if (/row-level security|permission denied/i.test(msg)) return "Akunmu tidak punya izin untuk ini.";
   return msg || "Terjadi kesalahan.";
 }
+
+/**
+ * Hitungan kas. Rumusnya sama persis dengan halaman /kas lama:
+ * - belanja usaha = belanja yang dibebankan ke 'Bersama';
+ * - uang di tangan = setoran + penjualan − belanja dibayar dari 'Kas' − talangan yang sudah dikembalikan;
+ * - posisi tiap pemodal: (setoran + talangan) − (modal + kopi pribadi) − dikembalikan.
+ *   Positif = talangannya belum dikembalikan, negatif = kurang setor;
+ * - saldo usaha = uang di tangan + total kurang setor − total talangan belum balik.
+ */
+export function hitungKas({ penjualan, belanja, setoran, pengembalian, pemodal, po }) {
+  const sum = (a, f) => a.reduce((s, r) => s + Number(f(r)), 0);
+  const B = belanja.filter((b) => b.masuk_hitungan !== false);
+  const bersama = B.filter((b) => b.dibebankan_ke === "Bersama");
+  const jual = sum(penjualan, (p) => p.uang_diterima);
+  const setor = sum(setoran, (s) => s.jumlah);
+  const usaha = sum(bersama, (b) => b.jumlah);
+  const kembaliTotal = sum(pengembalian, (k) => k.jumlah);
+  const uang = setor + jual - sum(B.filter((b) => b.dibayar_oleh === "Kas"), (b) => b.jumlah) - kembaliTotal;
+
+  const rekap = pemodal.map(({ nama, modal }) => {
+    const pribadi = sum(B.filter((b) => b.dibebankan_ke === nama), (b) => b.jumlah);
+    const st = sum(setoran.filter((s) => s.nama === nama), (s) => s.jumlah);
+    const tal = sum(B.filter((b) => b.dibayar_oleh === nama), (b) => b.jumlah);
+    const kembali = sum(pengembalian.filter((k) => k.nama === nama), (k) => k.jumlah);
+    const wajib = modal + pribadi;
+    const keluar = st + tal;
+    const selisih = keluar - wajib - kembali;
+    return {
+      nama, modal, pribadi, wajib, setor: st, talangan: tal, keluar, kembali, selisih,
+      status: selisih > 0 ? "Belum dikembalikan" : selisih < 0 ? "Kurang setor" : "Lunas",
+    };
+  });
+  const piutang = rekap.reduce((s, r) => s + Math.max(0, r.selisih), 0);
+  const kurang = rekap.reduce((s, r) => s + Math.max(0, -r.selisih), 0);
+  const saldo = uang + kurang - piutang;
+
+  const kopi = B.filter((b) => b.kategori === "Kopi");
+  const awalBatch1 = (b) => b.batch === "0" || b.batch === "1";
+  const kopi1 = sum(bersama.filter((b) => b.kategori === "Kopi" && awalBatch1(b)), (b) => b.jumlah);
+  const stok2 = sum(kopi.filter((b) => !awalBatch1(b)), (b) => b.jumlah);
+  const alat = sum(B.filter((b) => b.kategori !== "Kopi"), (b) => b.jumlah);
+  const totalBelanja = sum(B, (b) => b.jumlah);
+
+  const grupMap = new Map();
+  for (const b of B) {
+    const k = b.kategori === "Kopi" ? `Kopi ${b.sumber ?? ""}`.trim() : b.item;
+    const g = grupMap.get(k) ?? { kelompok: k, kategori: b.kategori, jumlah: 0 };
+    g.jumlah += b.jumlah;
+    grupMap.set(k, g);
+  }
+  const grup = [...grupMap.values()].sort((a, b) =>
+    a.kategori === b.kategori ? b.jumlah - a.jumlah : a.kategori === "Kopi" ? -1 : 1,
+  );
+  const poBaris = (po ?? []).map((p) => ({
+    ...p,
+    belanja: sum(kopi.filter((b) => b.batch === p.batch), (b) => b.jumlah),
+  }));
+
+  return {
+    jual, jualCount: penjualan.length, setor, usaha, kembaliTotal, uang, rekap, piutang, kurang, saldo,
+    modalTotal: sum(pemodal, (p) => p.modal), kopiTotal: sum(kopi, (b) => b.jumlah), alat, totalBelanja,
+    pribadi: totalBelanja - usaha, kopi1, untungKotor1: jual - kopi1, stok2, grup, po: poBaris,
+  };
+}
+
+/** "+Rp1.000", "−Rp1.000", "Rp0". */
+export function bertanda(n) {
+  return (n > 0 ? "+" : n < 0 ? "−" : "") + rupiah(Math.abs(n));
+}

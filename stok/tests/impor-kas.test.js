@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { bacaKas, buatSql, petakanRincian } from "../scripts/impor-kas.mjs";
 
@@ -42,8 +41,45 @@ test("stok awal impor = jumlah terjual per varian", () => {
   assert.match(sql, /values \('bold-100g', 3, pemilik, '2026-10-02T08:00:00\+07:00'/);
 });
 
+// /kas sudah dihapus dari web; contoh halamannya cukup memuat bagian yang dibaca skrip.
+const CONTOH_HTML = `<script id="kas-data" type="application/json">${JSON.stringify({
+  penjualan: [
+    { no: "1", tanggal: "2026-10-02", rincian: "Bold 100g x2", total: 90000, metode: "BCA", catatan: "" },
+    { no: "2", tanggal: "2026-10-03", rincian: "Kopi", total: 95000, metode: "BCA", catatan: "" },
+  ],
+  belanja: [
+    { no: "1", item: "Sealer", sumber: "Shopee", kategori: "Peralatan & kemasan", batch: "-", qty: 1, harga: 143750,
+      jumlah: 143750, dibayar_oleh: "A", dibebankan_ke: "Bersama", masuk_hitungan: "Ya", catatan: "" },
+  ],
+  setoran: [{ no: "1", nama: "A", jumlah: 500000, keterangan: "Setoran modal" }],
+  pengembalian: [{ no: "1", nama: "A", jumlah: 143750, keterangan: "Talangan sealer" }],
+  po: [{ batch: "1", kg: 3, status: "Habis terjual" }],
+})}</script><script>var INVESTOR = ['A', 'B'];\n  var MODAL = 500000;</script>`;
+
+test("bacaKas membaca kas-data, pemodal, dan modal", () => {
+  const kas = bacaKas(CONTOH_HTML);
+  assert.deepEqual(kas.pemodal, ["A", "B"]);
+  assert.equal(kas.modal, 500000);
+  assert.equal(kas.belanja.length, 1);
+});
+
+test("SQL impor kas: belanja, setoran, pengembalian, pemodal, PO", () => {
+  const { sql } = buatSql(bacaKas(CONTOH_HTML));
+  for (const t of ["pengembalian", "setoran", "belanja"]) assert.match(sql, new RegExp(`delete from public\\.${t} where impor;`));
+  assert.match(sql, /insert into public\.pemodal \(nama, modal, urutan\) values \('B', 500000, 1\)/);
+  assert.match(sql, /insert into public\.po .*values \('1', 3, 'Habis terjual', 0\)/);
+  assert.match(sql, /insert into public\.belanja .*'Sealer', 'Shopee', 'Peralatan & kemasan', null, 1, 143750, 'A', 'Bersama', true, null, true, pemilik/);
+  assert.match(sql, /insert into public\.setoran .*'A', 500000, 'Setoran modal', true, pemilik/);
+});
+
+test("belanja yang jumlahnya bukan qty x harga ditolak", () => {
+  const kas = bacaKas(CONTOH_HTML);
+  kas.belanja[0].jumlah = 1;
+  assert.throws(() => buatSql(kas), /qty x harga/);
+});
+
 test("SQL impor: bisa diulang, satu transaksi, semua uang /kas masuk", () => {
-  const kas = bacaKas(readFileSync(new URL("../../web/public/kas/index.html", import.meta.url), "utf8"));
+  const kas = bacaKas(CONTOH_HTML);
   const { sql, laporan } = buatSql(kas);
   assert.match(sql, /^begin;\ndelete from public\.penjualan where impor;/);
   assert.match(sql, /commit;$/);

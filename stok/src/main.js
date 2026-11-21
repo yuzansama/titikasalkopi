@@ -8,6 +8,7 @@ import { api, sb } from "./api.js";
 import { pesanGalat } from "./lib.js";
 import { layarMasuk, layarNonaktif, layarUndangan } from "./screens/auth.js";
 import { layarGudangScan, layarGudangStok } from "./screens/gudang.js";
+import { layarKas } from "./screens/kas.js";
 import { layarAtur, layarLabel, layarRingkasan } from "./screens/owner.js";
 import { layarSalesManual, layarSalesRiwayat, layarSalesScan } from "./screens/sales.js";
 import { MENU, toast } from "./ui.js";
@@ -22,6 +23,7 @@ const RUTE = {
   "#/sales/manual": [layarSalesManual, ["sales"]],
   "#/sales/riwayat": [layarSalesRiwayat, ["sales"]],
   "#/owner/ringkasan": [layarRingkasan, []],
+  "#/owner/kas": [layarKas, []],
   "#/owner/label": [layarLabel, []],
   "#/owner/atur": [layarAtur, []],
 };

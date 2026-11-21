@@ -1,7 +1,14 @@
 /**
  * Impor penjualan dari halaman /kas (web/public/kas/index.html) ke database stok.
  *
- *   node scripts/impor-kas.mjs > /tmp/impor.sql   # SQL ke stdout, laporan ke stderr
+ *   node scripts/impor-kas.mjs [kas.html] > /tmp/impor.sql   # SQL ke stdout, laporan ke stderr
+ *
+ * Halaman /kas sudah dihapus dari web setelah diimpor (21 Nov 2026). Untuk
+ * menjalankan ulang, ambil dari riwayat git:
+ *   git show 3e2dd65:web/public/kas/index.html > /tmp/kas.html
+ *
+ * Selain penjualan, skrip ini juga mengimpor bagian kas: pemodal, daftar PO,
+ * belanja, setoran modal, dan pengembalian talangan.
  *
  * SQL-nya bisa dijalankan ulang: penjualan impor lama dihapus dulu, lalu
  * seluruh isi /kas dimasukkan lagi dalam satu transaksi. Penjualan impor
@@ -27,7 +34,13 @@ const KAS = new URL("../../web/public/kas/index.html", import.meta.url);
 export function bacaKas(html) {
   const m = html.match(/<script id="kas-data" type="application\/json">([\s\S]*?)<\/script>/);
   if (!m) throw new Error("kas-data tidak ditemukan di halaman /kas");
-  return JSON.parse(m[1]);
+  const kas = JSON.parse(m[1]);
+  // Daftar pemodal dan modal per orang tertulis di skrip halaman, bukan di kas-data.
+  const inv = html.match(/var INVESTOR = (\[[^\]]*\]);/);
+  const modal = html.match(/var MODAL = (\d+);/);
+  kas.pemodal = inv ? JSON.parse(inv[1].replace(/'/g, '"')) : [];
+  kas.modal = modal ? Number(modal[1]) : 500000;
+  return kas;
 }
 
 /** [pola nama, slug produk web]. Papua = Sabin (lihat komentar di atas). */
@@ -79,6 +92,51 @@ export function petakanRincian(rincian) {
 
 const lit = (s) => (s === null || s === undefined ? "null" : `'${String(s).replace(/'/g, "''")}'`);
 
+const angka = (v) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) throw new Error(`bukan angka: ${v}`);
+  return n;
+};
+
+/** Pemodal, PO, belanja, setoran, dan pengembalian talangan (bagian kas). */
+export function sqlKas(kas) {
+  const out = [];
+  if (!kas.belanja && !kas.setoran && !kas.pengembalian) return out;
+  out.push(
+    "  delete from public.pengembalian where impor;",
+    "  delete from public.setoran where impor;",
+    "  delete from public.belanja where impor;",
+  );
+  (kas.pemodal ?? []).forEach((nama, i) => {
+    out.push(
+      `  insert into public.pemodal (nama, modal, urutan) values (${lit(nama)}, ${angka(kas.modal)}, ${i}) on conflict (nama) do update set modal = excluded.modal, urutan = excluded.urutan;`,
+    );
+  });
+  (kas.po ?? []).forEach((p, i) => {
+    out.push(
+      `  insert into public.po (batch, kg, status, urutan) values (${lit(p.batch)}, ${angka(p.kg)}, ${lit(p.status)}, ${i}) on conflict (batch) do update set kg = excluded.kg, status = excluded.status, urutan = excluded.urutan;`,
+    );
+  });
+  for (const b of kas.belanja ?? []) {
+    if (angka(b.jumlah) !== angka(b.qty) * angka(b.harga)) throw new Error(`belanja #${b.no}: jumlah bukan qty x harga`);
+    const batch = b.batch && b.batch !== "-" ? b.batch : null;
+    out.push(
+      `  insert into public.belanja (item, sumber, kategori, batch, qty, harga, dibayar_oleh, dibebankan_ke, masuk_hitungan, catatan, impor, oleh) values (${lit(b.item)}, ${lit(b.sumber || null)}, ${lit(b.kategori)}, ${lit(batch)}, ${angka(b.qty)}, ${angka(b.harga)}, ${lit(b.dibayar_oleh)}, ${lit(b.dibebankan_ke)}, ${b.masuk_hitungan === "Ya"}, ${lit(b.catatan || null)}, true, pemilik);`,
+    );
+  }
+  for (const t of kas.setoran ?? []) {
+    out.push(
+      `  insert into public.setoran (nama, jumlah, keterangan, impor, oleh) values (${lit(t.nama)}, ${angka(t.jumlah)}, ${lit(t.keterangan || null)}, true, pemilik);`,
+    );
+  }
+  for (const k of kas.pengembalian ?? []) {
+    out.push(
+      `  insert into public.pengembalian (nama, jumlah, keterangan, impor, oleh) values (${lit(k.nama)}, ${angka(k.jumlah)}, ${lit(k.keterangan || null)}, true, pemilik);`,
+    );
+  }
+  return out;
+}
+
 export function buatSql(kas) {
   const baris = [
     "begin;",
@@ -104,6 +162,7 @@ export function buatSql(kas) {
     }
     laporan.push({ no: p.no, tanggal: p.tanggal, total: p.total, rincian: p.rincian, items });
   }
+  baris.push(...sqlKas(kas));
   const awal = kas.penjualan.map((p) => p.tanggal).sort()[0];
   for (const [kode, jumlah] of terjual) {
     baris.push(
@@ -115,7 +174,7 @@ export function buatSql(kas) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const kas = bacaKas(readFileSync(KAS, "utf8"));
+  const kas = bacaKas(readFileSync(process.argv[2] ?? KAS, "utf8"));
   const { sql, laporan } = buatSql(kas);
   process.stdout.write(sql + "\n");
   const total = laporan.reduce((s, l) => s + l.total, 0);
