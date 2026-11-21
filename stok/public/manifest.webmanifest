@@ -1,0 +1,12 @@
+{
+  "name": "Stok Titik Asal Kopi",
+  "short_name": "Stok TAK",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9f4ee",
+  "theme_color": "#0e251f",
+  "lang": "id",
+  "icons": [
+    { "src": "/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" }
+  ]
+}
