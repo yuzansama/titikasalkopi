@@ -197,8 +197,10 @@ try {
   });
   await uji("owner menonaktifkan gudang dan gudang kehilangan akses", async () => {
     await owner.getByRole("link", { name: "Atur" }).click();
-    await owner.getByRole("button", { name: "Nonaktifkan" }).first().click();
-    await owner.getByRole("button", { name: "Aktifkan", exact: true }).waitFor({ timeout: 10000 });
+    // Hanya baris anggota uji. Database ini dipakai sungguhan: baris lain milik orang asli.
+    const baris = owner.locator("#tim .list > div", { hasText: "Gudang E2E" });
+    await baris.getByRole("button", { name: "Nonaktifkan" }).click();
+    await baris.getByRole("button", { name: "Aktifkan", exact: true }).waitFor({ timeout: 10000 });
     const status = await sql(
       `select aktif from public.anggota a join auth.users u on u.id = a.user_id where u.email = '${email("gudang")}'`,
     );

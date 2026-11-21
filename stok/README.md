@@ -27,6 +27,20 @@ Mengubah skema: edit `supabase/schema.sql` (ditulis supaya aman dijalankan ulang
 SQL editor Supabase, lalu jalankan `supabase/test_rls.sql` — ia menguji setiap peran dan selalu
 di-ROLLBACK.
 
+## Penjualan lama dari /kas
+
+Penjualan sebelum app dipakai diimpor dari `web/public/kas/index.html`:
+
+```bash
+node scripts/impor-kas.mjs > impor.sql   # laporan pemetaan tampil di layar
+```
+
+Jalankan `impor.sql` di SQL editor Supabase. Bisa diulang: impor lama dihapus dulu. Penjualan
+impor ditandai `impor = true`: uang dan bungkusnya ikut di ringkasan, tetapi tidak mengurangi
+stok, karena kopinya dari batch yang barang masuknya tidak pernah dicatat. Nama lama dipetakan
+lewat harga (Arabica/Full Arabica = BRIGHT, Blend/Houseblend/Robusta = BOLD); rincian yang
+bukan 4 varian (1 kg, single origin, "Kopi") hanya diimpor uangnya.
+
 ## Pengembangan
 
 ```bash

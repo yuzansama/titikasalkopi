@@ -75,6 +75,13 @@ create table if not exists public.penjualan (
 );
 create index if not exists penjualan_waktu_idx on public.penjualan (waktu desc);
 
+-- Penjualan yang diimpor dari catatan lama (/kas) membawa uang dan rinciannya,
+-- tetapi TIDAK mengurangi stok: kopinya berasal dari batch sebelum app dipakai,
+-- yang barang masuknya tidak pernah dicatat. Lihat scripts/impor-kas.mjs.
+alter table public.penjualan add column if not exists catatan text
+  check (catatan is null or char_length(catatan) <= 500);
+alter table public.penjualan add column if not exists impor boolean not null default false;
+
 create table if not exists public.penjualan_item (
   id            bigint generated always as identity primary key,
   penjualan_id  bigint not null references public.penjualan (id) on delete cascade,
@@ -260,7 +267,9 @@ language sql stable security definer set search_path = public
 as $$
   select v.kode, v.jenis, v.ukuran, v.harga, v.batas_min, v.aktif, v.urutan,
          (coalesce((select sum(m.jumlah) from public.barang_masuk m where m.kode_varian = v.kode), 0)
-        - coalesce((select sum(i.jumlah) from public.penjualan_item i where i.kode_varian = v.kode), 0))::integer
+        - coalesce((select sum(i.jumlah) from public.penjualan_item i
+                      join public.penjualan p on p.id = i.penjualan_id
+                     where i.kode_varian = v.kode and not p.impor), 0))::integer
     from public.varian v
    where public.peran_saya() is not null
    order by v.urutan, v.kode
