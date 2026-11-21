@@ -21,7 +21,7 @@ export async function generateMetadata({
 }: PageProps<"/q/[kode]">): Promise<Metadata> {
   const { kode } = await params;
   const entry = findQrEntry(kode);
-  return entry ? qrMetadata(entry.product, entry.variant.label, entry.code) : {};
+  return entry ? qrMetadata(entry.name, entry.label, entry.code) : {};
 }
 
 /**
@@ -35,9 +35,8 @@ export default async function QrThankYouPage({
   const entry = findQrEntry(kode);
   if (!entry) notFound();
 
-  const { product, variant } = entry;
   const reorder = waLink(
-    `Halo ${site.name}, saya mau pesan lagi ${product.name} (${variant.label}).`,
+    `Halo ${site.name}, saya mau pesan lagi ${entry.name} (${entry.label}).`,
   );
 
   return (
@@ -55,12 +54,12 @@ export default async function QrThankYouPage({
           Kopi di tanganmu
         </h2>
         <p className="mt-2 font-heading text-2xl font-semibold uppercase tracking-wide text-rust sm:text-3xl">
-          {product.name}
+          {entry.name}
         </p>
-        <p className="mt-1 font-semibold text-primary">{variant.label}</p>
-        {product.tastingNotes && product.tastingNotes.length > 0 ? (
+        <p className="mt-1 font-semibold text-primary">{entry.label}</p>
+        {entry.tastingNotes && entry.tastingNotes.length > 0 ? (
           <ul className="mt-4 flex flex-wrap gap-2" aria-label="Catatan rasa">
-            {product.tastingNotes.map((note) => (
+            {entry.tastingNotes.map((note) => (
               <li
                 key={note}
                 className="rounded-full bg-primary/5 px-3 py-1 text-sm font-medium text-primary"
@@ -70,14 +69,16 @@ export default async function QrThankYouPage({
             ))}
           </ul>
         ) : null}
-        <p className="mt-4">
-          <Link
-            href={`/${product.category === "houseblend" ? "houseblend" : "produk"}/${product.slug}`}
-            className="font-semibold text-rust underline underline-offset-4 hover:text-clay"
-          >
-            Tentang kopi ini
-          </Link>
-        </p>
+        {entry.href ? (
+          <p className="mt-4">
+            <Link
+              href={entry.href}
+              className="font-semibold text-rust underline underline-offset-4 hover:text-clay"
+            >
+              Tentang kopi ini
+            </Link>
+          </p>
+        ) : null}
       </section>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">

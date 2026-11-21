@@ -40,6 +40,7 @@ const SINGLE_ORIGIN = [
   [/kerinci/, "kerinci"],
   [/pondok\s*baru/, "pondok-baru"],
   [/sindoro/, "sindoro"],
+  [/peneli/, "peneli"], // di luar katalog web; halaman /q-nya di web/src/data/qr.ts
 ];
 
 /** Kode varian = id varian di katalog web. */

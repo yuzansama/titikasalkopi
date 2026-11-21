@@ -1143,7 +1143,7 @@ check("QR: bundel tidak mendapat kode QR", () => {
 });
 
 check("QR: halaman /q noindex, kanonis absolut, dan menawarkan pesan ulang", () => {
-  for (const { code, product } of qrEntries) {
+  for (const { code, name } of qrEntries) {
     const route = `q/${code}`;
     const html = pages.get(route).html;
     const robots = robotsOf(html);
@@ -1153,8 +1153,17 @@ check("QR: halaman /q noindex, kanonis absolut, dan menawarkan pesan ulang", () 
       `${SITE_URL}/${route}`,
       `kanonis salah pada /${route}`,
     );
-    assert.ok(html.includes(product.name), `/${route} tidak menyebut ${product.name}`);
+    assert.ok(html.includes(name), `/${route} tidak menyebut ${name}`);
     assert.ok(html.includes("https://wa.me/"), `/${route} tanpa tautan WhatsApp`);
+  }
+});
+
+check("QR: kopi di luar katalog (Peneli) tetap punya halaman, tanpa tautan produk", () => {
+  for (const kode of ["peneli-mini1", "peneli-pack1"]) {
+    const html = pages.get(`q/${kode}`)?.html;
+    assert.ok(html, `/q/${kode} tidak dibangun`);
+    assert.ok(html.includes("Peneli"), `/q/${kode} tidak menyebut Peneli`);
+    assert.ok(!html.includes("Tentang kopi ini"), `/q/${kode} menautkan halaman produk yang tidak ada`);
   }
 });
 

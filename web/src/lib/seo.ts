@@ -227,10 +227,10 @@ export function lacakMetadata(): Metadata {
  * halaman ini untuk orang yang sudah memegang kopinya, dan isinya mengulang
  * halaman produk yang memang terindeks.
  */
-export function qrMetadata(product: Product, variantLabel: string, code: string): Metadata {
+export function qrMetadata(name: string, variantLabel: string, code: string): Metadata {
   return buildPageMetadata({
-    title: `Terima kasih — ${product.name}, ${variantLabel}`,
-    description: `Terima kasih sudah membeli ${product.name} (${variantLabel}) dari ${site.name}. Pesan lagi lewat WhatsApp atau lihat kopi lainnya.`,
+    title: `Terima kasih — ${name}, ${variantLabel}`,
+    description: `Terima kasih sudah membeli ${name} (${variantLabel}) dari ${site.name}. Pesan lagi lewat WhatsApp atau lihat kopi lainnya.`,
     path: `/q/${code}`,
     noIndex: true,
   });

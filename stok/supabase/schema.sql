@@ -319,5 +319,9 @@ insert into public.varian (kode, jenis, ukuran, harga, batas_min, urutan) values
   ('kerinci-pack1',     'KERINCI',     '200 gr', 125000, 5, 161),
   ('palimping-mini1',   'PALIMPING',   '100 gr',  70000, 5, 170),
   ('palimping-pack1',   'PALIMPING',   '200 gr', 125000, 5, 171),
-  ('sindoro-pack1',     'SINDORO',     '200 gr', 125000, 5, 181)
+  ('sindoro-pack1',     'SINDORO',     '200 gr', 125000, 5, 181),
+  -- Peneli tidak ada di katalog web; halaman /q-nya ada di web/src/data/qr.ts
+  -- (diLuarKatalog). Harga sementara mengikuti Pondok Baru (harga beli sama).
+  ('peneli-mini1',      'PENELI',      '100 gr',  70000, 5, 190),
+  ('peneli-pack1',      'PENELI',      '200 gr', 125000, 5, 191)
 on conflict (kode) do nothing;
