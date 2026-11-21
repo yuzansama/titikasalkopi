@@ -222,6 +222,20 @@ export function lacakMetadata(): Metadata {
   });
 }
 
+/**
+ * `/q/[kode]` — halaman terima kasih yang dibuka QR di kemasan. `noindex`:
+ * halaman ini untuk orang yang sudah memegang kopinya, dan isinya mengulang
+ * halaman produk yang memang terindeks.
+ */
+export function qrMetadata(product: Product, variantLabel: string, code: string): Metadata {
+  return buildPageMetadata({
+    title: `Terima kasih — ${product.name}, ${variantLabel}`,
+    description: `Terima kasih sudah membeli ${product.name} (${variantLabel}) dari ${site.name}. Pesan lagi lewat WhatsApp atau lihat kopi lainnya.`,
+    path: `/q/${code}`,
+    noIndex: true,
+  });
+}
+
 /** `not-found.tsx`. */
 export function notFoundMetadata(): Metadata {
   return buildPageMetadata({

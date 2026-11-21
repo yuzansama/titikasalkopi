@@ -1118,4 +1118,48 @@ check("FR-51: /lacak dan buku order tertaut dari footer setiap rute", () => {
   }
 });
 
+/* ------------------------------------------------------------------ */
+/* QR kemasan — /q/[kode]                                               */
+/* ------------------------------------------------------------------ */
+
+const { qrEntries } = await loadTs("src/data/qr.ts");
+
+check("QR: setiap varian per bungkus punya halaman /q/<kode>", () => {
+  assert.ok(qrEntries.length > 0, "tidak ada kode QR sama sekali");
+  const missing = qrEntries
+    .map((entry) => `q/${entry.code}`)
+    .filter((route) => !pages.has(route));
+  assert.deepEqual(missing, [], `halaman QR tidak dibangun: ${missing.join(", ")}`);
+});
+
+check("QR: bundel tidak mendapat kode QR", () => {
+  const bundles = catalogModule.products.flatMap((product) =>
+    product.variants.filter((variant) => (variant.packsPerUnit ?? 1) > 1),
+  );
+  assert.ok(bundles.length > 0, "tidak ada bundel di katalog; pemeriksaan ini tidak lagi menguji apa pun");
+  for (const variant of bundles) {
+    assert.ok(!pages.has(`q/${variant.id}`), `bundel ${variant.id} punya halaman QR`);
+  }
+});
+
+check("QR: halaman /q noindex, kanonis absolut, dan menawarkan pesan ulang", () => {
+  for (const { code, product } of qrEntries) {
+    const route = `q/${code}`;
+    const html = pages.get(route).html;
+    const robots = robotsOf(html);
+    assert.ok(robots && robots.includes("noindex"), `/${route} harus noindex`);
+    assert.equal(
+      canonicalOf(html).replace(/\/$/, ""),
+      `${SITE_URL}/${route}`,
+      `kanonis salah pada /${route}`,
+    );
+    assert.ok(html.includes(product.name), `/${route} tidak menyebut ${product.name}`);
+    assert.ok(html.includes("https://wa.me/"), `/${route} tanpa tautan WhatsApp`);
+  }
+});
+
+check("QR: sitemap tidak memuat /q", () => {
+  assert.ok(!/\/q\//.test(readSitemap()), "sitemap memuat halaman QR");
+});
+
 summary("HTML hasil build");
