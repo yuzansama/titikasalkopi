@@ -121,9 +121,9 @@ export function layarSalesManual(ctx) {
     const total = v ? v.harga * jumlah : 0;
     return `
     <div class="field"><span class="lbl" id="l-kopi">Kopi</span>
-      <div class="seg" role="group" aria-labelledby="l-kopi">${daftarJenis
+      <div class="seg two" role="group" aria-labelledby="l-kopi">${daftarJenis
         .map(
-          (j) => `<button type="button" class="opt blend ${blendClass(j)}" style="font-size:22px" data-jenis="${esc(j)}" aria-pressed="${j === jenis}">${esc(j)}</button>`,
+          (j) => `<button type="button" class="opt blend ${blendClass(j)}" style="font-size:20px" data-jenis="${esc(j)}" aria-pressed="${j === jenis}">${esc(j)}</button>`,
         )
         .join("")}</div></div>
     ${jenis ? `<div class="field"><span class="lbl" id="l-ukuran">Ukuran</span>

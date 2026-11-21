@@ -66,9 +66,11 @@ test("cukupHari dan perluPesan", () => {
   assert.equal(cukupHari(7, 56, 14), 1); // 4/hari
   assert.equal(cukupHari(24, 42, 14), 8); // 3/hari
   assert.equal(cukupHari(10, 0, 14), null);
-  assert.equal(perluPesan({ aktif: true, stok: 10, batas_min: 10 }), true);
-  assert.equal(perluPesan({ aktif: true, stok: 11, batas_min: 10 }), false);
-  assert.equal(perluPesan({ aktif: false, stok: 0, batas_min: 10 }), false);
+  assert.equal(perluPesan({ aktif: true, stok: 10, batas_min: 10, total_masuk: 30 }), true);
+  assert.equal(perluPesan({ aktif: true, stok: 11, batas_min: 10, total_masuk: 30 }), false);
+  assert.equal(perluPesan({ aktif: false, stok: 0, batas_min: 10, total_masuk: 30 }), false);
+  // Varian yang belum pernah punya stok tidak memicu peringatan.
+  assert.equal(perluPesan({ aktif: true, stok: 0, batas_min: 5, total_masuk: 0 }), false);
 });
 
 test("saranKode mengikuti pola id varian web", () => {

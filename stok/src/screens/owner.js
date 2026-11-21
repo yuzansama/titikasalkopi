@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { api } from "../api.js";
 import {
-  awalBulan, awalHari, cukupHari, esc, PERAN_LABEL, perluPesan, parseRupiah, pesanGalat, pesanUndangan,
+  adaStok, awalBulan, awalHari, cukupHari, esc, PERAN_LABEL, perluPesan, parseRupiah, pesanGalat, pesanUndangan,
   qrUrl, ringkasPenjualan, rupiah, saranKode, tambahHari, tanggalPanjang,
 } from "../lib.js";
 import { blendClass, namaVarian, nav, skalaStok, stokBar, toast, topbar } from "../ui.js";
@@ -18,13 +18,14 @@ export function layarRingkasan(ctx) {
     periode === "7" ? tambahHari(awalHari(), -6) : periode === "bulan" ? awalBulan() : null;
 
   const render = (root) => {
-    const aktif = varian.filter((v) => v.aktif);
+    const aktif = varian.filter(adaStok);
+    const belum = varian.filter((v) => v.aktif && !adaStok(v)).length;
     const nama = new Map(varian.map((v) => [v.kode, namaVarian(v)]));
     const hari = ringkasPenjualan(jual, awalHari());
     const per = ringkasPenjualan(periode === "semua" ? semua ?? [] : jual, periodeAwal());
     const jendela = ringkasPenjualan(jual, tambahHari(awalHari(), -(JENDELA_HARI - 1)));
     const skala = skalaStok(aktif);
-    const pesan = aktif.filter(perluPesan);
+    const pesan = varian.filter(perluPesan);
     const labelPeriode = periode === "7" ? "7 hari terakhir" : periode === "bulan" ? new Date().toLocaleDateString("id-ID", { month: "long" }) : "sejak awal";
 
     root.querySelector("#t-uang").textContent = rupiah(hari.uang);
@@ -70,7 +71,7 @@ export function layarRingkasan(ctx) {
                 : `cukup ± ${h} hari`
           }</span></div>`;
       })
-      .join("");
+      .join("") + (belum ? `<p class="small" style="margin:0">${belum} varian lain belum pernah punya stok.</p>` : "");
 
     const baris = [...hari.perVarian.entries()].sort((a, b) => b[1].bungkus - a[1].bungkus);
     root.querySelector("#tabel").innerHTML = baris.length

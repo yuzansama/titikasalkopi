@@ -118,8 +118,14 @@ export function cukupHari(stok, terjualDalamJendela, hariJendela) {
   return Math.max(0, Math.floor(stok / perHari));
 }
 
+/** Peringatan pesan ulang: hanya untuk varian yang pernah punya stok. */
 export function perluPesan(v) {
-  return v.aktif && v.stok <= v.batas_min;
+  return v.aktif && v.total_masuk > 0 && v.stok <= v.batas_min;
+}
+
+/** Varian yang ditampilkan di daftar stok: pernah punya stok, atau stoknya tidak 0. */
+export function adaStok(v) {
+  return v.aktif && (v.total_masuk > 0 || v.stok !== 0);
 }
 
 export function formatWaktu(iso) {

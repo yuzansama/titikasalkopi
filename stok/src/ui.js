@@ -54,8 +54,10 @@ export function topbar(ctx) {
   )}</span><button type="button" class="linkbtn" data-act="keluar">Keluar</button></div>`;
 }
 
+/** Warna nama: BOLD karat, BRIGHT emas, single origin hijau zaitun. */
 export function blendClass(jenis) {
-  return String(jenis).toUpperCase() === "BRIGHT" ? "alt" : "bold";
+  const j = String(jenis).toUpperCase();
+  return j === "BRIGHT" ? "alt" : j === "BOLD" ? "bold" : "so";
 }
 
 export function namaVarian(v) {

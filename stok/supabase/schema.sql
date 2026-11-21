@@ -75,12 +75,15 @@ create table if not exists public.penjualan (
 );
 create index if not exists penjualan_waktu_idx on public.penjualan (waktu desc);
 
--- Penjualan yang diimpor dari catatan lama (/kas) membawa uang dan rinciannya,
--- tetapi TIDAK mengurangi stok: kopinya berasal dari batch sebelum app dipakai,
--- yang barang masuknya tidak pernah dicatat. Lihat scripts/impor-kas.mjs.
+-- Data yang diimpor dari catatan lama (/kas), lihat scripts/impor-kas.mjs.
+-- Penjualan impor membawa uang dan rinciannya. Untuk setiap varian, barang
+-- masuk impor ("stok awal") sama dengan jumlah terjualnya, sehingga stok
+-- setelah impor tepat 0 dan app mulai menghitung dari situ. Penanda `impor`
+-- membuat impor bisa diulang tanpa menyentuh data yang dicatat lewat app.
 alter table public.penjualan add column if not exists catatan text
   check (catatan is null or char_length(catatan) <= 500);
 alter table public.penjualan add column if not exists impor boolean not null default false;
+alter table public.barang_masuk add column if not exists impor boolean not null default false;
 
 create table if not exists public.penjualan_item (
   id            bigint generated always as identity primary key,
@@ -260,16 +263,18 @@ $$;
 
 -- Stok = total masuk − total terjual, per varian. Semua anggota boleh
 -- melihatnya, termasuk yang tidak boleh membaca rincian penjualan.
-create or replace function public.stok_saat_ini()
+-- `total_masuk` = 0 berarti varian ini belum pernah punya stok (mis. single
+-- origin yang belum dijual): app tidak memberi peringatan pesan untuknya.
+drop function if exists public.stok_saat_ini();
+create function public.stok_saat_ini()
 returns table (kode text, jenis text, ukuran text, harga integer, batas_min integer,
-               aktif boolean, urutan integer, stok integer)
+               aktif boolean, urutan integer, stok integer, total_masuk integer)
 language sql stable security definer set search_path = public
 as $$
   select v.kode, v.jenis, v.ukuran, v.harga, v.batas_min, v.aktif, v.urutan,
          (coalesce((select sum(m.jumlah) from public.barang_masuk m where m.kode_varian = v.kode), 0)
-        - coalesce((select sum(i.jumlah) from public.penjualan_item i
-                      join public.penjualan p on p.id = i.penjualan_id
-                     where i.kode_varian = v.kode and not p.impor), 0))::integer
+        - coalesce((select sum(i.jumlah) from public.penjualan_item i where i.kode_varian = v.kode), 0))::integer,
+         coalesce((select sum(m.jumlah) from public.barang_masuk m where m.kode_varian = v.kode), 0)::integer
     from public.varian v
    where public.peran_saya() is not null
    order by v.urutan, v.kode
@@ -292,12 +297,27 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 -- ------------------------------------------------------------------
--- Data awal: empat varian yang dijual sekarang (harga dari katalog web).
+-- Data awal: varian dari katalog web (kode = id varian web, harga web).
 -- ------------------------------------------------------------------
 
 insert into public.varian (kode, jenis, ukuran, harga, batas_min, urutan) values
   ('bold-100g',   'BOLD',   '100 gr', 45000, 10, 10),
   ('bold-200g',   'BOLD',   '200 gr', 80000, 10, 20),
   ('bright-100g', 'BRIGHT', '100 gr', 55000, 10, 30),
-  ('bright-200g', 'BRIGHT', '200 gr', 95000, 10, 40)
+  ('bright-200g', 'BRIGHT', '200 gr', 95000, 10, 40),
+  ('abmisibil-mini1',   'ABMISIBIL',   '100 gr',  85000, 5, 110),
+  ('abmisibil-pack1',   'ABMISIBIL',   '200 gr', 140000, 5, 111),
+  ('sabin-mini1',       'SABIN',       '100 gr',  85000, 5, 120),
+  ('sabin-pack1',       'SABIN',       '200 gr', 140000, 5, 121),
+  ('pyramid-mini1',     'PYRAMID',     '100 gr',  85000, 5, 130),
+  ('pyramid-pack1',     'PYRAMID',     '200 gr', 140000, 5, 131),
+  ('oelbiteno-mini1',   'OELBITENO',   '100 gr',  85000, 5, 140),
+  ('oelbiteno-pack1',   'OELBITENO',   '200 gr', 140000, 5, 141),
+  ('pondok-baru-mini1', 'PONDOK BARU', '100 gr',  70000, 5, 150),
+  ('pondok-baru-pack1', 'PONDOK BARU', '200 gr', 125000, 5, 151),
+  ('kerinci-mini1',     'KERINCI',     '100 gr',  70000, 5, 160),
+  ('kerinci-pack1',     'KERINCI',     '200 gr', 125000, 5, 161),
+  ('palimping-mini1',   'PALIMPING',   '100 gr',  70000, 5, 170),
+  ('palimping-pack1',   'PALIMPING',   '200 gr', 125000, 5, 171),
+  ('sindoro-pack1',     'SINDORO',     '200 gr', 125000, 5, 181)
 on conflict (kode) do nothing;

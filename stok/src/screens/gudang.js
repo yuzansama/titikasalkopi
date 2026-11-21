@@ -1,5 +1,5 @@
 import { api } from "../api.js";
-import { esc, formatWaktu, kodeDariScan, pesanGalat } from "../lib.js";
+import { adaStok, esc, formatWaktu, kodeDariScan, pesanGalat } from "../lib.js";
 import { getar, mulaiScanner } from "../scanner.js";
 import { blendClass, namaVarian, nav, skalaStok, stokBar, toast, topbar } from "../ui.js";
 
@@ -149,7 +149,8 @@ export function layarGudangStok(ctx) {
     async mount(root) {
       const muat = async () => {
         const [varian, log] = await Promise.all([api.stok(), api.masukTerakhir(10)]);
-        const aktif = varian.filter((v) => v.aktif);
+        const aktif = varian.filter(adaStok);
+        const belum = varian.filter((v) => v.aktif && !adaStok(v)).length;
         const skala = skalaStok(aktif);
         root.querySelector("#total").textContent = aktif.reduce((s, v) => s + v.stok, 0);
         root.querySelector("#ket").textContent = `Per ${new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })} · garis hitam = batas minimum`;
@@ -164,7 +165,7 @@ export function layarGudangStok(ctx) {
               ${low ? `<span class="err">Di bawah batas ${v.batas_min}. Owner melihat peringatan ini.</span>` : ""}
             </div>`;
           })
-          .join("");
+          .join("") + (belum ? `<p class="small">${belum} varian lain belum pernah punya stok. Scan QR-nya di Scan masuk saat barangnya datang.</p>` : "");
         const nama = new Map(varian.map((v) => [v.kode, namaVarian(v)]));
         root.querySelector("#log").innerHTML = log.length
           ? log

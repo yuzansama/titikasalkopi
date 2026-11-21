@@ -5,6 +5,19 @@
 
 begin;
 
+-- Database ini dipakai sungguhan, jadi uji membandingkan dengan keadaan awal,
+-- bukan dengan nol. Nilai awal disimpan di setting transaksi supaya terbaca
+-- dari peran mana pun.
+create function pg_temp.stok_mentah(k text) returns integer language sql as $f$
+  select (coalesce((select sum(jumlah) from public.barang_masuk where kode_varian = k), 0)
+        - coalesce((select sum(jumlah) from public.penjualan_item where kode_varian = k), 0))::integer
+$f$;
+select set_config('uji.bold100', pg_temp.stok_mentah('bold-100g')::text, true),
+       set_config('uji.sabin200', pg_temp.stok_mentah('sabin-pack1')::text, true),
+       set_config('uji.jual', (select count(*) from public.penjualan)::text, true),
+       set_config('uji.masuk', (select count(*) from public.barang_masuk)::text, true),
+       set_config('uji.impor', (select count(*) from public.penjualan where impor)::text, true);
+
 -- Empat akun uji.
 insert into auth.users (id, email, aud, role) values
   ('00000000-0000-0000-0000-0000000000a1', 'owner@uji.test',  'authenticated', 'authenticated'),
@@ -66,7 +79,7 @@ do $$ begin
   exception when no_data_found then null; end;
   if public.klaim_undangan('UJIS-0001') <> 'sales' then raise exception 'GAGAL: sales tidak terklaim'; end if;
   perform public.catat_penjualan('[{"kode":"bold-100g","jumlah":2}]', 85000);
-  if (select stok from public.stok_saat_ini() where kode = 'bold-100g') <> 28 then raise exception 'GAGAL: stok bukan 30 - 2'; end if;
+  if (select stok from public.stok_saat_ini() where kode = 'bold-100g') <> current_setting('uji.bold100')::int + 28 then raise exception 'GAGAL: stok bukan 30 - 2'; end if;
   if (select harga_satuan from public.penjualan_item limit 1) <> 45000 then raise exception 'GAGAL: harga katalog tidak tercatat'; end if;
   if (select impor from public.penjualan limit 1) then raise exception 'GAGAL: penjualan app tertandai impor'; end if;
   if (select count(*) from public.barang_masuk) <> 0 then raise exception 'GAGAL: sales melihat barang masuk'; end if;
@@ -108,8 +121,8 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 set local role authenticated;
 
 do $$ begin
-  if (select count(*) from public.penjualan) <> 1 then raise exception 'GAGAL: owner tidak melihat penjualan'; end if;
-  if (select count(*) from public.barang_masuk) <> 1 then raise exception 'GAGAL: owner tidak melihat barang masuk'; end if;
+  if (select count(*) from public.penjualan) <> current_setting('uji.jual')::int + 1 then raise exception 'GAGAL: owner tidak melihat penjualan'; end if;
+  if (select count(*) from public.barang_masuk) <> current_setting('uji.masuk')::int + 1 then raise exception 'GAGAL: owner tidak melihat barang masuk'; end if;
   update public.anggota set aktif = false where user_id = '00000000-0000-0000-0000-0000000000a1';
   if not (select aktif from public.anggota where user_id = '00000000-0000-0000-0000-0000000000a1') then
     raise exception 'GAGAL: owner bisa menonaktifkan dirinya sendiri';
@@ -145,18 +158,22 @@ do $$ begin
 end $$;
 reset role;
 
--- ---------------- penjualan impor tidak mengurangi stok ----------------
+-- ---------------- impor: stok awal = terjual, stok bersih tidak berubah ----------------
 do $$ declare pid bigint; begin
   insert into public.penjualan (uang_diterima, oleh, impor, catatan)
-  values (90000, '00000000-0000-0000-0000-0000000000a1', true, 'uji impor') returning id into pid;
-  insert into public.penjualan_item (penjualan_id, kode_varian, jumlah, harga_satuan) values (pid, 'bold-100g', 2, 45000);
+  values (280000, '00000000-0000-0000-0000-0000000000a1', true, 'uji impor') returning id into pid;
+  insert into public.penjualan_item (penjualan_id, kode_varian, jumlah, harga_satuan) values (pid, 'sabin-pack1', 2, 140000);
+  insert into public.barang_masuk (kode_varian, jumlah, oleh, impor, catatan)
+  values ('sabin-pack1', 2, '00000000-0000-0000-0000-0000000000a1', true, 'uji stok awal');
 end $$;
 
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","email":"owner@uji.test","role":"authenticated"}', true);
 set local role authenticated;
 do $$ begin
-  if (select stok from public.stok_saat_ini() where kode = 'bold-100g') <> 28 then raise exception 'GAGAL: penjualan impor mengurangi stok'; end if;
-  if (select count(*) from public.penjualan where impor) <> 1 then raise exception 'GAGAL: owner tidak melihat penjualan impor'; end if;
+  if (select stok from public.stok_saat_ini() where kode = 'sabin-pack1') <> current_setting('uji.sabin200')::int then raise exception 'GAGAL: impor stok awal + jual tidak saling meniadakan'; end if;
+  if (select stok from public.stok_saat_ini() where kode = 'bold-100g') <> current_setting('uji.bold100')::int + 28 then raise exception 'GAGAL: impor mengubah stok varian lain'; end if;
+  if (select count(*) from public.penjualan where impor) <> current_setting('uji.impor')::int + 1 then raise exception 'GAGAL: owner tidak melihat penjualan impor'; end if;
+  if (select count(*) from public.varian where kode like '%-pack1') < 8 then raise exception 'GAGAL: varian single origin belum ada'; end if;
 end $$;
 reset role;
 

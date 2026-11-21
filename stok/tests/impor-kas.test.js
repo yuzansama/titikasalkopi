@@ -15,14 +15,31 @@ test("nama lama dipetakan ke BOLD/BRIGHT", () => {
   assert.deepEqual(peta("Houseblend 100g x2, 200g x1"), { "bold-100g": 2, "bold-200g": 1 });
 });
 
-test("yang bukan 4 varian tidak dipetakan", () => {
+test("yang tidak dikenali hanya dicatat uangnya", () => {
   assert.deepEqual(peta("Kopi"), {});
   assert.deepEqual(peta("Tanpa keterangan"), {});
   assert.deepEqual(
     peta("Houseblend 70-30 Beans Temanggung 1kg (230rb), Houseblend Bold Robusta 100g (45rb), Giling (10rb)"),
     { "bold-100g": 1 },
   );
-  assert.deepEqual(peta("Single Origin Papua 200g (135rb)"), {});
+});
+
+test("single origin dipetakan ke kode varian web", () => {
+  assert.deepEqual(peta("Single Origin Papua 200g (135rb)"), { "sabin-pack1": 1 });
+  assert.deepEqual(peta("Pondok Baru 100g x2, Kerinci 200g"), { "pondok-baru-mini1": 2, "kerinci-pack1": 1 });
+  assert.deepEqual(peta("Single Origin 200g"), {}); // tanpa nama: tidak ditebak
+});
+
+test("stok awal impor = jumlah terjual per varian", () => {
+  const { sql, stokAwal } = buatSql({
+    penjualan: [
+      { no: "1", tanggal: "2026-10-02", rincian: "Bold 100g x2", total: 90000, metode: "x", catatan: "" },
+      { no: "2", tanggal: "2026-10-05", rincian: "Bold 100g, Sabin 200g", total: 185000, metode: "x", catatan: "" },
+    ],
+  });
+  assert.deepEqual(stokAwal, { "bold-100g": 3, "sabin-pack1": 1 });
+  assert.match(sql, /delete from public\.barang_masuk where impor;/);
+  assert.match(sql, /values \('bold-100g', 3, pemilik, '2026-10-02T08:00:00\+07:00'/);
 });
 
 test("SQL impor: bisa diulang, satu transaksi, semua uang /kas masuk", () => {

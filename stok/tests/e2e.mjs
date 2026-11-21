@@ -188,10 +188,10 @@ try {
     assert.match(tabel, /Total\s*4\s*Rp270\.000/);
     await shot(owner, "40-owner-ringkasan");
   });
-  await uji("label QR menampilkan empat QR berisi alamat /q/", async () => {
+  await uji("label QR menampilkan QR berisi alamat /q/", async () => {
     await owner.getByRole("link", { name: "Label QR" }).click();
     await owner.locator(".label svg").first().waitFor();
-    assert.equal(await owner.locator(".label").count(), 4);
+    assert.ok((await owner.locator(".label").count()) >= 4, "kurang dari 4 label");
     await owner.getByText("titikasalkopi.vercel.app/q/bold-100g").waitFor();
     await shot(owner, "50-owner-label");
   });
