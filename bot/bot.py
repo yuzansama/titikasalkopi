@@ -19,10 +19,13 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import tempfile
 from collections import defaultdict, deque
+from datetime import datetime
 from pathlib import Path
 
 import order
+import stats
 
 PROJECT, ENGINE = "titikasalkopi-bot", "tanya-kopi"
 ANSWER = (f"https://discoveryengine.googleapis.com/v1/projects/{PROJECT}/locations/global/collections/"
@@ -113,9 +116,11 @@ def answer(text, session=None):
         d = post(ANSWER, body, {"Authorization": f"Bearer {token()}", "X-Goog-User-Project": PROJECT})
     except (OSError, subprocess.CalledProcessError) as e:
         print("vertex error:", type(e).__name__, str(e)[:200])
+        stats.count("vertex_error")
         return ERROR, session
     a, sess = d.get("answer", {}), (d.get("session") or {}).get("name", session)
     if a.get("answerSkippedReasons") or a.get("state") != "SUCCEEDED" or not a.get("answerText"):
+        stats.count("vertex_skipped")
         return OFF_TOPIC, sess
     return a["answerText"].strip(), sess
 
@@ -194,7 +199,7 @@ def sizes(chat, slug, edit=None):
             rows.append([{"text": f"{label.replace('Kemasan ', '')} · {price}", "callback_data": f"a:{vid}"}])
     if not rows:
         return menu(chat, edit)
-    rows.append([{"text": "⬅️ Kembali", "callback_data": "o"}])
+    rows.append([{"text": "⬅️ Kembali", "callback_data": "o:b"}])
     say(chat, f"{name}\nCatatan rasa: {NOTES.get(slug, '-')}\n\nPilih ukuran:", {"inline_keyboard": rows}, edit)
 
 
@@ -216,7 +221,7 @@ def cart_view(chat, edit=None, info=""):
              {"text": f"{order.VARIANTS[v][0].split()[-1]} {order.VARIANTS[v][2].replace('Kemasan ', '')} ×{q}",
               "callback_data": "c"},
              {"text": "➕", "callback_data": f"a:{v}"}] for v, q in c["items"].items()]
-    rows += [[{"text": "➕ Tambah kopi lain", "callback_data": "o"}, {"text": "📝 Catatan", "callback_data": "n"}],
+    rows += [[{"text": "➕ Tambah kopi lain", "callback_data": "o:b"}, {"text": "📝 Catatan", "callback_data": "n"}],
              [{"text": "✅ Checkout", "callback_data": "k"}], [{"text": "🗑 Kosongkan", "callback_data": "x"}]]
     say(chat, text, {"inline_keyboard": rows}, edit)
 
@@ -229,9 +234,11 @@ def finish(chat, user, last4):
     if not items:
         return cart_view(chat)
     if not may_order(user, time.time()):
+        stats.count("checkout_capped")
         return say(chat, f"Pesanan lewat bot hari ini udah banyak. Lanjut pesan langsung lewat {WA} ya.",
                    {"inline_keyboard": [[WA_BTN]]})
     code, lines = order.new_code(), order.lines_of(items, cat)
+    stats.count("checkout")
     text = order.message(code, lines, c["note"])
     order.record(code, last4, order.record_items(lines))
     _carts.pop(chat, None)   # a second tap can't mint a second code
@@ -253,6 +260,9 @@ def on_callback(q):
         return
     user, mid = (q.get("from") or {}).get("id", chat), m.get("message_id")
     cmd, _, arg = (q.get("data") or "").partition(":")
+    stats.count("tap")
+    if q.get("data") == "o":
+        stats.count("menu")
     c = cart(chat)
     c["await"] = None
     if cmd == "o":
@@ -288,6 +298,7 @@ def on_message(m, sessions):
     text, chat = m.get("text"), (m.get("chat") or {}).get("id")
     if not text or chat is None or m["chat"].get("type") != "private":
         return   # private chats only: in groups the bot stays silent
+    stats.count("msg")
     user, c = (m.get("from") or {}).get("id", chat), _carts.get(chat)
     waiting = c and c["await"] and not text.startswith("/")
     if text.startswith("/batal"):
@@ -305,20 +316,26 @@ def on_message(m, sessions):
     if c:
         c["await"] = None
     if text.startswith("/start"):
+        stats.count("start")
         return say(chat, START, ORDER_BTN)
     if text.startswith("/keranjang"):
         return cart_view(chat)
     if text.startswith("/pesan") or ORDER_WORDS.search(text):   # "mau pesan dong": the menu, free
+        stats.count("menu")
         return menu(chat)
     if greet := greeting(text):   # free: answered here, never sent to Vertex
+        stats.count("greet")
         return say(chat, greet, ORDER_BTN)
     if (ok := allowed(user, time.time())) is not True:
+        stats.count("cap_busy" if ok == BUSY else "cap_closed")
         return say(chat, ok)
+    stats.count("vertex")
     reply, sessions[chat] = answer(text[:MAX_INPUT], sessions.get(chat))
     say(chat, reply, ORDER_BTN)
 
 
 def run():
+    stats.FILE = Path.home() / "bot_stats.jsonl"   # only the live bot counts; _check() and --test never write
     _api["url"] = f"https://api.telegram.org/bot{TG_TOKEN_FILE.read_text(encoding='utf-8').strip()}"
     me = json.load(urllib.request.urlopen(f"{_api['url']}/getMe", timeout=30))["result"]["username"]
     print(f"running as @{me} (Vertex AI Search)", flush=True)
@@ -347,6 +364,7 @@ def run():
                     on_message(m, sessions)
             except Exception as e:
                 print("update failed:", type(e).__name__, str(e)[:200], flush=True)
+                stats.count("update_failed")
 
 
 def _check():
@@ -371,6 +389,8 @@ def _order_flow_check():
     """A whole order through fake Telegram calls: menu, sizes, cart, note, last4, checkout. No network."""
     global tg
     sent, recorded, real = [], [], (tg, order.catalog, order.record)
+    tmp = Path(tempfile.mkdtemp()) / "stats.jsonl"
+    stats.FILE = tmp
     cat = order.parse_managed('"houseblend.bold.mini1": 45_000,\n"houseblend.bold.pack1": 80_000,\n'
                               '"houseblend.bold.kg": 320_000,\n"houseblend.bold.kg.promo": 300_000,\n'
                               '"houseblend.bright.mini1": 55_000,\n"houseblend.bright.pack1": 95_000,\n'
@@ -414,7 +434,13 @@ def _order_flow_check():
             tap("a:bold-100g"); tap("kk")
         assert len(recorded) == ORDERS_PER_USER and "udah banyak" in last()["text"]
         tap("a:bogus"); tap("p:solok"); tap("")   # crafted buttons do nothing harmful
+        tap("o"); tap("o:b"); msg("Halo")
+        c = stats.per_day(tmp)[str(datetime.now(stats.WIB).date())]
+        assert c["checkout"] == len(recorded) and c["checkout_capped"] == 1, c
+        assert c["menu"] == 2 and c["msg"] == 5 and c["greet"] == 1 and c["tap"] > 10 and "vertex" not in c, c
+        assert not re.search(r"9567|giling|[79]", tmp.read_text()), "stats must hold counts only"
     finally:
+        stats.FILE = None
         tg, (order.catalog, order.record) = real[0], real[1:]
         _carts.clear(); _orders.clear(); _orders_day.clear()
 

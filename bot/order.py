@@ -14,6 +14,8 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
+import stats
+
 # Apps Script web app of the order book; the same public URL as NEXT_PUBLIC_TRACKING_ENDPOINT in pages.yml.
 ENDPOINT = ("https://script.google.com/macros/s/AKfycbwat_rXKbsLHMdF1Dlj7odKBBz23tp0BL2AQqrzUTrWynPrq04eY3njBrHl4HHbD9vKmQ"
             "/exec")
@@ -170,10 +172,12 @@ def record(code, last4, items):
     def send():
         try:
             req = urllib.request.Request(ENDPOINT, data=body, headers={"Content-Type": "text/plain;charset=UTF-8"})
-            print("order book:", code, urllib.request.urlopen(req, timeout=30).read(100).decode(errors="replace"),
-                  flush=True)
+            reply = urllib.request.urlopen(req, timeout=30).read(100).decode(errors="replace")
+            print("order book:", code, reply, flush=True)
+            stats.count("orderbook_ok" if '"ok":true' in reply.replace(" ", "") else "orderbook_rejected")
         except OSError as e:
             print("order book failed:", code, type(e).__name__, flush=True)
+            stats.count("orderbook_failed")
 
     threading.Thread(target=send, daemon=True).start()
 
