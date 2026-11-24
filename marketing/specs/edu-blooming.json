@@ -1,0 +1,52 @@
+{
+ "slug": "edu-blooming",
+ "shots": [
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 120,
+   "len": 6,
+   "big": "BLOOMING",
+   "sub": "",
+   "say": "Pernah lihat bubuk kopi menggelembung pas pertama kali disiram?",
+   "say_baku": "Pernah lihat bubuk kopi menggelembung saat pertama disiram?",
+   "x": 0.54
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 126.5,
+   "len": 4,
+   "big": "TUANG\nSEDIKIT DULU",
+   "sub": "",
+   "say": "Itu namanya blooming. Caranya, tuang sedikit air dulu.",
+   "say_baku": "Itu namanya blooming. Tuang sedikit air dulu.",
+   "x": 0.54
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 140,
+   "len": 5,
+   "big": "GAS CO2\nKELUAR",
+   "sub": "karbon dioksida dari kopi",
+   "say": "Gelembungnya itu karbon dioksida yang keluar dari kopi.",
+   "say_baku": "Gelembungnya adalah karbon dioksida yang keluar dari kopi.",
+   "x": 0.54
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 145,
+   "len": 15,
+   "big": "30–45 DETIK",
+   "sub": "baru lanjut menuang",
+   "say": "Tunggu sekitar tiga puluh sampai empat puluh lima detik, baru lanjut nuang, ya.",
+   "say_baku": "Tunggu sekitar tiga puluh sampai empat puluh lima detik, baru lanjutkan menuang.",
+   "x": 0.54
+  }
+ ],
+ "end": {
+  "big": "BLOOMING",
+  "sub": "sabar 30–45 detik",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Blooming: saat bubuk kopi pertama disiram sedikit air, karbon dioksida keluar dan bubuknya menggelembung. Tunggu sekitar 30–45 detik, baru lanjutkan menuang.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#blooming #pourover #v60 #edukasikopi #titikasalkopi"
+}

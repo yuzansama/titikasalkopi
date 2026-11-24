@@ -1,0 +1,49 @@
+{
+ "slug": "edu-resting-degassing",
+ "shots": [
+  {
+   "src": "own_roast_3",
+   "t": 0.5,
+   "len": 4.5,
+   "big": "BARU\nDISANGRAI",
+   "sub": "",
+   "say": "Kopi yang baru disangrai itu masih melepas gas, lho.",
+   "say_baku": "Kopi yang baru disangrai masih melepas gas."
+  },
+  {
+   "src": "C1sks8ZKuL0",
+   "t": 30,
+   "len": 10,
+   "big": "DEGASSING",
+   "sub": "melepas karbon dioksida",
+   "say": "Karbon dioksidanya keluar paling deras di sekitar dua puluh hari pertama.",
+   "say_baku": "Karbon dioksida keluar paling deras di sekitar dua puluh hari pertama."
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 127,
+   "len": 6,
+   "big": "TERLIHAT\nSAAT SEDUH",
+   "sub": "bubuk menggelembung",
+   "say": "Nah, gas inilah yang bikin bubuk kopi menggelembung pas disiram.",
+   "say_baku": "Gas inilah yang membuat bubuk kopi menggelembung saat disiram.",
+   "x": 0.54
+  },
+  {
+   "src": "FqdmS91CCcU",
+   "t": 48,
+   "len": 12,
+   "big": "RESTING",
+   "sub": "istirahatkan dulu",
+   "say": "Banyak penyeduh mengistirahatkan kopinya dulu: seduh manual sekitar seminggu, espresso sering lebih lama.",
+   "say_baku": "Banyak penyeduh mengistirahatkan kopi dulu: seduh manual sekitar seminggu, espresso sering lebih lama."
+  }
+ ],
+ "end": {
+  "big": "RESTING",
+  "sub": "sesuaikan dengan rasa",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Kopi yang baru disangrai masih melepas karbon dioksida (degassing), paling deras sekitar 20 hari pertama. Gas inilah yang membuat bubuk menggelembung saat disiram.\nBanyak penyeduh mengistirahatkan kopi dulu: untuk seduh manual sekitar seminggu, espresso sering lebih lama. Sumbernya beragam, jadi sesuaikan dengan rasa.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#degassing #restingkopi #kopiroasted #edukasikopi #titikasalkopi"
+}

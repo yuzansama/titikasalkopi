@@ -1,0 +1,50 @@
+{
+ "slug": "edu-sortir-apung",
+ "shots": [
+  {
+   "src": "xOLf01l78i4",
+   "t": 42,
+   "len": 4.3,
+   "big": "SORTIR\nPAKAI AIR",
+   "sub": "",
+   "say": "Habis dipetik, buah kopi sering disortir pakai air, lho.",
+   "say_baku": "Setelah dipetik, buah kopi sering disortir dengan air.",
+   "x": 0.6
+  },
+  {
+   "src": "xOLf01l78i4",
+   "t": 49,
+   "len": 2.4,
+   "big": "YANG\nMENGAMBANG",
+   "sub": "disisihkan",
+   "say": "Yang mengambang itu disisihkan.",
+   "say_baku": "Yang mengambang, disisihkan."
+  },
+  {
+   "src": "xOLf01l78i4",
+   "t": 58,
+   "len": 3.15,
+   "big": "KENAPA RINGAN?",
+   "sub": "kering, terlalu matang, rusak",
+   "say": "Biasanya yang kering, terlalu matang, atau rusak.",
+   "say_baku": "Biasanya kering, terlalu matang, atau rusak."
+  },
+  {
+   "src": "xOLf01l78i4",
+   "t": 134,
+   "len": 6.2,
+   "big": "YANG\nTENGGELAM",
+   "sub": "lanjut diproses",
+   "say": "Nah, yang tenggelam lebih padat, terus lanjut diproses.",
+   "say_baku": "Yang tenggelam lebih padat, dan lanjut diproses.",
+   "x": 0.3
+  }
+ ],
+ "end": {
+  "big": "SORTIR APUNG",
+  "sub": "memisahkan buah yang ringan",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Sortir apung: buah kopi dimasukkan ke air. Yang mengambang lebih ringan, biasanya buah yang kering di pohon, terlalu matang, atau rusak, lalu disisihkan. Yang tenggelam lebih padat dan lanjut diproses.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#sortirkopi #pascapanen #cerikopi #edukasikopi #titikasalkopi"
+}

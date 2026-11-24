@@ -1,0 +1,51 @@
+{
+ "slug": "edu-petik-merah",
+ "shots": [
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 22,
+   "len": 2.35,
+   "big": "TIDAK MATANG\nBERSAMAAN",
+   "sub": "",
+   "say": "Buah kopi itu nggak matang bareng, lho.",
+   "say_baku": "Buah kopi tidak matang bersamaan."
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 46,
+   "len": 3.8,
+   "big": "PETIK PILIH",
+   "sub": "hanya yang matang",
+   "say": "Petik pilih itu artinya cuma buah matang yang dipetik.",
+   "say_baku": "Petik pilih: hanya buah matang yang dipetik."
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 40,
+   "len": 5.0,
+   "big": "BERGILIR",
+   "sub": "kembali tiap 8–10 hari",
+   "say": "Pemetiknya balik lagi ke pohon yang sama tiap delapan sampai sepuluh hari.",
+   "say_baku": "Pemetik kembali ke pohon yang sama setiap delapan sampai sepuluh hari.",
+   "x": 0.3
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 56.3,
+   "len": 4.85,
+   "big": "ATAU SEKALIGUS",
+   "sub": "strip picking",
+   "say": "Ada juga cara lain, strip picking: semua buah di dahan dipetik sekaligus.",
+   "say_baku": "Cara lainnya, strip picking: semua buah di dahan dipetik sekaligus.",
+   "zoom": 0.82,
+   "y": 1.0
+  }
+ ],
+ "end": {
+  "big": "PETIK MATANG",
+  "sub": "kerja teliti di kebun",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Buah kopi dalam satu dahan tidak matang bersamaan. Petik pilih (selective picking): hanya buah matang yang dipetik, pemetik kembali ke pohon yang sama tiap 8–10 hari. Cara lainnya, strip picking: semua buah di dahan dipetik sekaligus.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#panenkopi #petikmerah #kebunkopi #edukasikopi #titikasalkopi"
+}

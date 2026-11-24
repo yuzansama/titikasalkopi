@@ -1,0 +1,48 @@
+{
+ "slug": "edu-cold-brew",
+ "shots": [
+  {
+   "src": "XXMYVX34C_4",
+   "t": 8,
+   "len": 10,
+   "big": "COLD BREW",
+   "sub": "",
+   "say": "Cold brew itu bukan kopi panas yang didinginkan, lho.",
+   "x": 0.5
+  },
+  {
+   "src": "d1TGIHTRfvM",
+   "t": 5,
+   "len": 10,
+   "big": "GILING KASAR",
+   "sub": "lalu direndam",
+   "say": "Bubuk kopi giling kasar direndam di air suhu ruang, atau air dingin.",
+   "x": 0.5
+  },
+  {
+   "src": "d1TGIHTRfvM",
+   "t": 30,
+   "len": 10,
+   "big": "12–24 JAM",
+   "sub": "tanpa air panas",
+   "say": "Lama rendamnya dua belas sampai dua puluh empat jam, tanpa air panas sama sekali.",
+   "x": 0.5
+  },
+  {
+   "src": "3cDPRY9WGKg",
+   "t": 19,
+   "len": 12,
+   "big": "KALAU\nICED COFFEE?",
+   "sub": "diseduh panas, lalu ke es",
+   "say": "Kalau iced coffee, kopinya diseduh panas dulu, baru dituang ke es.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "COLD BREW",
+  "sub": "12–24 jam, tanpa panas",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Cold brew: bubuk kopi giling kasar direndam di air suhu ruang atau air dingin selama 12–24 jam, tanpa air panas. Iced coffee: diseduh panas dulu, baru dituang ke es.\nPesan lewat WA 0851-2155-9488, Shopee: Titikasalkopi, atau bot Telegram @mas_bas_bot.\n\n#coldbrew #icedcoffee #edukasikopi #kopinusantara #titikasalkopi"
+}

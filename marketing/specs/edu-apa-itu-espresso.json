@@ -1,0 +1,52 @@
+{
+ "slug": "edu-apa-itu-espresso",
+ "shots": [
+  {
+   "src": "-HXm9WhlBKI",
+   "t": 0.5,
+   "len": 8.5,
+   "big": "APA ITU\nESPRESSO?",
+   "sub": "",
+   "say": "Sebenarnya espresso itu apa?",
+   "say_baku": "Apa sebenarnya espresso?",
+   "x": 0.6
+  },
+  {
+   "src": "_btkfTU688A",
+   "t": 0.5,
+   "len": 8.5,
+   "big": "HALUS &\nDIPADATKAN",
+   "sub": "tamping, biar air merata",
+   "say": "Kopinya digiling halus, terus dipadatkan, biar airnya meresap merata.",
+   "say_baku": "Kopi digiling halus lalu dipadatkan, supaya air meresap merata.",
+   "x": 0.5
+  },
+  {
+   "src": "3i6k7UB4zLQ",
+   "t": 1.5,
+   "len": 5,
+   "big": "± 9 BAR",
+   "sub": "air panas bertekanan tinggi",
+   "say": "Nah, air panasnya didorong pakai tekanan sekitar sembilan bar.",
+   "say_baku": "Air panas didorong dengan tekanan sekitar sembilan bar.",
+   "x": 0.5
+  },
+  {
+   "src": "3i6k7UB4zLQ",
+   "t": 6.5,
+   "len": 5,
+   "big": "25–30 DETIK",
+   "sub": "waktu ekstraksi umum",
+   "say": "Biasanya kelar dalam dua puluh lima sampai tiga puluh detik.",
+   "say_baku": "Biasanya selesai dalam dua puluh lima sampai tiga puluh detik.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "ESPRESSO",
+  "sub": "pekat, singkat, bertekanan",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Espresso: kopi giling halus dipadatkan (tamping) supaya air meresap merata, lalu air panas didorong dengan tekanan sekitar 9 bar. Biasanya selesai dalam 25–30 detik.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#espresso #kopiespresso #manualbrew #edukasikopi #titikasalkopi"
+}

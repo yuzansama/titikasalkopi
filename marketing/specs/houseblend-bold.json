@@ -1,0 +1,55 @@
+{
+ "slug": "houseblend-bold",
+ "shots": [
+  {
+   "src": "own_roast_3",
+   "t": 0,
+   "len": 6,
+   "big": "HOUSEBLEND\nBOLD",
+   "sub": "",
+   "say": "Kenalan sama Houseblend Bold."
+  },
+  {
+   "src": "C1sks8ZKuL0",
+   "t": 12,
+   "len": 10,
+   "big": "ARABIKA\n+ ROBUSTA",
+   "sub": "dua-duanya proses natural",
+   "say": "Perpaduan arabika natural dan fine robusta natural.",
+   "x": 0.5
+  },
+  {
+   "src": "FqdmS91CCcU",
+   "t": 20,
+   "len": 8,
+   "big": "CHOCO · ALMOND\n· CARAMEL",
+   "sub": "catatan rasa",
+   "say": "Catatan rasanya cokelat, almond, dan karamel.",
+   "x": 0.5
+  },
+  {
+   "src": "4MmIogL_xGw",
+   "t": 0,
+   "len": 6,
+   "big": "100 GR · 200 GR\n· 1 KG",
+   "sub": "di rumah atau buat kedai",
+   "say": "Ada kemasan seratus gram dan dua ratus gram buat di rumah, dan satu kilo buat kedai.",
+   "x": 0.5
+  },
+  {
+   "src": "own_roast_2",
+   "t": 0,
+   "len": 6,
+   "big": "SIAP DIPESAN",
+   "sub": "WhatsApp atau Shopee",
+   "say": "Pesan langsung lewat WhatsApp, ya."
+  }
+ ],
+ "end": {
+  "big": "BOLD",
+  "sub": "choco · almond · caramel",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Houseblend BOLD: Arabica Natural dan Fine Robusta Natural. Catatan rasa: choco, almond, caramel. Kemasan 100 gr dan 200 gr untuk di rumah, 1 kg untuk kedai.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#houseblend #kopiarabika #kopirobusta #kopinusantara #titikasalkopi"
+}

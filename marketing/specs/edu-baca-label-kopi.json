@@ -1,0 +1,59 @@
+{
+ "slug": "edu-baca-label-kopi",
+ "shots": [
+  {
+   "src": "C1sks8ZKuL0",
+   "t": 36,
+   "len": 10,
+   "big": "CARA BACA\nLABEL KOPI",
+   "sub": "",
+   "say": "Ada lima hal yang sering tertulis di kemasan kopi spesialti. Apa aja?",
+   "say_baku": "Lima hal yang sering tertulis di kemasan kopi spesialti."
+  },
+  {
+   "src": "1QqlD0Ur0CY",
+   "t": 6,
+   "len": 2,
+   "big": "ASAL",
+   "sub": "tempat kopi tumbuh",
+   "say": "Asal, itu tempat kopinya tumbuh.",
+   "say_baku": "Asal: tempat kopinya tumbuh.",
+   "x": 0.05
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 216,
+   "len": 3,
+   "big": "PROSES",
+   "sub": "natural · washed · honey",
+   "say": "Terus proses, cara buahnya diolah setelah panen.",
+   "say_baku": "Proses: cara buahnya diolah setelah panen.",
+   "x": 0.45
+  },
+  {
+   "src": "xOLf01l78i4",
+   "t": 72,
+   "len": 2.8,
+   "big": "MDPL &\nVARIETAS",
+   "sub": "ketinggian & jenis tanaman",
+   "say": "Lalu ada ketinggian sama varietasnya.",
+   "say_baku": "Lalu ketinggian dan varietasnya."
+  },
+  {
+   "src": "C1sks8ZKuL0",
+   "t": 18,
+   "len": 7.3,
+   "big": "TANGGAL\nSANGRAI",
+   "sub": "kapan kopi disangrai",
+   "say": "Sama tanggal sangrainya.",
+   "say_baku": "Dan tanggal sangrai."
+  }
+ ],
+ "end": {
+  "big": "ABMISIBIL",
+  "sub": "Papua · Natural Anaerob\n1900 mdpl · Bourbon & Typica",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Lima hal yang sering ada di label kopi spesialti: asal, proses, ketinggian (mdpl), varietas, dan tanggal sangrai.\nContoh: Abmisibil, Pegunungan Bintang, Papua. Natural anaerob, 1900 mdpl, arabika Bourbon & Typica.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#labelkopi #kopispesialti #singleorigin #edukasikopi #titikasalkopi"
+}

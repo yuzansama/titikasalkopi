@@ -1,0 +1,52 @@
+{
+ "slug": "edu-moka-pot",
+ "shots": [
+  {
+   "src": "at7d-_qsp7Y",
+   "t": 0,
+   "len": 4,
+   "big": "MOKA POT",
+   "sub": "",
+   "say": "Moka pot? Itu alat seduh di atas kompor.",
+   "say_baku": "Moka pot, alat seduh di atas kompor.",
+   "x": 0.45
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 138,
+   "len": 12,
+   "big": "AIR DI BAWAH",
+   "sub": "kopi di keranjang saringan",
+   "say": "Airnya di bagian bawah, bubuk kopinya di keranjang saringan.",
+   "say_baku": "Air di bagian bawah, bubuk kopi di keranjang saringan.",
+   "x": 0.5
+  },
+  {
+   "src": "at7d-_qsp7Y",
+   "t": 130,
+   "len": 12,
+   "big": "TEKANAN UAP",
+   "sub": "sekitar 1–2 bar",
+   "say": "Pas dipanaskan, tekanan uap dorong airnya naik lewat kopi, sekitar satu sampai dua bar.",
+   "say_baku": "Saat dipanaskan, tekanan uap mendorong air naik melewati kopi, sekitar satu sampai dua bar.",
+   "x": 0.42
+  },
+  {
+   "src": "at7d-_qsp7Y",
+   "t": 168,
+   "len": 7.5,
+   "big": "KOPI NAIK",
+   "sub": "ke wadah atas",
+   "say": "Kopinya naik ke wadah atas. Tapi tekanannya jauh di bawah espresso, ya.",
+   "say_baku": "Kopi pun naik ke wadah atas. Tekanannya jauh di bawah espresso.",
+   "x": 0.42
+  }
+ ],
+ "end": {
+  "big": "MOKA POT",
+  "sub": "kopi pekat dari atas kompor",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Moka pot: air di bagian bawah, bubuk kopi di keranjang saringan. Saat dipanaskan, tekanan uap (sekitar 1–2 bar) mendorong air naik melewati kopi ke wadah atas. Jauh di bawah espresso yang sekitar 9 bar. Bubuknya cukup diratakan, jangan dipadatkan.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#mokapot #caraseduhkopi #manualbrew #edukasikopi #titikasalkopi"
+}

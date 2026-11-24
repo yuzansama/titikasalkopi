@@ -1,0 +1,52 @@
+{
+ "slug": "edu-giling-sebelum-seduh",
+ "shots": [
+  {
+   "src": "9GlE0rKAjBY",
+   "t": 1,
+   "len": 8,
+   "big": "GILING\nSEBELUM SEDUH",
+   "sub": "",
+   "say": "Kenapa sih, kopi sebaiknya digiling sesaat sebelum diseduh?",
+   "say_baku": "Kenapa kopi sebaiknya digiling sesaat sebelum diseduh?",
+   "x": 0.6
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 42,
+   "len": 10,
+   "big": "PERMUKAAN\nMAKIN LUAS",
+   "sub": "",
+   "say": "Begitu digiling, pori dan luas permukaannya bertambah.",
+   "say_baku": "Setelah digiling, pori dan luas permukaannya bertambah.",
+   "x": 0.55
+  },
+  {
+   "src": "-HXm9WhlBKI",
+   "t": 0.5,
+   "len": 8.5,
+   "big": "LEBIH CEPAT\nBASI",
+   "sub": "gas & aroma lepas lebih cepat",
+   "say": "Akibatnya, gas sama aromanya lepas lebih cepat, kopinya pun lebih cepat basi.",
+   "say_baku": "Akibatnya gas dan aromanya lepas lebih cepat, kopi pun lebih cepat basi.",
+   "x": 0.6
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 30,
+   "len": 6,
+   "big": "GILING\nSECUKUPNYA",
+   "sub": "tepat sebelum menyeduh",
+   "say": "Jadi, giling secukupnya, tepat sebelum kamu seduh.",
+   "say_baku": "Jadi, giling secukupnya, tepat sebelum menyeduh.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "BIJI UTUH",
+  "sub": "giling saat mau diseduh",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Kenapa kopi sebaiknya digiling sesaat sebelum diseduh? Setelah digiling, pori dan luas permukaannya bertambah, jadi gas dan aromanya lepas lebih cepat dan kopi lebih cepat basi. Giling secukupnya, tepat sebelum menyeduh.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#gilingkopi #coffeegrinder #tipskopi #edukasikopi #titikasalkopi"
+}

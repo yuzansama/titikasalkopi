@@ -1,0 +1,55 @@
+{
+ "slug": "houseblend-bright",
+ "shots": [
+  {
+   "src": "own_roast_1",
+   "t": 9.5,
+   "len": 6,
+   "big": "HOUSEBLEND\nBRIGHT",
+   "sub": "",
+   "say": "Kenalan sama Houseblend Bright."
+  },
+  {
+   "src": "Rpy0LmYeEfU",
+   "t": 30,
+   "len": 8,
+   "big": "FULL ARABIKA",
+   "sub": "natural + washed",
+   "say": "Full arabika, gabungan proses natural dan washed.",
+   "x": 0.5
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 150,
+   "len": 10,
+   "big": "RAISIN · ORANGE\n· LEMON ZEST",
+   "sub": "catatan rasa",
+   "say": "Catatan rasanya kismis, jeruk, dan lemon zest.",
+   "x": 0.54
+  },
+  {
+   "src": "9GlE0rKAjBY",
+   "t": 1,
+   "len": 8,
+   "big": "100 GR · 200 GR\n· 1 KG",
+   "sub": "di rumah atau buat kedai",
+   "say": "Ada kemasan seratus gram dan dua ratus gram buat di rumah, dan satu kilo buat kedai.",
+   "x": 0.5
+  },
+  {
+   "src": "own_roast_3",
+   "t": 0.5,
+   "len": 5,
+   "big": "SIAP DIPESAN",
+   "sub": "WhatsApp atau Shopee",
+   "say": "Pesan langsung lewat WhatsApp, ya."
+  }
+ ],
+ "end": {
+  "big": "BRIGHT",
+  "sub": "raisin · orange · lemon zest",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Houseblend BRIGHT: full Arabica, gabungan proses natural dan washed. Catatan rasa: raisin, orange, lemon zest. Kemasan 100 gr dan 200 gr untuk di rumah, 1 kg untuk kedai.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#houseblend #kopiarabika #fullarabika #kopinusantara #titikasalkopi"
+}

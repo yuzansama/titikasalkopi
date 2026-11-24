@@ -1,0 +1,54 @@
+{
+ "slug": "edu-rasio-kopi-air",
+ "shots": [
+  {
+   "src": "RB1ZJTa9A6w",
+   "t": 0,
+   "len": 8,
+   "big": "RASIO\nKOPI : AIR",
+   "sub": "",
+   "say": "Butuh berapa banyak kopi buat sekian air?",
+   "say_baku": "Berapa banyak kopi untuk sekian air?",
+   "x": 0.45
+  },
+  {
+   "src": "at7d-_qsp7Y",
+   "t": 14,
+   "len": 10,
+   "big": "55 GRAM\nPER LITER",
+   "sub": "patokan Golden Cup SCA",
+   "say": "Patokan Golden Cup SCA itu sekitar lima puluh lima gram kopi buat satu liter air.",
+   "say_baku": "Patokan Golden Cup SCA: sekitar lima puluh lima gram kopi untuk satu liter air.",
+   "x": 0.5
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 140,
+   "len": 5,
+   "big": "± 1 : 18",
+   "sub": "1 gram kopi : 18 ml air",
+   "say": "Jadi kira-kira satu banding delapan belas.",
+   "say_baku": "Kira-kira satu banding delapan belas.",
+   "x": 0.54
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 6,
+   "len": 7.5,
+   "big": "TIMBANG",
+   "sub": "NCA: 1:13 – 1:16 untuk pour over",
+   "say": "Kalau pour over, NCA kasih rentang satu banding tiga belas sampai enam belas. Timbang dulu, terus sesuaikan sama seleramu.",
+   "say_baku": "Untuk pour over, NCA memberi rentang satu banding tiga belas sampai enam belas. Timbang, lalu sesuaikan seleramu.",
+   "x": 0.5,
+   "zoom": 0.85,
+   "y": 0
+  }
+ ],
+ "end": {
+  "big": "RASIO",
+  "sub": "mulai dari 1:18, lalu sesuaikan",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Rasio kopi : air. Patokan Golden Cup SCA sekitar 55 gram kopi per 1 liter air, kira-kira 1:18. Untuk pour over, NCA memberi rentang 1:13 sampai 1:16. Timbang, lalu sesuaikan dengan seleramu.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#rasiokopi #manualbrew #tipskopi #edukasikopi #titikasalkopi"
+}

@@ -1,0 +1,50 @@
+{
+ "slug": "edu-single-origin-vs-blend",
+ "shots": [
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 237,
+   "len": 2.95,
+   "big": "SINGLE ORIGIN\nATAU BLEND?",
+   "sub": "",
+   "say": "Single origin atau blend, ya?",
+   "say_baku": "Single origin atau blend?",
+   "x": 0.38
+  },
+  {
+   "src": "xOLf01l78i4",
+   "t": 134,
+   "len": 6.2,
+   "big": "SINGLE ORIGIN",
+   "sub": "dari satu asal",
+   "say": "Single origin itu kopi tanpa campuran, dari satu negara, daerah, dan panen.",
+   "say_baku": "Single origin: kopi tanpa campuran, dari satu negara, daerah, dan panen.",
+   "x": 0.3
+  },
+  {
+   "src": "4MmIogL_xGw",
+   "t": 0.5,
+   "len": 9,
+   "big": "BLEND",
+   "sub": "campuran beberapa kopi",
+   "say": "Kalau blend, campuran dua atau lebih kopi single origin.",
+   "say_baku": "Blend: campuran dua atau lebih kopi single origin."
+  },
+  {
+   "src": "FqdmS91CCcU",
+   "t": 36,
+   "len": 12,
+   "big": "DI TITIK\nASAL KOPI",
+   "sub": "single origin & houseblend",
+   "say": "Di Titik Asal Kopi ada dua-duanya: single origin dari Papua, Kupang, Sumatera, dan Jawa, juga houseblend.",
+   "say_baku": "Di Titik Asal Kopi ada keduanya: single origin dari Papua, Kupang, Sumatera, dan Jawa, juga houseblend."
+  }
+ ],
+ "end": {
+  "big": "PILIH RASAMU",
+  "sub": "single origin atau houseblend",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Single origin: kopi tanpa campuran, dari satu negara, daerah, dan panen. Blend: campuran dua atau lebih kopi single origin.\nDi Titik Asal Kopi ada keduanya: single origin dari Papua, Kupang, Sumatera, dan Jawa, juga Houseblend Bold, Bright, dan Full Robusta.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#singleorigin #houseblend #kopinusantara #edukasikopi #titikasalkopi"
+}

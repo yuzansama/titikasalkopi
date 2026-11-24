@@ -1,0 +1,49 @@
+{
+ "slug": "roasting-sebelum-sesudah",
+ "src_audio": 0.3,
+ "shots": [
+  {
+   "src": "own_roast_5",
+   "t": 5,
+   "len": 3,
+   "x": 0.55,
+   "big": "SEBELUM",
+   "sub": "biji kopi hijau",
+   "say": "Ini biji kopi hijau, sebelum disangrai."
+  },
+  {
+   "src": "own_roast_11",
+   "t": 10,
+   "len": 3,
+   "x": 0.5,
+   "big": "SESUDAH",
+   "sub": "baru keluar dari mesin",
+   "say": "Dan ini sesudahnya."
+  },
+  {
+   "src": "own_roast_12",
+   "t": 0,
+   "len": 5,
+   "x": 0.5,
+   "big": "BERAT TURUN\n15–18%",
+   "sub": "volume ± dua kali lipat",
+   "say": "Beratnya berkurang lima belas sampai delapan belas persen, tapi volumenya kira-kira jadi dua kali lipat."
+  },
+  {
+   "src": "own_roast_8",
+   "t": 0,
+   "len": 6,
+   "x": 0.5,
+   "big": "SAMPAI\nKE CANGKIRMU",
+   "sub": "",
+   "say": "Dari mesin sangrai kami, sampai ke cangkirmu."
+  }
+ ],
+ "end": {
+  "big": "SEBELUM &\nSESUDAH",
+  "sub": "berat turun, volume naik",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Sebelum dan sesudah disangrai: berat biji kopi berkurang 15–18%, tapi volumenya kira-kira jadi dua kali lipat. Semua footage dari tempat roasting kami sendiri.\nPesan lewat WA 0851-2155-9488, Shopee: Titikasalkopi, atau bot Telegram @mas_bas_bot.\n\n#roastingkopi #bijikopi #edukasikopi #kopinusantara #titikasalkopi"
+}

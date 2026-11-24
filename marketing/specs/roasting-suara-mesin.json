@@ -1,0 +1,38 @@
+{
+ "src_audio": 0.9,
+ "shots": [
+  {
+   "src": "own_roast_2",
+   "t": 0,
+   "len": 6,
+   "big": "SUARA\nROASTING",
+   "sub": "nyalakan suaramu",
+   "min": 6
+  },
+  {
+   "src": "own_roast_3",
+   "t": 0,
+   "len": 5.9,
+   "big": "FRESH ROAST",
+   "sub": "baru keluar dari mesin",
+   "min": 5.9
+  },
+  {
+   "src": "own_roast_2",
+   "t": 6,
+   "len": 10,
+   "big": "DIDINGINKAN",
+   "sub": "supaya proses sangrainya berhenti",
+   "say": "Habis keluar dari mesin, biji kopi langsung didinginkan, supaya proses sangrainya berhenti.",
+   "min": 9
+  }
+ ],
+ "end": {
+  "big": "FRESH ROAST",
+  "sub": "Single Origin · Houseblend",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Suara mesin roasting Titik Asal Kopi. Biji yang baru keluar langsung didinginkan supaya proses sangrainya berhenti.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#roastingkopi #asmrkopi #kopiroasted #ngopi #titikasalkopi",
+ "slug": "roasting-suara-mesin"
+}

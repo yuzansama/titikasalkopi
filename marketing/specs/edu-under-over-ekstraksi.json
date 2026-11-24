@@ -1,0 +1,52 @@
+{
+ "slug": "edu-under-over-ekstraksi",
+ "shots": [
+  {
+   "src": "bq0yWTsO0t8",
+   "t": 0,
+   "len": 8,
+   "big": "ASAM?\nATAU PAHIT?",
+   "sub": "",
+   "say": "Kopimu terlalu asam, atau malah terlalu pahit?",
+   "say_baku": "Kopimu terlalu asam, atau terlalu pahit?",
+   "x": 0.45
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 228,
+   "len": 12,
+   "big": "KURANG\nEKSTRAKSI",
+   "sub": "asam, tipis, hampa",
+   "say": "Kalau asam, tipis, dan hampa, biasanya kurang ekstraksi. Coba giling lebih halus.",
+   "say_baku": "Asam, tipis, dan hampa biasanya kurang ekstraksi. Coba giling lebih halus.",
+   "x": 0.54
+  },
+  {
+   "src": "TiDxIropKuU",
+   "t": 0,
+   "len": 9,
+   "big": "KELEBIHAN\nEKSTRAKSI",
+   "sub": "pahit, kasar, sepat",
+   "say": "Kalau pahit, kasar, dan sepat, biasanya kelebihan ekstraksi. Coba giling lebih kasar.",
+   "say_baku": "Pahit, kasar, dan sepat biasanya kelebihan ekstraksi. Coba giling lebih kasar.",
+   "x": 0.45
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 41,
+   "len": 10,
+   "big": "UBAH SATU\nHAL SAJA",
+   "sub": "mulai dari gilingan",
+   "say": "Ubah satu hal aja dulu, misalnya gilingan, terus cicipi lagi.",
+   "say_baku": "Ubah satu hal saja dulu, misalnya gilingan, lalu cicipi lagi.",
+   "x": 0.56
+  }
+ ],
+ "end": {
+  "big": "EKSTRAKSI",
+  "sub": "cari titik pas rasamu",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Kopi terlalu asam, tipis, dan hampa? Biasanya kurang ekstraksi: coba giling lebih halus. Terlalu pahit, kasar, dan sepat? Biasanya kelebihan ekstraksi: coba giling lebih kasar. Ubah satu hal saja dulu, lalu cicipi lagi.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#ekstraksikopi #manualbrew #tipskopi #edukasikopi #titikasalkopi"
+}

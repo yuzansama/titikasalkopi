@@ -1,0 +1,53 @@
+{
+ "slug": "edu-level-sangrai",
+ "shots": [
+  {
+   "src": "4MmIogL_xGw",
+   "t": 0.5,
+   "len": 9,
+   "big": "LIGHT, MEDIUM,\nATAU DARK?",
+   "sub": "",
+   "say": "Light, medium, atau dark roast? Ini bedanya."
+  },
+  {
+   "src": "own_roast_1",
+   "t": 9.5,
+   "len": 4.3,
+   "big": "MAKIN LAMA",
+   "sub": "makin gelap warnanya",
+   "say": "Makin lama disangrai, warna biji makin gelap."
+  },
+  {
+   "src": "C1sks8ZKuL0",
+   "t": 52,
+   "len": 6,
+   "big": "LIGHT ROAST",
+   "sub": "cokelat muda, acidity terasa",
+   "say": "Light roast: cokelat muda, acidity-nya lebih terasa.",
+   "x": 0.55
+  },
+  {
+   "src": "FqdmS91CCcU",
+   "t": 6,
+   "len": 6,
+   "big": "MEDIUM ROAST",
+   "sub": "cokelat sedang, tidak berminyak",
+   "say": "Medium: cokelat sedang, tidak berminyak, rasanya lebih kuat."
+  },
+  {
+   "src": "Rpy0LmYeEfU",
+   "t": 24,
+   "len": 10,
+   "big": "DARK ROAST",
+   "sub": "mengilap, lebih pahit",
+   "say": "Dark roast: biji mengilap berminyak, pahitnya menonjol, acidity-nya lebih rendah."
+  }
+ ],
+ "end": {
+  "big": "LEVEL SANGRAI",
+  "sub": "pilih sesuai seleramu",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Light, medium, atau dark roast?\nLight: cokelat muda, acidity paling terasa. Medium: cokelat sedang, permukaan tidak berminyak, rasa lebih kuat. Dark: biji mengilap berminyak, pahitnya menonjol, acidity lebih rendah. Makin lama disangrai, makin gelap warnanya.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#roastlevel #lightroast #darkroast #edukasikopi #titikasalkopi"
+}

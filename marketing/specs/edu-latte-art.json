@@ -1,0 +1,52 @@
+{
+ "slug": "edu-latte-art",
+ "shots": [
+  {
+   "src": "fffMlAK3BFw",
+   "t": 0,
+   "len": 5,
+   "big": "LATTE ART",
+   "sub": "",
+   "say": "Latte art mulainya dari mana? Secangkir espresso.",
+   "say_baku": "Latte art dimulai dari secangkir espresso.",
+   "x": 0.55
+  },
+  {
+   "src": "fffMlAK3BFw",
+   "t": 5,
+   "len": 8,
+   "big": "MICROFOAM",
+   "sub": "susu steam berbusa halus",
+   "say": "Terus dituang microfoam, yaitu susu yang di-steam sampai busanya halus banget.",
+   "say_baku": "Lalu dituang microfoam, susu yang di-steam sampai busanya sangat halus.",
+   "x": 0.55
+  },
+  {
+   "src": "fffMlAK3BFw",
+   "t": 13,
+   "len": 7,
+   "big": "POLA DARI\nTUANGAN",
+   "sub": "dibentuk saat menuang",
+   "say": "Polanya terbentuk dari cara kita menuang susu ke espresso.",
+   "say_baku": "Polanya terbentuk dari cara menuang susu ke espresso.",
+   "x": 0.55
+  },
+  {
+   "src": "fffMlAK3BFw",
+   "t": 20,
+   "len": 7,
+   "big": "HATI, TULIP,\nROSETTA",
+   "sub": "pola dasar latte art",
+   "say": "Pola dasarnya, antara lain hati, tulip, sama rosetta.",
+   "say_baku": "Pola dasarnya antara lain hati, tulip, dan rosetta.",
+   "x": 0.55
+  }
+ ],
+ "end": {
+  "big": "LATTE ART",
+  "sub": "espresso + microfoam",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Latte art dibuat dengan menuang microfoam, susu yang di-steam sampai busanya sangat halus, ke espresso. Polanya terbentuk dari cara menuang; pola dasarnya antara lain hati, tulip, dan rosetta.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#latteart #microfoam #kopisusu #edukasikopi #titikasalkopi"
+}

@@ -4,3 +4,13 @@ out/
 .env*
 !.env.example
 .DS_Store
+
+# reels: downloaded sources, renders and local state
+marketing/src/
+marketing/out/
+marketing/out_review/
+marketing/out_old/
+marketing/tts_cache/
+marketing/post_reels.log
+marketing/posted.json
+__pycache__/

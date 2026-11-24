@@ -1,0 +1,51 @@
+{
+ "slug": "edu-kopi-tubruk",
+ "shots": [
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 269.65,
+   "len": 4.3,
+   "big": "KOPI TUBRUK",
+   "sub": "",
+   "say": "Tahu kopi tubruk? Cara seduh khas Indonesia.",
+   "say_baku": "Kopi tubruk, cara seduh khas Indonesia.",
+   "x": 0.45
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 244,
+   "len": 4.85,
+   "big": "BUBUK HALUS",
+   "sub": "langsung di gelas",
+   "say": "Bubuk kopi halusnya langsung masuk ke gelas, mau tambah gula juga boleh.",
+   "say_baku": "Bubuk kopi halus dimasukkan langsung ke gelas, boleh ditambah gula."
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 256,
+   "len": 7.8,
+   "big": "SIRAM\nAIR PANAS",
+   "sub": "tanpa saringan",
+   "say": "Terus disiram air panas, tanpa saringan apa pun.",
+   "say_baku": "Lalu disiram air panas, tanpa saringan apa pun.",
+   "x": 0.55
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 264,
+   "len": 4.8,
+   "big": "AMPAS\nMENGENDAP",
+   "sub": "di dasar gelas",
+   "say": "Karena nggak pakai saringan, ampasnya mengendap di dasar gelas.",
+   "say_baku": "Karena tanpa saringan, ampasnya mengendap di dasar gelas.",
+   "x": 0.45
+  }
+ ],
+ "end": {
+  "big": "KOPI TUBRUK",
+  "sub": "sederhana, khas Indonesia",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Kopi tubruk: bubuk kopi halus dimasukkan langsung ke gelas (boleh ditambah gula), lalu disiram air panas tanpa saringan. Ampasnya mengendap di dasar gelas.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#kopitubruk #kopiindonesia #caraseduhkopi #edukasikopi #titikasalkopi"
+}
