@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { Container, SectionHeading } from "@/components/ui/container";
-import { CARD } from "@/components/ui/styles";
 import { catalogGroups } from "@/data/catalog";
 import { segeraHadir } from "@/data/segera-hadir";
 import { ViewEvent } from "@/features/analytics/view-event";
 import { ProductGrid } from "@/features/catalog/product-grid";
+import { SegeraHadirCard } from "@/features/catalog/segera-hadir-card";
 import { breadcrumbJsonLd, katalogMetadata } from "@/lib/seo";
 
 /* ADR-01 */
@@ -37,23 +36,13 @@ export default function KatalogPage() {
           resmi; ongkos kirim dikonfirmasi lewat WhatsApp.
         </p>
 
-        {segeraHadir.map((kopi) => (
-          <Link
-            key={kopi.slug}
-            href={`/segera-hadir/${kopi.slug}`}
-            className={`${CARD} mt-8 flex items-center justify-between gap-4 p-5 hover:ring-primary/30`}
-          >
-            <span>
-              <span className="block font-heading text-sm font-semibold uppercase tracking-[0.2em] text-rust">
-                Segera hadir
-              </span>
-              <span className="mt-1 block font-display text-xl font-semibold text-primary">
-                {kopi.name}, {kopi.wilayah}
-              </span>
-            </span>
-            <span className="shrink-0 font-semibold text-rust underline underline-offset-4">Lihat</span>
-          </Link>
-        ))}
+        {segeraHadir.length > 0 ? (
+          <div className="mt-8 max-w-2xl space-y-3">
+            {segeraHadir.map((kopi) => (
+              <SegeraHadirCard key={kopi.slug} kopi={kopi} />
+            ))}
+          </div>
+        ) : null}
 
         {catalogGroups.map((group, index) => (
           <section key={group.id} className="mt-12" aria-labelledby={group.id}>

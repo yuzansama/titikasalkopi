@@ -1184,11 +1184,13 @@ check("SEGERA HADIR: Solok tanpa harga, tanpa klaim lot, tanpa nama yang dilindu
   assert.ok(teks.includes("bukan data lot"), "fakta kawasan tidak ditandai sebagai fakta kawasan");
 });
 
-check("SEGERA HADIR: katalog menautkan Solok", () => {
-  assert.ok(
-    pages.get("katalog").html.includes(`${SITE_BASE_PATH}/segera-hadir/solok`),
-    "katalog tidak menautkan halaman Solok",
-  );
+check("SEGERA HADIR: beranda dan katalog menautkan Solok", () => {
+  for (const route of ["", "katalog"]) {
+    assert.ok(
+      pages.get(route).html.includes(`${SITE_BASE_PATH}/segera-hadir/solok`),
+      `/${route} tidak menautkan halaman Solok`,
+    );
+  }
 });
 
 check("QR: sitemap tidak memuat /q", () => {

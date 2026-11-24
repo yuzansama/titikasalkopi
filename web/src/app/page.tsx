@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Container, SectionHeading } from "@/components/ui/container";
 import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
 import { featuredHouseblend } from "@/data/catalog";
+import { segeraHadir } from "@/data/segera-hadir";
 import { ProductGrid } from "@/features/catalog/product-grid";
+import { SegeraHadirCard } from "@/features/catalog/segera-hadir-card";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { homeMetadata, organizationJsonLd } from "@/lib/seo";
 import { site, waLink } from "@/lib/site";
@@ -79,6 +81,17 @@ export default function HomePage() {
           </Link>
         </p>
       </Container>
+
+      {/* Segera hadir — kopi yang sudah diumumkan, belum dijual (src/data/segera-hadir.ts). */}
+      {segeraHadir.length > 0 ? (
+        <Container className="pb-4">
+          <div className="max-w-2xl space-y-3">
+            {segeraHadir.map((kopi) => (
+              <SegeraHadirCard key={kopi.slug} kopi={kopi} />
+            ))}
+          </div>
+        </Container>
+      ) : null}
 
       {/* Ajakan memesan — FR-26 */}
       {/* D-13: <OrderSteps /> tidak lagi dipasang di beranda. Blok itu utuh di
