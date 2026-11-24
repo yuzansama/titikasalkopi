@@ -34,7 +34,7 @@ jobs:
     env:
       # Same Apps Script Web app as /lacak - one deployment serves the order
       # book and the catalogue. Keep in step with pages.yml.
-      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbzGbe4W2zxmPp9fErxcbG9MN2ZSau4qAjmyNNrmSke56_FJvakzr_HAyECwoVWdMQ74RQ/exec
+      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbwat_rXKbsLHMdF1Dlj7odKBBz23tp0BL2AQqrzUTrWynPrq04eY3njBrHl4HHbD9vKmQ/exec
     steps:
       - uses: actions/checkout@v4
 

@@ -45,7 +45,7 @@ jobs:
       BASE_PATH: /titikasalkopi
       SITE_ENV: preview
       NEXT_PUBLIC_SITE_ORIGIN: https://yuzansama.github.io
-      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbzGbe4W2zxmPp9fErxcbG9MN2ZSau4qAjmyNNrmSke56_FJvakzr_HAyECwoVWdMQ74RQ/exec
+      NEXT_PUBLIC_TRACKING_ENDPOINT: https://script.google.com/macros/s/AKfycbwat_rXKbsLHMdF1Dlj7odKBBz23tp0BL2AQqrzUTrWynPrq04eY3njBrHl4HHbD9vKmQ/exec
     steps:
       - uses: actions/checkout@v4
 
