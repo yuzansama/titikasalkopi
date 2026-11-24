@@ -1,0 +1,17 @@
+# systemd unit for the Telegram bot on the GCE VM "bot-kopi" (user kopi). Install:
+#   sudo cp bot-kopi.service /etc/systemd/system/ && sudo systemctl enable --now bot-kopi
+# The Telegram token lives only in /home/kopi/.tg_env (chmod 600, copied with scp, never in git).
+[Unit]
+Description=Titik Asal Kopi Telegram bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=kopi
+Environment=TG_TOKEN_FILE=/home/kopi/.tg_env
+ExecStart=/usr/bin/python3 -u /home/kopi/bot/bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
