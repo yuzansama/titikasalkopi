@@ -119,6 +119,8 @@ const PUBLIC_ROUTES = [
   "produk/kerinci",
   "produk/pondok-baru",
   "produk/sindoro",
+  // Kopi yang segera hadir (src/data/segera-hadir.ts): terindeks, belum dijual.
+  "segera-hadir/solok",
 ];
 
 const CART_ROUTE = "keranjang";
@@ -142,7 +144,7 @@ const robotsOf = (html) => attr(html, /<meta name="robots" content="([^"]*)"/);
 /* 1. Kelengkapan rute                                                 */
 /* ------------------------------------------------------------------ */
 
-check("FR-01/FR-09: 15 rute publik Fase 1a hadir di hasil build", () => {
+check(`FR-01/FR-09: ${PUBLIC_ROUTES.length} rute publik hadir di hasil build`, () => {
   const missing = PUBLIC_ROUTES.filter((route) => !pages.has(route));
   assert.deepEqual(missing, [], `rute hilang: ${missing.join(", ")}`);
 });
@@ -622,7 +624,7 @@ check("FR-45: sitemap.xml dibangun", () => {
   assert.ok(readSitemap(), "sitemap.xml tidak ditemukan di folder build");
 });
 
-check("FR-45: sitemap memuat PERSIS 16 URL yang diharapkan", () => {
+check(`FR-45: sitemap memuat PERSIS ${PUBLIC_ROUTES.length} URL yang diharapkan`, () => {
   const xml = readSitemap();
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
     m[1].replace(/\/$/, ""),
@@ -1165,6 +1167,28 @@ check("QR: kopi di luar katalog (Peneli) tetap punya halaman, tanpa tautan produ
     assert.ok(html.includes("Peneli"), `/q/${kode} tidak menyebut Peneli`);
     assert.ok(!html.includes("Tentang kopi ini"), `/q/${kode} menautkan halaman produk yang tidak ada`);
   }
+});
+
+check("SEGERA HADIR: Solok tanpa harga, tanpa klaim lot, tanpa nama yang dilindungi", () => {
+  const html = pages.get("segera-hadir/solok").html;
+  const teks = html.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ");
+  assert.ok(/Segera hadir/i.test(teks), "label segera hadir hilang");
+  assert.ok(html.includes("https://wa.me/"), "tombol kabari lewat WhatsApp hilang");
+  assert.ok(!/Rp\s?\d/.test(teks), "halaman segera hadir menampilkan harga");
+  // docs riset owner: nama IG dan merek koperasi tidak boleh dipakai tanpa izin.
+  assert.ok(!/Minang Solok|Solok Radjo/i.test(teks), "nama IG atau Solok Radjo muncul di halaman");
+  // Data lot belum ada; yang ada di mockup kemasan belum terverifikasi.
+  for (const klaim of ["Washed", "1.200", "Citrusy", "Medium"]) {
+    assert.ok(!teks.includes(klaim), `klaim lot belum terverifikasi tampil: ${klaim}`);
+  }
+  assert.ok(teks.includes("bukan data lot"), "fakta kawasan tidak ditandai sebagai fakta kawasan");
+});
+
+check("SEGERA HADIR: katalog menautkan Solok", () => {
+  assert.ok(
+    pages.get("katalog").html.includes(`${SITE_BASE_PATH}/segera-hadir/solok`),
+    "katalog tidak menautkan halaman Solok",
+  );
 });
 
 check("QR: sitemap tidak memuat /q", () => {

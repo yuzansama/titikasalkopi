@@ -196,6 +196,16 @@ export function kontakMetadata(): Metadata {
   });
 }
 
+/** `/segera-hadir/<slug>` — kopi yang sudah diumumkan, belum dijual. Terindeks. */
+export function segeraHadirMetadata(kopi: { slug: string; name: string; wilayah: string; ringkas: string }): Metadata {
+  return buildPageMetadata({
+    title: `Segera Hadir: ${kopi.name}, ${kopi.wilayah}`,
+    description: `Single origin ${kopi.name}, ${kopi.wilayah}, segera hadir di ${site.name}. ${kopi.ringkas} Minta dikabari lewat WhatsApp saat tersedia.`,
+    path: `/segera-hadir/${kopi.slug}`,
+    keywords: [`kopi ${kopi.name}`, `kopi ${kopi.wilayah}`, `arabika ${kopi.name}`],
+  });
+}
+
 /** Rute 16 — `/keranjang`. Tidak diindeks: tidak ada isi yang layak (Bagian 3.2). */
 export function keranjangMetadata(): Metadata {
   return buildPageMetadata({

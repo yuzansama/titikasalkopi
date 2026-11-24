@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { houseblendLines, singleOriginProducts } from "@/data/catalog";
+import { segeraHadir } from "@/data/segera-hadir";
 import { canonicalUrl } from "@/lib/site";
 
 /**
@@ -43,6 +44,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 0.9,
+    })),
+    ...segeraHadir.map((kopi) => ({
+      url: canonicalUrl(`/segera-hadir/${kopi.slug}`),
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
     })),
   ];
 }
