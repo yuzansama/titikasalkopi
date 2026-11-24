@@ -93,8 +93,9 @@ export function waLink(message?: string): string {
 }
 
 export const instagram = {
-  handle: "@Titikasalkopi",
-  username: "Titikasalkopi",
+  // Username Instagram selalu huruf kecil; ditulis persis seperti di aplikasinya.
+  handle: "@titikasalkopi",
+  username: "titikasalkopi",
   url: "https://instagram.com/titikasalkopi",
 } as const;
 
