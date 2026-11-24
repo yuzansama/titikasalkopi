@@ -160,7 +160,8 @@ def record_items(lines):
 
 def record(code, last4, items):
     """POST the order to the order book once, in the background; the result is ignored, so a dead endpoint never
-    holds up the order (contract section 5). `source` is ignored until the Apps Script learns it."""
+    holds up the order (contract section 5). `source` puts the row in the order book's "telegram"
+    source with its own daily cap (ops/order-tracker.gs)."""
     if not CODE_PATTERN.match(code):
         return
     body = json.dumps({"code": code, "last4": last4 if re.fullmatch(r"\d{4}", last4 or "") else "",

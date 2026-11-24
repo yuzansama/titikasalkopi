@@ -180,13 +180,12 @@ Content-Type: text/plain;charset=UTF-8
 3. **Jangan mengirim data pribadi** di `items` (nama, alamat, nomor lengkap). Kolom itu dibaca
    owner, dan `items` ditampilkan ke pembeli di `/lacak`.
 
-**Perubahan yang dibutuhkan bot, belum dikerjakan:**
-Apps Script sekarang menulis kolom `sumber` = `web` untuk **setiap** baris otomatis, dan kuota
-harian hanya menghitung baris `web`. Supaya pesanan bot bisa dibedakan dan punya kuota
-sendiri, `ops/order-tracker.gs` perlu menerima medan `source` (`web` atau `telegram`).
-Ubah di repo lewat PR (berkas itu dijaga `web/scripts/check-order-tracker-gs.mjs`), lalu owner
-menempel ulang skripnya dan deploy versi baru. **Jangan** mengubah skrip langsung di editor
-Google tanpa memperbarui repo.
+**Medan `source` (24 Nov 2026):** bot mengirim `"source":"telegram"`. `ops/order-tracker.gs` menulis
+kolom `sumber` = `telegram` untuk baris itu, dan `web` untuk POST tanpa `source` atau dengan nilai lain.
+Kuota harian dihitung per sumber: `web` 50 baris, `telegram` 20 baris (`DAILY_TELEGRAM_ROW_CAP`), jadi bot
+tidak menghabiskan jatah web. **Owner perlu menempel ulang skripnya dan deploy versi baru**; sampai itu,
+skrip lama mengabaikan `source` dan mencatat pesanan bot sebagai `web`. Jangan mengubah skrip langsung di
+editor Google tanpa memperbarui repo.
 
 **`<ENDPOINT>`:** nilai `NEXT_PUBLIC_TRACKING_ENDPOINT` di `.github/workflows/pages.yml`
 (URL Web App Apps Script yang berakhiran `/exec`). URL ini memang publik. Keamanannya ada di
@@ -251,7 +250,7 @@ Berkas: `web/src/lib/site.ts`.
 - [ ] Kode order `TAK-YYMMDD-XXXX`, acak, tanggal WIB, satu per checkout.
 - [ ] Teks pesan mengikuti bagian 4 (format jumlah, `Rp`, keterangan ongkir, catatan ≤200).
 - [ ] Pencatatan ke buku order: POST `{code,last4,items}`, sekali kirim, tidak menghambat pesanan.
-- [ ] `source: "telegram"` setelah Apps Script diperbarui (bagian 5).
+- [x] `source: "telegram"`, dengan kuota sendiri (bagian 5). Aktif setelah owner deploy ulang Apps Script.
 - [ ] Pelacakan: satu pesan "tidak ketemu", tidak ada percobaan ulang otomatis.
 - [ ] Tidak ada pembayaran di bot. Ongkir dan total akhir dikonfirmasi lewat chat.
 - [ ] Solok hanya "segera hadir". Tanpa data lot, tanpa nama Indikasi Geografis, tanpa "Solok Radjo".
