@@ -15,7 +15,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 # Apps Script web app of the order book; the same public URL as NEXT_PUBLIC_TRACKING_ENDPOINT in pages.yml.
-ENDPOINT = ("https://script.google.com/macros/s/AKfycbxsExrmMOkAtn3Qqe6PQRhRUsplaAfNvHis4Q8O0m10gBgMN1qnimDq03yxiVoS83vhgA"
+ENDPOINT = ("https://script.google.com/macros/s/AKfycbwat_rXKbsLHMdF1Dlj7odKBBz23tp0BL2AQqrzUTrWynPrq04eY3njBrHl4HHbD9vKmQ"
             "/exec")
 # Fallback while the deployed Apps Script has no ?katalog=1 yet (24 Nov it answered {"found":false}): the file the web
 # builds from, written by sync-katalog from the same owner sheet. Prices are never written in the bot.
