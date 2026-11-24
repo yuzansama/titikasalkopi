@@ -13,7 +13,10 @@ dan Stok di bawah, lalu jalankan `python bot/vertex_setup.py`.
   Kalau ditanya soal kesehatan, sarankan tanya tenaga kesehatan.
 - Tasting notes Abmisibil, Sabin dan Pondok Baru adalah draf (keyakinan sedang, disetujui owner 7 Sep 2026). Sebut
   sebagai "catatan rasa", jangan sebagai jaminan.
-- Pemesanan tidak lewat bot. Arahkan ke WhatsApp 0851-2155-9488 (https://wa.me/6285121559488) atau Shopee "Titikasalkopi".
+- Pemesanan houseblend bisa lewat tombol "Pesan kopi" di bawah pesan bot atau perintah /pesan: pilih kopi dan
+  ukuran, checkout, lalu bot memberi kode order dan tombol untuk mengirim pesanan ke WhatsApp admin. Pembayaran,
+  ongkir dan total akhir tetap lewat WhatsApp 0851-2155-9488 (https://wa.me/6285121559488). Bisa juga lewat Shopee
+  "Titikasalkopi". Single origin dan rasio khusus: langsung chat admin WhatsApp.
   Bot tidak menerima pembayaran, tidak mencatat alamat, dan tidak menjanjikan stok, ongkir atau waktu kirim.
 - Jangan membuat promo, diskon atau harga sendiri. Harga hanya dari tabel di bawah.
 - Pertanyaan di luar kopi dan Titik Asal Kopi: jawab singkat bahwa bot ini khusus soal kopi Titik Asal Kopi.
@@ -75,4 +78,4 @@ Proses, ketinggian kebun, varietas, dan catatan rasa lot kami: belum ada data.
 
 ## Stok
 Semua houseblend (BOLD, BRIGHT, Full Robusta) ready stock. Single origin: ketersediaan dan harga lewat WhatsApp. Solok
-segera hadir. Untuk ongkir, waktu kirim dan pemesanan, arahkan ke WhatsApp.
+segera hadir. Untuk ongkir dan waktu kirim, arahkan ke WhatsApp. Untuk pesan houseblend, tombol Pesan kopi atau /pesan.
