@@ -22,10 +22,31 @@ Path-nya dibaca lewat `placeholderImagePath(slug)` di `src/data/catalog.ts`.
 
 ## Mengganti dengan foto asli
 
-Lima produk sudah memakai gambar asli dan tidak lagi membaca folder ini:
-`abmisibil`, `sabin`, `pondok-baru`, `bold`, dan `bright`. Berkasnya ada di
+Sembilan produk sudah memakai gambar asli dan tidak lagi membaca folder ini:
+`abmisibil`, `sabin`, `pondok-baru`, `bold`, `bright`, lalu `oelbiteno`,
+`pyramid`, `palimping`, dan `kerinci`. Berkasnya ada di
 `web/src/images/produk/` — bukan di `public/` — supaya ikut hashing dan
 caching aset Next lewat impor statis (ADR-06).
+
+Yang masih placeholder tinggal **dua**: `sindoro` dan `full-robusta`. Keduanya
+tidak punya artwork di aset mana pun — poster origin hanya memuat tujuh nama
+dan Sindoro bukan salah satunya, sementara lembar houseblend hanya memotret
+BOLD dan BRIGHT.
+
+> **Utang mutu yang disengaja, 10 September 2026.** Empat gambar terakhir
+> (`oelbiteno`, `pyramid`, `palimping`, `kerinci`) BUKAN berasal dari kartu
+> origin tersendiri seperti lima yang pertama. Ia dipotong dari ubin kecil pada
+> poster `assets/brand/WhatsApp Image 2026-09-07 at 14.10.57.jpeg`, yang area
+> bebas teksnya hanya ±115×145 px, lalu diperbesar ke 560×700 — sekitar empat
+> kali. Hasilnya lembek dibanding tetangganya di grid yang sama, dan itu
+> diketahui saat dipasang: owner memilih memakai yang ada lebih dulu daripada
+> menunggu berkas desain. Aturan "jangan memperbesar melebihi ukuran asli" di
+> bawah dilanggar SEKALI di sini, dengan sadar, dan bukan preseden.
+>
+> Penggantinya: minta kartu origin Oelbiteno, Pyramid, Palimping, dan Kerinci
+> ke pembuat desain, dalam format yang sama dengan Abmisibil, Sabin, dan Pondok
+> Baru (±1400×1120). Begitu berkas itu ada, ganti keempatnya dan hapus catatan
+> ini.
 
 1. Kompres gambar ke rasio **4:5** dan **≤ 120 KB** (NFR-03 membatasi 150 KB
    per gambar; 120 KB memberi ruang aman). Jangan memperbesar melebihi ukuran
