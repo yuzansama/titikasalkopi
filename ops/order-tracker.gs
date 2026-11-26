@@ -31,7 +31,8 @@
  *
  * 4. `doPost` MENULIS ke sheet, dan ia terbuka untuk siapa pun. Tiga hal yang
  *    menahan penyalahgunaan, dan ketiganya wajib tetap ada:
- *    - Kuota harian baris otomatis (DAILY_WEB_ROW_CAP).
+ *    - Kuota harian baris otomatis per sumber (DAILY_WEB_ROW_CAP,
+ *      DAILY_TELEGRAM_ROW_CAP).
  *    - Teks dari luar dinetralkan sebelum ditulis, karena sel yang diawali
  *      `=`, `+`, `-`, atau `@` dieksekusi Sheets sebagai rumus. Tanpa ini,
  *      orang bisa menanam rumus yang berjalan saat owner membuka bukunya.
@@ -64,11 +65,14 @@ var LAST4_COLUMN = 'last4';
 
 /**
  * Kolom penanda asal baris: 'web' untuk yang dicatat otomatis saat pembeli
- * menekan tombol pesan, kosong untuk yang Anda ketik sendiri. Sengaja TIDAK
+ * menekan tombol pesan di situs, 'telegram' untuk checkout di bot Telegram
+ * (medan `source` di POST), kosong untuk yang Anda ketik sendiri. POST tanpa
+ * `source`, atau dengan nilai lain, dicatat sebagai 'web'. Sengaja TIDAK
  * masuk daftar putih — ini pembukuan internal, bukan urusan pembeli.
  */
 var SOURCE_COLUMN = 'sumber';
 var WEB_SOURCE = 'web';
+var TELEGRAM_SOURCE = 'telegram';
 
 /** Status awal setiap baris otomatis. Harus ada di kosakata situs. */
 var INITIAL_STATUS = 'menunggu-konfirmasi';
@@ -82,6 +86,14 @@ var INITIAL_STATUS = 'menunggu-konfirmasi';
  * longgar untuk pemakaian jujur dan tetap membatasi kerugian.
  */
 var DAILY_WEB_ROW_CAP = 50;
+
+/**
+ * Batas baris otomatis per hari dari bot Telegram, dihitung terpisah supaya
+ * bot tidak menghabiskan jatah web dan sebaliknya. Bot sendiri membatasi 20
+ * checkout sehari. Siapa pun bisa mengaku 'telegram', jadi pagar total
+ * endpoint ini menjadi 50 + 20 baris sehari.
+ */
+var DAILY_TELEGRAM_ROW_CAP = 20;
 
 /** Batas panjang ringkasan, disamakan dengan MAX_RECORD_ITEMS_LENGTH di situs. */
 var MAX_ITEMS_LENGTH = 200;
@@ -348,8 +360,10 @@ function doPost(e) {
       return json({ ok: false });
     }
 
+    var source = payload.source === TELEGRAM_SOURCE ? TELEGRAM_SOURCE : WEB_SOURCE;
+    var cap = source === TELEGRAM_SOURCE ? DAILY_TELEGRAM_ROW_CAP : DAILY_WEB_ROW_CAP;
     var stamp = today_();
-    var webRowsToday = 0;
+    var rowsToday = 0;
     var exists = false;
 
     for (var i = 0; i < table.rows.length; i += 1) {
@@ -358,10 +372,10 @@ function doPost(e) {
         exists = true;
       }
       if (
-        cell_(table.headers, row, SOURCE_COLUMN) === WEB_SOURCE &&
+        cell_(table.headers, row, SOURCE_COLUMN) === source &&
         cell_(table.headers, row, 'tanggal_pesan') === stamp
       ) {
-        webRowsToday += 1;
+        rowsToday += 1;
       }
     }
 
@@ -369,8 +383,8 @@ function doPost(e) {
     // seperti kode baru. Versi sebelumnya menjawab kode lama dengan
     // penanda "duplikat", bahkan sesudah kuota habis, sehingga siapa pun bisa
     // memastikan kode mana yang nyata tanpa menulis apa pun (aturan 2).
-    if (webRowsToday >= DAILY_WEB_ROW_CAP) {
-      console.warn('Kuota baris otomatis harian tercapai: ' + webRowsToday);
+    if (rowsToday >= cap) {
+      console.warn('Kuota baris otomatis harian ' + source + ' tercapai: ' + rowsToday);
       return json({ ok: false, capped: true });
     }
     // Kode yang sudah ada tidak pernah ditimpa. Ini yang membuat pengiriman
@@ -385,7 +399,7 @@ function doPost(e) {
     values['tanggal_pesan'] = stamp;
     values['tanggal_status'] = stamp;
     values['ringkasan'] = sanitizeCell_(payload.items);
-    values[SOURCE_COLUMN] = WEB_SOURCE;
+    values[SOURCE_COLUMN] = source;
 
     // Dirakit mengikuti urutan kolom yang benar-benar ada di sheet, sehingga
     // memindah atau menambah kolom tidak merusak apa pun.

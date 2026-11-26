@@ -166,6 +166,29 @@ check("KEAMANAN: kuota harian menutup endpoint setelah batasnya", () => {
   assert.equal(gs.rows().length, 50);
 });
 
+check("Bot Telegram: source telegram dicatat ber-sumber telegram, nilai lain jadi web", () => {
+  const gs = makeScript();
+  gs.doPost(body({ code: "TAK-261124-K7Q2", last4: "9567", items: "x", source: "telegram" }));
+  gs.doPost(body({ code: "TAK-261124-K7Q3", last4: "", items: "x", source: "=jahat" }));
+  assert.deepEqual(gs.rows().map((row) => row[col("sumber")]), ["telegram", "web"]);
+});
+
+check("Bot Telegram: kuota telegram terpisah dari kuota web", () => {
+  const A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const webRows = Array.from({ length: 50 }, (_, i) => [
+    `TAK-261124-W${A[i % 31]}${A[Math.floor(i / 31)]}B`, today, "", "menunggu-konfirmasi", today, "", "", "x", "web", "",
+  ]);
+  const gs = makeScript(HEADERS, webRows);
+  // Jatah web habis, tetapi bot tetap bisa mencatat sampai jatahnya sendiri.
+  let accepted = 0;
+  for (let i = 0; i < 25; i += 1) {
+    const result = parse(gs.doPost(body({ code: `TAK-261124-T${A[i]}QB`, last4: "", items: "x", source: "telegram" })));
+    if (result.ok) accepted += 1;
+  }
+  assert.equal(accepted, 20, `telegram diterima ${accepted}, seharusnya berhenti di 20`);
+  assert.deepEqual(parse(gs.doPost(body({ code: "TAK-261124-ZZZZ", last4: "", items: "x" }))), { ok: false, capped: true });
+});
+
 check("KEAMANAN: doPost tidak membedakan kode nyata dari kode karangan", () => {
   // Audit 22 Nov 2026. Bila jawabannya berbeda, doPost menjadi alat untuk
   // memastikan kode order mana yang ada, lalu last4-nya tinggal ditebak.

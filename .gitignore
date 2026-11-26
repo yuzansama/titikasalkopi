@@ -4,3 +4,13 @@ out/
 .env*
 !.env.example
 .DS_Store
+
+# reels: downloaded sources and renders
+marketing/src/
+marketing/out/
+marketing/post_reels.log
+marketing/out_review/
+marketing/tts_cache/
+marketing/out_old/
+bot/.tg_env
+bot/bot.log
