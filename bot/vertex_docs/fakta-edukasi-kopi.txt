@@ -190,6 +190,52 @@ Singkatan sumber yang dipakai berulang:
 2. Kiriman bibit 1699 berhasil tumbuh di Jawa. Sumber: lihat edu-sejarah-kopi-nusantara.
 3. **[brief]** Sindoro: Gunung Sindoro, Jawa Tengah. Palimping: Desa Palimping, Garut.
 
+## edu-americano
+1. Americano = satu shot espresso ditambah air panas, rasio 1:3 sampai 1:4. Sumber: WP-Caffè_Americano ("an espresso shot with hot water at a 1:3 to 1:4 ratio", dengan sitasi).
+2. Cerita tentara Amerika di Italia saat Perang Dunia II disebut WP sebagai "popular belief"; OED menyebutnya pinjaman dari bahasa Spanyol Amerika Tengah. Karena itu VO menyebutnya "cerita populer" dan "masih diperdebatkan".
+
+## edu-cappuccino-latte-flatwhite
+1. Cappuccino: espresso, susu panas, dan lapisan busa; proporsi klasik 1/3 espresso, 1/3 susu, 1/3 busa. Sumber: WP-Cappuccino (dengan sitasi).
+2. Latte: espresso dan susu panas, lebih banyak susu dan tanpa lapisan busa tebal; "much milkier ... resulting in a milder coffee taste" (kalimat ini tanpa sitasi). Sumber: WP-Caffè_latte.
+3. Flat white: "less milk and less microfoam than a latte" (dengan sitasi). Asal: "café owners in both Australia and New Zealand claim its invention" (tanpa sitasi; WP juga menyebut asalnya tidak jelas). Sumber: WP-Flat_white. VO memakai "sama-sama mengaku", tidak menyatakan siapa yang benar.
+
+## edu-ristretto-lungo
+1. Ristretto: kopi giling sama, air setengahnya (tanpa sitasi); diencerkan pun "less bitter ... more intense espresso character" (dengan sitasi). Sumber: WP-Ristretto.
+2. Lungo: air sekitar dua kali lipat. Rasio 1:1 ristretto, 1:2 normale, 1:4 lungo (dengan sitasi), dan istilahnya "relative terms without exact measurements" (dengan sitasi). Sumber: WP-Lungo.
+3. Doppio: shot ganda dengan dua kali jumlah kopi giling (dengan sitasi). Sumber: WP-Doppio.
+
+## edu-peaberry
+1. Normalnya dua biji dengan sisi datar berhadapan. Sumber: WP-Coffee_bean (lihat edu-anatomi-ceri-kopi).
+2. Peaberry: hanya satu biji yang dibuahi dan tumbuh tanpa ada yang meratakannya, jadi lonjong. Sumber: WP-Peaberry.
+3. Sekitar 5% biji yang dipanen (dengan sitasi). Sumber: WP-Peaberry; NCA-what juga "about 5%".
+4. "Often separated" demi sangrai yang rata (tanpa sitasi). Sumber: WP-Peaberry. VO memakai "sering".
+5. Footage biji makro adalah biji biasa, bukan peaberry; teks layar tidak menyebut biji di layar sebagai peaberry.
+
+## houseblend-bold, houseblend-bright
+1. **[brief]** BOLD: Arabica Natural dan Fine Robusta Natural; catatan rasa choco, almond, caramel. BRIGHT: full Arabica, natural dan washed; raisin, orange, lemon zest.
+2. Kemasan 100 gr, 200 gr (di rumah) dan 1 kg (kedai): `web/src/data/products.ts` dan docs/15-kontrak-pesanan-untuk-bot-telegram.md (24 Nov 2026). Harga sengaja tidak disebut karena diatur owner di sheet dan bisa berubah.
+
+## edu-cold-brew
+1. Cold brew: bubuk giling kasar direndam 12–24 jam (dengan sitasi); air biasanya suhu ruang, bisa air dingin (tanpa sitasi); bubuk tidak pernah bersentuhan dengan air panas (dengan sitasi). Sumber: WP-Cold_brew_coffee.
+2. Iced coffee diseduh panas lalu dituang ke es; cold brew dibuat tanpa panas (dengan sitasi). Sumber: WP-Iced_coffee.
+3. Klaim keasaman sengaja tidak dipakai: WP menyebut keasaman cold brew dan seduh panas mirip.
+
+## edu-dari-bunga-ke-panen
+1. Mulai berbunga 3–4 tahun setelah ditanam; panen pertama yang layak sekitar 5 tahun (dengan sitasi). Sumber: WP-Coffee_production.
+2. Buah matang sekitar 8 bulan setelah bunga muncul (tanpa sitasi). Sumber: WP-Coffee_production. VO memakai "sekitar".
+3. Di kebanyakan negara dipetik dengan tangan (dengan sitasi). Sumber: WP-Coffee_production.
+4. Footage kebun (Freestocks, Royalty Free Content) adalah ilustrasi, bukan kebun mitra.
+
+## bold-kopi-susu
+1. **[owner]** Flyer owner 24 Nov 2026 (brand/WhatsApp Image 2026-11-24 at 19.48.06.jpeg): BOLD body lebih tebal, cokelat, nutty, sedikit earthy; pas untuk kopi susu maupun espresso. Rasio 70/30 di flyer tidak disebut di reel, karena katalog web tidak memuat rasio.
+2. Kemasan 100 gr, 200 gr, 1 kg: lihat houseblend-bold. Harga tidak disebut.
+
+## roasting-di-dapur-kami, roasting-sebelum-sesudah
+1. Footage `own_roast_5`–`own_roast_12`: video asli roasting Titik Asal Kopi, diberikan owner 24 Nov 2026 (brand/WhatsApp Video 2026-11-24 19.56–20.04). Suara mesin aslinya dicampur pelan (src_audio 0.3).
+2. Maillard dan karamelisasi membentuk rasa, aroma, warna cokelat: lihat edu-kenapa-disangrai (WP-Coffee_roasting).
+3. Berat berkurang 15–18%, volume kira-kira dua kali lipat: lihat edu-kenapa-disangrai (WP-Coffee_roasting).
+4. Reel tidak menyebut level sangrai, suhu, atau lama sangrai produk.
+
 ---
 
 ## Catatan kekuatan sumber (untuk reviewer)
