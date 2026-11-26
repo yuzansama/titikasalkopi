@@ -35,7 +35,7 @@ export type SegeraHadir = {
 export const segeraHadir: SegeraHadir[] = [
   {
     slug: "solok",
-    name: "Solok",
+    name: "Solok Honey & Wash",
     wilayah: "Sumatera Barat",
     ringkas: "Arabika dari dataran tinggi Solok sedang kami siapkan.",
     image: {
@@ -57,6 +57,20 @@ export const segeraHadir: SegeraHadir[] = [
       },
     ],
   },
+];
+
+/**
+ * Kopi baru lain yang segera hadir (owner, 26 Nov 2026). Hanya nama dan
+ * wilayah dari owner: belum ada halaman sendiri, gambar, atau fakta kawasan.
+ * Begitu dijual, pindahkan ke katalog.
+ */
+export const segeraHadirLainnya: { name: string; wilayah: string }[] = [
+  { name: "Gn. Tiom", wilayah: "Papua" },
+  { name: "Peneli", wilayah: "Papua" },
+  { name: "Kersamanah Anaerob", wilayah: "Jawa Barat" },
+  { name: "Yellow Bourbon", wilayah: "Jawa Barat" },
+  { name: "Manglayang Honey", wilayah: "Jawa Barat" },
+  { name: "Blueberry Infused", wilayah: "Jawa Tengah" },
 ];
 
 const indeks = new Map(segeraHadir.map((k) => [k.slug, k]));

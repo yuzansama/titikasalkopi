@@ -4,7 +4,7 @@ import { buttonClass, CARD, FOCUS_RING } from "@/components/ui/styles";
 import { featuredHouseblend } from "@/data/catalog";
 import { segeraHadir } from "@/data/segera-hadir";
 import { ProductGrid } from "@/features/catalog/product-grid";
-import { SegeraHadirCard } from "@/features/catalog/segera-hadir-card";
+import { SegeraHadirCard, SegeraHadirLainnya } from "@/features/catalog/segera-hadir-card";
 import { ShopeeLink } from "@/features/contact/shopee-link";
 import { homeMetadata, organizationJsonLd } from "@/lib/seo";
 import { site, waLink } from "@/lib/site";
@@ -89,6 +89,7 @@ export default function HomePage() {
             {segeraHadir.map((kopi) => (
               <SegeraHadirCard key={kopi.slug} kopi={kopi} />
             ))}
+            <SegeraHadirLainnya />
           </div>
         </Container>
       ) : null}
