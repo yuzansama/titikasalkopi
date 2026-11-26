@@ -110,17 +110,18 @@ export const api = {
 
   /** Semua data untuk layar Kas (hanya owner; RLS menolak peran lain). */
   async kas() {
-    const [penjualan, belanja, setoran, pengembalian, pemodal, po] = await Promise.all([
+    const [penjualan, belanja, setoran, pengembalian, pemodal, po, poItem] = await Promise.all([
       sb.from("penjualan").select("id,uang_diterima,waktu,catatan,impor").order("waktu", { ascending: false }).limit(5000),
       sb.from("belanja").select("*").order("id", { ascending: false }),
       sb.from("setoran").select("*").order("id", { ascending: false }),
       sb.from("pengembalian").select("*").order("id", { ascending: false }),
       sb.from("pemodal").select("*").order("urutan"),
       sb.from("po").select("*").order("urutan"),
+      sb.from("po_item").select("*").order("urutan"),
     ]);
     return {
       penjualan: ok(penjualan), belanja: ok(belanja), setoran: ok(setoran),
-      pengembalian: ok(pengembalian), pemodal: ok(pemodal), po: ok(po),
+      pengembalian: ok(pengembalian), pemodal: ok(pemodal), po: ok(po), poItem: ok(poItem),
     };
   },
   async tambah(tabel, baris) {

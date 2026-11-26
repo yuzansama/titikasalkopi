@@ -18,8 +18,6 @@
  */
 
 import {
-  SINGLE_ORIGIN_MINI_PACK_GRAMS,
-  SINGLE_ORIGIN_PACKS_PER_BUNDLE,
   SINGLE_ORIGIN_PACK_GRAMS,
   houseblendBold,
   houseblendBright,
@@ -138,38 +136,17 @@ export function lineTotal(variant: Variant, qty: number): PriceIDR {
 /* ------------------------------------------------------------------ */
 
 function singleOriginVariants(bean: SingleOriginBean): Variant[] {
+  // Owner, 26 Nov 2026: single origin hanya dijual 200 gr, satu harga untuk semua
+  // tier. Kemasan 100 gr dan paket 3 pack disembunyikan; harganya tetap ada di
+  // sheet/managed.generated.ts supaya bisa dihidupkan lagi tanpa sinkron ulang.
   const pricing = singleOriginPricing[bean.tier];
-  const mini: Variant[] = bean.hasMiniPack
-    ? [
-        {
-          id: `${bean.slug}-mini1`,
-          label: `1 pack (${SINGLE_ORIGIN_MINI_PACK_GRAMS} gr)`,
-          // Satuan yang sama dengan lini Katalog Kopi 100 gram: keranjang,
-          // format kuantitas, dan pesan WhatsApp sudah mengenalnya (KD-07).
-          unit: "gram-100",
-          unitPrice: pricing.mini1,
-          minQty: 1,
-          step: 1,
-        },
-      ]
-    : [];
   return [
-    ...mini,
     {
       id: `${bean.slug}-pack1`,
       label: `1 pack (${SINGLE_ORIGIN_PACK_GRAMS} gr)`,
       unit: "pack",
       unitPrice: pricing.pack1,
       packsPerUnit: 1,
-      minQty: 1,
-      step: 1,
-    },
-    {
-      id: `${bean.slug}-pack3`,
-      label: `${SINGLE_ORIGIN_PACKS_PER_BUNDLE} pack (${SINGLE_ORIGIN_PACKS_PER_BUNDLE} x ${SINGLE_ORIGIN_PACK_GRAMS} gr)`,
-      unit: "paket",
-      unitPrice: pricing.pack3,
-      packsPerUnit: SINGLE_ORIGIN_PACKS_PER_BUNDLE,
       minQty: 1,
       step: 1,
     },
@@ -333,16 +310,10 @@ function beanFactList(bean: SingleOriginBean): string[] {
 }
 
 /** "200 gr" atau "100 gr dan 200 gr", tergantung kemasan yang benar-benar ada. */
-function beanPackPhrase(bean: SingleOriginBean): string {
-  return bean.hasMiniPack
-    ? `${SINGLE_ORIGIN_MINI_PACK_GRAMS} gr dan ${SINGLE_ORIGIN_PACK_GRAMS} gr`
-    : `${SINGLE_ORIGIN_PACK_GRAMS} gr`;
-}
-
 function beanSummary(bean: SingleOriginBean): string {
   const facts = beanFactList(bean);
   const factPart = facts.length > 0 ? ` ${facts.join(", ")}.` : "";
-  return `${bean.name} — single origin ${TIER_LABEL[bean.tier]} dari ${beanOriginPhrase(bean)}.${factPart} Kemasan ${beanPackPhrase(bean)}.`;
+  return `${bean.name} — single origin ${TIER_LABEL[bean.tier]} dari ${beanOriginPhrase(bean)}.${factPart} Kemasan ${SINGLE_ORIGIN_PACK_GRAMS} gr.`;
 }
 
 function beanDescription(bean: SingleOriginBean): string {
@@ -351,7 +322,7 @@ function beanDescription(bean: SingleOriginBean): string {
     facts.length > 0
       ? ` Yang kami ketahui tentang biji ini: ${facts.join(", ")}.`
       : "";
-  return `${bean.name} berasal dari ${beanOriginPhrase(bean)} dan masuk tier ${TIER_LABEL[bean.tier]}.${factSentence} Tersedia dalam kemasan ${beanPackPhrase(bean)}, satuan maupun paket ${SINGLE_ORIGIN_PACKS_PER_BUNDLE} x ${SINGLE_ORIGIN_PACK_GRAMS} gr dari origin yang sama.`;
+  return `${bean.name} berasal dari ${beanOriginPhrase(bean)} dan masuk tier ${TIER_LABEL[bean.tier]}.${factSentence} Tersedia dalam kemasan ${SINGLE_ORIGIN_PACK_GRAMS} gr.`;
 }
 
 /* ------------------------------------------------------------------ */

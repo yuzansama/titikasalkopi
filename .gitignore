@@ -14,3 +14,5 @@ marketing/tts_cache/
 marketing/post_reels.log
 marketing/posted.json
 __pycache__/
+bot/.tg_env
+bot/bot.log

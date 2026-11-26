@@ -4,6 +4,8 @@ import { nav, toast, topbar } from "../ui.js";
 
 const KATEGORI = ["Kopi", "Peralatan & kemasan", "Lainnya"];
 const STATUS_PO = ["Dalam proses", "Berjalan", "Habis terjual"];
+const SATUAN_PO = ["pcs", "kg"];
+const angkaID = (n) => Number(n).toLocaleString("id-ID");
 const TAB = [
   ["ringkasan", "Ringkasan"],
   ["belanja", "Belanja"],
@@ -79,14 +81,27 @@ function tabRingkasan(d, k) {
       <div class="box"><table><thead><tr><th scope="col">Batch</th><th scope="col" class="r">Berat</th><th scope="col" class="r">Belanja</th><th scope="col" style="padding-left:8px">Status</th></tr></thead>
       <tbody>${k.po
         .map(
-          (p) => `<tr><td>Batch ${esc(p.batch)}</td><td class="r">${Number(p.kg).toLocaleString("id-ID")} kg</td><td class="r">${rupiah(p.belanja)}</td>
-          <td style="padding-left:8px"><select class="input" style="min-height:44px;padding:0 6px;font-size:14px" data-po="${esc(p.batch)}" aria-label="Status batch ${esc(p.batch)}">${opsi(STATUS_PO, p.status)}</select></td></tr>`,
+          (p) => `<tr><td>Batch ${esc(p.batch)}</td><td class="r">${p.kg == null ? "–" : `${angkaID(p.kg)} kg`}</td><td class="r">${rupiah(p.belanja)}</td>
+          <td style="padding-left:8px"><select class="input" style="min-height:44px;padding:0 6px;font-size:14px" data-po="${esc(p.batch)}" aria-label="Status batch ${esc(p.batch)}">${opsi(STATUS_PO, p.status)}</select></td></tr>
+          ${d.poItem
+            .filter((i) => i.batch === p.batch)
+            .map(
+              (i) => `<tr><td colspan="3" class="small" style="padding-left:16px">${esc(i.beans)} · ${angkaID(i.qty)} ${esc(i.satuan)}</td>
+              <td style="padding-left:8px">${hapusBtn("po_item", i.id, `${i.beans} batch ${p.batch}`)}</td></tr>`,
+            )
+            .join("")}`,
         )
         .join("")}</tbody></table></div>
       <form class="row" id="f-po" style="gap:8px" novalidate>
         <input class="input" name="batch" maxlength="20" placeholder="Batch" aria-label="Batch baru" style="width:96px">
-        <input class="input" name="kg" inputmode="decimal" placeholder="kg" aria-label="Berat (kg)" style="width:80px">
+        <input class="input" name="kg" inputmode="decimal" placeholder="kg (opsional)" aria-label="Berat (kg), opsional" style="width:120px">
         <button class="btn small" type="submit">Tambah PO</button></form>
+      ${k.po.length ? `<form class="row" id="f-po-item" style="gap:8px;flex-wrap:wrap" novalidate>
+        <select class="input" name="batch" aria-label="Batch" style="width:110px">${opsi(k.po.map((p) => p.batch), k.po[k.po.length - 1].batch)}</select>
+        <input class="input" name="beans" maxlength="60" placeholder="Beans" aria-label="Nama beans" style="flex:1;min-width:140px">
+        <input class="input" name="qty" inputmode="decimal" placeholder="Qty" aria-label="Jumlah" style="width:72px">
+        <select class="input" name="satuan" aria-label="Satuan" style="width:80px">${opsi(SATUAN_PO, "pcs")}</select>
+        <button class="btn small" type="submit">Tambah beans</button></form>` : ""}
     </section>
 
     <section class="stack"><span class="eyebrow">Penjualan terakhir</span>
@@ -310,10 +325,20 @@ export function layarKas(ctx) {
             pesan = "Pemodal ditambahkan.";
           }
           if (f.id === "f-po") {
-            const kg = Number(String(f.kg.value).replace(",", "."));
-            if (!teks(f.batch.value) || !(kg > 0)) throw new Error("Isi batch dan berat (kg).");
+            const kgTeks = String(f.kg.value).trim();
+            const kg = kgTeks ? Number(kgTeks.replace(",", ".")) : null;
+            if (!teks(f.batch.value) || (kg !== null && !(kg > 0))) throw new Error("Isi batch; berat (kg) boleh kosong.");
             await api.tambah("po", { batch: teks(f.batch.value), kg, status: "Dalam proses", urutan: data.po.length });
             pesan = "PO ditambahkan.";
+          }
+          if (f.id === "f-po-item") {
+            const qty = Number(String(f.qty.value).replace(",", "."));
+            if (!teks(f.beans.value) || !(qty > 0)) throw new Error("Isi nama beans dan jumlahnya.");
+            await api.tambah("po_item", {
+              batch: f.batch.value, beans: teks(f.beans.value), qty, satuan: f.satuan.value,
+              urutan: data.poItem.filter((i) => i.batch === f.batch.value).length,
+            });
+            pesan = `${teks(f.beans.value)} masuk PO batch ${f.batch.value}.`;
           }
           // Muat ulang dulu, baru beri tahu: angka di layar sudah yang baru saat pesan muncul.
           await muat();
