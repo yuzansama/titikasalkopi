@@ -32,10 +32,10 @@ export const managedCatalog: ManagedCatalog = {
   syncedAt: "2026-11-11",
 
   harga: {
-    "single.signature.pack1": 140_000,
+    "single.signature.pack1": 150_000,
     "single.signature.pack3": 392_000,
     "single.signature.mini1": 85_000,
-    "single.reguler.pack1": 125_000,
+    "single.reguler.pack1": 150_000,
     "single.reguler.pack3": 352_000,
     "single.reguler.mini1": 70_000,
 
