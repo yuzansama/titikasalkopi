@@ -1,0 +1,52 @@
+{
+ "slug": "edu-istilah-rasa",
+ "shots": [
+  {
+   "src": "at7d-_qsp7Y",
+   "t": 194,
+   "len": 10,
+   "big": "ISTILAH RASA",
+   "sub": "",
+   "say": "Acidity, body, aftertaste. Maksudnya apa, sih?",
+   "say_baku": "Acidity, body, aftertaste. Artinya apa?",
+   "x": 0.45
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 257,
+   "len": 3.5,
+   "big": "ACIDITY",
+   "sub": "rasa asam segar yang enak",
+   "say": "Acidity itu rasa asam segar yang menyenangkan.",
+   "say_baku": "Acidity: rasa asam segar yang menyenangkan.",
+   "x": 0.35
+  },
+  {
+   "src": "fffMlAK3BFw",
+   "t": 22,
+   "len": 5,
+   "big": "BODY",
+   "sub": "kesan kental di mulut",
+   "say": "Kalau body, kesan berat atau kental di mulut.",
+   "say_baku": "Body: kesan berat atau kental di mulut.",
+   "x": 0.55
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 280,
+   "len": 10,
+   "big": "AFTERTASTE",
+   "sub": "rasa yang tertinggal di mulut",
+   "say": "Terus aftertaste, rasa yang tertinggal setelah kopinya ditelan.",
+   "say_baku": "Aftertaste: rasa yang tertinggal setelah kopi ditelan.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "ISTILAH RASA",
+  "sub": "acidity · body · aftertaste",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Istilah rasa kopi: acidity adalah rasa asam segar yang menyenangkan; body adalah kesan berat atau kental di mulut; aftertaste adalah rasa yang tertinggal setelah kopi ditelan.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#tastingkopi #kopispesialti #cuppingkopi #edukasikopi #titikasalkopi"
+}

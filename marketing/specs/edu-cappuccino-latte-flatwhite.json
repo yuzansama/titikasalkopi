@@ -1,0 +1,57 @@
+{
+ "slug": "edu-cappuccino-latte-flatwhite",
+ "shots": [
+  {
+   "src": "fffMlAK3BFw",
+   "t": 0,
+   "len": 5,
+   "big": "CAPPUCCINO,\nLATTE,\nFLAT WHITE",
+   "sub": "",
+   "say": "Cappuccino, latte, flat white. Bedanya apa?",
+   "x": 0.5
+  },
+  {
+   "src": "s5up3izKzJs",
+   "t": 248,
+   "len": 11,
+   "big": "CAPPUCCINO",
+   "sub": "1/3 espresso · 1/3 susu · 1/3 busa",
+   "say": "Cappuccino klasik: sepertiga espresso, sepertiga susu panas, sepertiga busa susu.",
+   "x": 0.45
+  },
+  {
+   "src": "fffMlAK3BFw",
+   "t": 5,
+   "len": 8,
+   "big": "LATTE",
+   "sub": "lebih banyak susu, busa tipis",
+   "say": "Latte susunya lebih banyak dan busanya tipis, jadi rasa kopinya lebih lembut.",
+   "x": 0.5
+  },
+  {
+   "src": "fffMlAK3BFw",
+   "t": 18,
+   "len": 8,
+   "big": "FLAT WHITE",
+   "sub": "susu lebih sedikit dari latte",
+   "say": "Flat white susunya lebih sedikit dari latte, dengan lapisan microfoam yang lebih tipis.",
+   "x": 0.5
+  },
+  {
+   "src": "RB1ZJTa9A6w",
+   "t": 0,
+   "len": 9,
+   "big": "AUSTRALIA ATAU\nSELANDIA BARU?",
+   "sub": "dua-duanya mengaku",
+   "say": "Soal asalnya, Australia dan Selandia Baru sama-sama mengaku penemunya.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "MANA\nFAVORITMU?",
+  "sub": "tulis di komentar",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Cappuccino: 1/3 espresso, 1/3 susu panas, 1/3 busa. Latte: susu lebih banyak, busa tipis. Flat white: susu dan microfoam lebih sedikit dari latte. Kamu tim yang mana?\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#cappuccino #latte #flatwhite #edukasikopi #titikasalkopi"
+}

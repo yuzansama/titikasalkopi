@@ -1,0 +1,52 @@
+{
+ "slug": "edu-kualitas-air",
+ "shots": [
+  {
+   "src": "RB1ZJTa9A6w",
+   "t": 10,
+   "len": 10,
+   "big": "AIR SEDUH",
+   "sub": "",
+   "say": "Air buat nyeduh? Jangan diremehkan.",
+   "say_baku": "Jangan remehkan air untuk menyeduh.",
+   "x": 0.45
+  },
+  {
+   "src": "bq0yWTsO0t8",
+   "t": 10,
+   "len": 10,
+   "big": "± 98% AIR",
+   "sub": "isi secangkir kopi",
+   "say": "Soalnya, secangkir kopi itu sekitar sembilan puluh delapan persen air.",
+   "say_baku": "Secangkir kopi itu sekitar sembilan puluh delapan persen air.",
+   "x": 0.45
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 180,
+   "len": 10,
+   "big": "BERSIH &\nTIDAK BERBAU",
+   "sub": "tanpa klorin",
+   "say": "Standar air SCA itu bersih, segar, nggak berbau, dan tanpa klorin.",
+   "say_baku": "Standar air SCA: bersih, segar, tidak berbau, dan tanpa klorin.",
+   "x": 0.54
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 264,
+   "len": 12,
+   "big": "TDS ± 150 MG/L",
+   "sub": "target mineral terlarut SCA",
+   "say": "Terus mineral terlarutnya, atau TDS, ditargetkan sekitar seratus lima puluh miligram per liter.",
+   "say_baku": "Mineral terlarutnya, atau TDS, ditargetkan sekitar seratus lima puluh miligram per liter.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "AIR YANG BAIK",
+  "sub": "bersih, segar, tidak berbau",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Secangkir kopi sekitar 98% air, jadi airnya ikut menentukan rasa. Standar air seduh SCA: bersih, segar, tidak berbau, tanpa klorin, dengan TDS (padatan terlarut) target sekitar 150 mg/L.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#airseduh #manualbrew #tipskopi #edukasikopi #titikasalkopi"
+}

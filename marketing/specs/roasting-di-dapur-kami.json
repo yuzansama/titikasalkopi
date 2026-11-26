@@ -1,0 +1,58 @@
+{
+ "slug": "roasting-di-dapur-kami",
+ "src_audio": 0.3,
+ "shots": [
+  {
+   "src": "own_roast_5",
+   "t": 4.5,
+   "len": 3.5,
+   "x": 0.55,
+   "big": "DARI\nBIJI HIJAU",
+   "sub": "",
+   "say": "Semua berawal dari biji kopi hijau."
+  },
+  {
+   "src": "own_roast_6",
+   "t": 8,
+   "len": 7,
+   "x": 0.5,
+   "big": "DISANGRAI\nDI SINI",
+   "sub": "footage asli roasting kami",
+   "say": "Biji hijau ini disangrai di tempat roasting kami sendiri."
+  },
+  {
+   "src": "own_roast_11",
+   "t": 9,
+   "len": 4,
+   "x": 0.5,
+   "big": "RASA TERBENTUK",
+   "sub": "reaksi Maillard & karamelisasi",
+   "say": "Panasnya memicu reaksi Maillard dan karamelisasi, yang membentuk rasa, aroma, dan warna cokelat."
+  },
+  {
+   "src": "own_roast_12",
+   "t": 0,
+   "len": 5,
+   "x": 0.5,
+   "big": "DIDINGINKAN",
+   "sub": "",
+   "say": "Setelah matang, biji dikeluarkan dan diaduk sampai dingin."
+  },
+  {
+   "src": "own_roast_7",
+   "t": 4,
+   "len": 11,
+   "x": 0.4,
+   "big": "SIAP KE\nCANGKIRMU",
+   "sub": "",
+   "say": "Dari mesin sangrai, sampai siap kamu seduh di rumah."
+  }
+ ],
+ "end": {
+  "big": "FRESH ROAST",
+  "sub": "dari tempat roasting kami",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Di balik layar: biji kopi hijau disangrai di tempat roasting kami sendiri. Panas memicu reaksi Maillard dan karamelisasi yang membentuk rasa, aroma, dan warna cokelat, lalu biji didinginkan dan siap diseduh.\nPesan lewat WA 0851-2155-9488, Shopee: Titikasalkopi, atau bot Telegram @mas_bas_bot.\n\n#roastingkopi #behindthescenes #kopinusantara #freshroast #titikasalkopi"
+}

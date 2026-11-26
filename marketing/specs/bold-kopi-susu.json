@@ -1,0 +1,56 @@
+{
+ "slug": "bold-kopi-susu",
+ "shots": [
+  {
+   "src": "GDcZCj_plcs",
+   "t": 2,
+   "len": 8,
+   "big": "KOPI SUSU\nDI RUMAH?",
+   "sub": "",
+   "say": "Suka bikin kopi susu di rumah?",
+   "x": 0.5
+  },
+  {
+   "src": "FEtNL3fSrmo",
+   "t": 6,
+   "len": 10,
+   "big": "HOUSEBLEND\nBOLD",
+   "sub": "arabika + robusta",
+   "say": "Coba Houseblend Bold, perpaduan arabika dan robusta.",
+   "x": 0.5
+  },
+  {
+   "src": "3cDPRY9WGKg",
+   "t": 38,
+   "len": 8,
+   "big": "BODY LEBIH TEBAL",
+   "sub": "cokelat · nutty",
+   "say": "Body-nya lebih tebal, rasanya cokelat dan nutty. Pas buat kopi susu maupun espresso.",
+   "x": 0.5
+  },
+  {
+   "src": "hWykpGfw6RQ",
+   "t": 0,
+   "len": 10,
+   "big": "100 GR · 200 GR\n· 1 KG",
+   "sub": "di rumah atau buat kedai",
+   "say": "Ada kemasan seratus gram, dua ratus gram, dan satu kilo.",
+   "x": 0.5
+  },
+  {
+   "src": "own_roast_2",
+   "t": 0,
+   "len": 6,
+   "big": "PESAN SEKARANG",
+   "sub": "WA · Shopee · bot Telegram",
+   "say": "Pesan lewat WhatsApp, Shopee, atau bot Telegram kami."
+  }
+ ],
+ "end": {
+  "big": "BOLD",
+  "sub": "buat kopi susu & espresso",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Houseblend BOLD: perpaduan arabika dan robusta, body lebih tebal dengan rasa cokelat dan nutty. Pas buat kopi susu maupun espresso. Kemasan 100 gr, 200 gr, dan 1 kg.\nPesan lewat WA 0851-2155-9488, Shopee: Titikasalkopi, atau bot Telegram @mas_bas_bot.\n\n#kopisusu #houseblend #kopirobusta #kopinusantara #titikasalkopi"
+}

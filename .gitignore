@@ -5,12 +5,14 @@ out/
 !.env.example
 .DS_Store
 
-# reels: downloaded sources and renders
+# reels: downloaded sources, renders and local state
 marketing/src/
 marketing/out/
-marketing/post_reels.log
 marketing/out_review/
-marketing/tts_cache/
 marketing/out_old/
+marketing/tts_cache/
+marketing/post_reels.log
+marketing/posted.json
+__pycache__/
 bot/.tg_env
 bot/bot.log

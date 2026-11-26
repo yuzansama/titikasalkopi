@@ -1,0 +1,52 @@
+{
+ "slug": "edu-crema-espresso",
+ "shots": [
+  {
+   "src": "3i6k7UB4zLQ",
+   "t": 1.5,
+   "len": 5,
+   "big": "CREMA",
+   "sub": "busa di atas espresso",
+   "say": "Lihat busa keemasan di atas espresso? Itu namanya crema.",
+   "say_baku": "Busa keemasan di atas espresso itu namanya crema.",
+   "x": 0.5
+  },
+  {
+   "src": "_btkfTU688A",
+   "t": 0,
+   "len": 9,
+   "big": "DARI MANA?",
+   "sub": "tekanan, CO2, dan minyak",
+   "say": "Air bertekanan tinggi melarutkan karbon dioksida, terus minyak kopinya teremulsi.",
+   "say_baku": "Air bertekanan tinggi melarutkan karbon dioksida, minyak kopi pun teremulsi.",
+   "x": 0.5
+  },
+  {
+   "src": "3i6k7UB4zLQ",
+   "t": 6.5,
+   "len": 5,
+   "big": "KOPI SEGAR",
+   "sub": "crema lebih banyak",
+   "say": "Kopi segar biasanya crema-nya lebih banyak. Robusta cenderung lebih tebal.",
+   "say_baku": "Kopi segar biasanya ber-crema lebih banyak. Robusta cenderung lebih tebal.",
+   "x": 0.5
+  },
+  {
+   "src": "9GlE0rKAjBY",
+   "t": 11,
+   "len": 10,
+   "big": "BUKAN JAMINAN",
+   "sub": "rasa tetap nomor satu",
+   "say": "Tapi ingat ya, crema bukan jaminan secangkir espresso yang enak.",
+   "say_baku": "Tapi crema bukan jaminan secangkir espresso yang enak.",
+   "x": 0.6
+  }
+ ],
+ "end": {
+  "big": "CREMA",
+  "sub": "cantik, tapi rasa nomor satu",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Crema: busa keemasan di atas espresso. Terbentuk saat air bertekanan tinggi melarutkan karbon dioksida dan minyak kopi teremulsi. Kopi segar biasanya ber-crema lebih banyak, robusta cenderung membuat crema lebih tebal. Tapi crema bukan jaminan rasa.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#crema #espresso #kopiespresso #edukasikopi #titikasalkopi"
+}

@@ -1,0 +1,52 @@
+{
+ "slug": "edu-suhu-air-seduh",
+ "shots": [
+  {
+   "src": "at7d-_qsp7Y",
+   "t": 88.7,
+   "len": 5.5,
+   "big": "SUHU AIR\nSEDUH",
+   "sub": "",
+   "say": "Suhu air yang pas buat nyeduh kopi itu berapa?",
+   "say_baku": "Berapa suhu air yang pas untuk menyeduh kopi?",
+   "x": 0.55
+  },
+  {
+   "src": "0NeI0GRv3Uk",
+   "t": 81,
+   "len": 8,
+   "big": "92–96 °C",
+   "sub": "patokan SCA",
+   "say": "Patokan SCA itu sembilan puluh dua sampai sembilan puluh enam derajat Celsius.",
+   "say_baku": "Patokan SCA: sembilan puluh dua sampai sembilan puluh enam derajat Celsius.",
+   "x": 0.5
+  },
+  {
+   "src": "kwpxLvPrdZo",
+   "t": 138,
+   "len": 12,
+   "big": "TANPA\nTERMOMETER?",
+   "sub": "didihkan, lalu matikan api",
+   "say": "Nggak punya termometer? Didihkan air, terus matikan apinya.",
+   "say_baku": "Tidak punya termometer? Didihkan air, lalu matikan api.",
+   "x": 0.5
+  },
+  {
+   "src": "3NmOwXXOd4c",
+   "t": 256,
+   "len": 7.8,
+   "big": "DIAMKAN\nSEBENTAR",
+   "sub": "± 30 detik – 1 menit",
+   "say": "Diamkan sekitar tiga puluh detik sampai satu menit, baru deh dituang.",
+   "say_baku": "Diamkan sekitar tiga puluh detik sampai satu menit, baru dituang.",
+   "x": 0.55
+  }
+ ],
+ "end": {
+  "big": "SUHU AIR",
+  "sub": "92–96 °C saat menyentuh kopi",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Suhu air seduh: patokan SCA 92–96 °C saat air menyentuh kopi.\nTidak punya termometer? Didihkan air, matikan api, lalu diamkan sekitar 30 detik sampai 1 menit sebelum dituang.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#suhuair #manualbrew #tipskopi #edukasikopi #titikasalkopi"
+}

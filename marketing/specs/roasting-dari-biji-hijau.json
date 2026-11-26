@@ -1,0 +1,53 @@
+{
+ "src_audio": 0.35,
+ "shots": [
+  {
+   "src": "own_roast_4",
+   "t": 4.5,
+   "len": 4.5,
+   "big": "BIJI HIJAU",
+   "sub": "sebelum disangrai",
+   "say": "Ini biji kopi hijau, sebelum disangrai."
+  },
+  {
+   "src": "own_roast_1",
+   "t": 0,
+   "len": 6,
+   "big": "MASUK MESIN",
+   "sub": "",
+   "say": "Biji kopi masuk ke mesin roasting."
+  },
+  {
+   "src": "own_roast_1",
+   "t": 9.5,
+   "len": 4.5,
+   "big": "DI DALAM DRUM",
+   "sub": "terus berputar",
+   "say": "Di dalam drum, biji kopi terus berputar dan pelan-pelan berubah warna."
+  },
+  {
+   "src": "own_roast_3",
+   "t": 0,
+   "len": 5.9,
+   "big": "SIAP\nDIKELUARKAN",
+   "sub": "",
+   "say": "Setelah matang, biji kopi dikeluarkan dari mesin."
+  },
+  {
+   "src": "own_roast_2",
+   "t": 0,
+   "len": 6,
+   "big": "DIDINGINKAN",
+   "sub": "sambil terus diaduk",
+   "say": "Lalu didinginkan, sambil terus diaduk."
+  }
+ ],
+ "end": {
+  "big": "ROASTING",
+  "sub": "dari biji hijau ke cangkirmu",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Dari biji hijau sampai siap diseduh: begini proses roasting di Titik Asal Kopi.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#roastingkopi #kopiroasted #kopinusantara #singleorigin #titikasalkopi",
+ "slug": "roasting-dari-biji-hijau"
+}

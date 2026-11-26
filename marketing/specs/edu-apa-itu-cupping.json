@@ -1,0 +1,51 @@
+{
+ "slug": "edu-apa-itu-cupping",
+ "shots": [
+  {
+   "src": "WBfE9jCMhc8",
+   "t": 40.2,
+   "len": 2.6,
+   "big": "CUPPING",
+   "sub": "cara standar mencicipi kopi",
+   "say": "Apa sih cupping itu?",
+   "say_baku": "Apa itu cupping?",
+   "x": 1.0
+  },
+  {
+   "src": "WBfE9jCMhc8",
+   "t": 66,
+   "len": 3.5,
+   "big": "SIRAM ± 93 °C",
+   "sub": "8,25 g kopi : 150 ml air",
+   "say": "Jadi, kopinya disiram air sekitar sembilan puluh tiga derajat.",
+   "say_baku": "Kopi disiram air sekitar sembilan puluh tiga derajat.",
+   "x": 0.6
+  },
+  {
+   "src": "bq0yWTsO0t8",
+   "t": 18,
+   "len": 10,
+   "big": "PECAHKAN\nKERAK",
+   "sub": "setelah 3–5 menit",
+   "say": "Habis tiga sampai lima menit, kerak di atasnya dipecah, terus kopinya diseruput dari sendok.",
+   "say_baku": "Setelah tiga sampai lima menit, kerak di atasnya dipecah, lalu kopinya diseruput dari sendok.",
+   "x": 0.45
+  },
+  {
+   "src": "xOLf01l78i4",
+   "t": 232,
+   "len": 5.35,
+   "big": "SKOR 80+",
+   "sub": "= kopi spesialti",
+   "say": "Kopi yang skornya delapan puluh ke atas, itu disebut kopi spesialti.",
+   "say_baku": "Kopi dengan skor delapan puluh ke atas disebut kopi spesialti."
+  }
+ ],
+ "end": {
+  "big": "CUPPING",
+  "sub": "cara profesional mencicipi kopi",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Cupping: cara standar para profesional mencicipi kopi. Rasionya 8,25 g kopi untuk 150 ml air sekitar 93 °C. Setelah 3–5 menit, kerak di atasnya dipecah, lalu kopi diseruput dari sendok. Kopi dengan skor 80 ke atas dari 100 disebut kopi spesialti.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#cupping #kopispesialti #specialtycoffee #edukasikopi #titikasalkopi"
+}

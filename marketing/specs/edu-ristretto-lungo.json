@@ -1,0 +1,57 @@
+{
+ "slug": "edu-ristretto-lungo",
+ "shots": [
+  {
+   "src": "-HXm9WhlBKI",
+   "t": 1,
+   "len": 6,
+   "big": "RISTRETTO\nVS LUNGO",
+   "sub": "",
+   "say": "Ristretto sama lungo, bedanya di mana?",
+   "x": 0.5
+  },
+  {
+   "src": "3i6k7UB4zLQ",
+   "t": 1.5,
+   "len": 5,
+   "big": "RISTRETTO",
+   "sub": "kopi sama, air setengahnya",
+   "say": "Ristretto pakai kopi yang sama, tapi airnya cuma setengah. Rasanya lebih intens dan kurang pahit.",
+   "x": 0.5
+  },
+  {
+   "src": "s5up3izKzJs",
+   "t": 244,
+   "len": 4,
+   "big": "LUNGO",
+   "sub": "air dua kali lipat",
+   "say": "Lungo kebalikannya, airnya dua kali lipat.",
+   "x": 0.5
+  },
+  {
+   "src": "RB1ZJTa9A6w",
+   "t": 8,
+   "len": 10,
+   "big": "1:1 · 1:2 · 1:4",
+   "sub": "ristretto · espresso · lungo",
+   "say": "Kira-kira satu banding satu, satu banding dua, dan satu banding empat. Tapi ini istilah relatif, bukan takaran pasti.",
+   "x": 0.5
+  },
+  {
+   "src": "_btkfTU688A",
+   "t": 0.5,
+   "len": 5,
+   "big": "DOPPIO",
+   "sub": "kopinya dua kali lipat",
+   "say": "Kalau doppio, yang digandakan justru kopinya.",
+   "x": 0.5
+  }
+ ],
+ "end": {
+  "big": "RISTRETTO\nATAU LUNGO?",
+  "sub": "tulis di komentar",
+  "say": "Titik Asal Kopi. Pilih rasa, temukan asalnya, nikmati setiap momen.",
+  "min": 4
+ },
+ "caption": "Ristretto: kopi sama, air setengahnya. Lungo: air dua kali lipat. Kira-kira 1:1, 1:2, 1:4, tapi istilahnya relatif, bukan takaran pasti. Doppio: kopinya yang digandakan.\nPesan lewat WA 0851-2155-9488 atau Shopee: Titikasalkopi.\n\n#ristretto #lungo #espresso #edukasikopi #titikasalkopi"
+}
