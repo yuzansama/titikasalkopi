@@ -62,7 +62,7 @@ export const managedCatalog: ManagedCatalog = {
     sindoro: "out-of-stock",
     bold: "available",
     bright: "available",
-    "full-robusta": "out-of-stock",
+    "full-robusta": "available",
   },
 
 };
