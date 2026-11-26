@@ -3,7 +3,7 @@ import { catalogGroups } from "@/data/catalog";
 import { segeraHadir } from "@/data/segera-hadir";
 import { ViewEvent } from "@/features/analytics/view-event";
 import { ProductGrid } from "@/features/catalog/product-grid";
-import { SegeraHadirCard } from "@/features/catalog/segera-hadir-card";
+import { SegeraHadirCard, SegeraHadirLainnya } from "@/features/catalog/segera-hadir-card";
 import { breadcrumbJsonLd, katalogMetadata } from "@/lib/seo";
 
 /* ADR-01 */
@@ -31,9 +31,7 @@ export default function KatalogPage() {
           Katalog kopi
         </h1>
         <p className="mt-3 max-w-2xl text-olive">
-          Saat ini kami menjual houseblend BOLD dan BRIGHT dalam kemasan 100
-          gr, 200 gr, dan 1 kg. Seluruh harga di halaman ini adalah harga
-          resmi; ongkos kirim dikonfirmasi lewat WhatsApp.
+          Harga resmi; ongkos kirim dikonfirmasi lewat WhatsApp.
         </p>
 
         {segeraHadir.length > 0 ? (
@@ -41,6 +39,7 @@ export default function KatalogPage() {
             {segeraHadir.map((kopi) => (
               <SegeraHadirCard key={kopi.slug} kopi={kopi} />
             ))}
+            <SegeraHadirLainnya />
           </div>
         ) : null}
 

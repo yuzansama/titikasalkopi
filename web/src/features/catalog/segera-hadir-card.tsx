@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CARD, FOCUS_RING } from "@/components/ui/styles";
-import type { SegeraHadir } from "@/data/segera-hadir";
+import { segeraHadirLainnya, type SegeraHadir } from "@/data/segera-hadir";
 
 /** Kartu kopi yang segera hadir, dipakai di beranda dan katalog. */
 export function SegeraHadirCard({ kopi }: { kopi: SegeraHadir }) {
@@ -26,5 +26,25 @@ export function SegeraHadirCard({ kopi }: { kopi: SegeraHadir }) {
         Lihat
       </span>
     </Link>
+  );
+}
+
+/** Daftar ringkas kopi lain yang segera hadir (belum punya halaman sendiri). */
+export function SegeraHadirLainnya() {
+  if (segeraHadirLainnya.length === 0) return null;
+  return (
+    <div className={`${CARD} p-4 sm:p-5`}>
+      <span className="block font-heading text-sm font-semibold uppercase tracking-[0.2em] text-rust">
+        Segera hadir
+      </span>
+      <ul className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+        {segeraHadirLainnya.map((kopi) => (
+          <li key={kopi.name} className="text-primary">
+            <span className="font-semibold">{kopi.name}</span>
+            <span className="text-olive">, {kopi.wilayah}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
