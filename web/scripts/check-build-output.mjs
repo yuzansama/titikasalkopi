@@ -1132,6 +1132,14 @@ check("FR-51: /lacak dan buku order tertaut dari footer setiap rute", () => {
 
 const { qrEntries } = await loadTs("src/data/qr.ts");
 
+check("QR: setiap varian di aplikasi stok punya halaman /q/<kode>", () => {
+  // Label QR dicetak dari tabel varian aplikasi stok; kodenya harus punya halaman di sini.
+  const schema = readFileSync(join(import.meta.dirname, "..", "..", "stok", "supabase", "schema.sql"), "utf8");
+  const kode = [...schema.matchAll(/^\s*\('([a-z0-9-]+)',\s+'[^']+',\s+'\d+ gr'/gm)].map((m) => m[1]);
+  assert.ok(kode.length >= 20, `hanya ${kode.length} varian terbaca dari stok/supabase/schema.sql`);
+  for (const k of kode) assert.ok(pages.get(`q/${k}`)?.html, `/q/${k} tidak dibangun; stiker varian ini jadi 404`);
+});
+
 check("QR: setiap varian per bungkus punya halaman /q/<kode>", () => {
   assert.ok(qrEntries.length > 0, "tidak ada kode QR sama sekali");
   const missing = qrEntries
@@ -1166,6 +1174,10 @@ check("QR: halaman /q noindex, kanonis absolut, dan menawarkan pesan ulang", () 
 });
 
 check("QR: kopi di luar katalog (Peneli) tetap punya halaman, tanpa tautan produk", () => {
+  for (const kode of ["oelbiteno-mini1", "abmisibil-mini1", "sabin-mini1", "pyramid-mini1", "palimping-mini1", "kerinci-mini1", "pondok-baru-mini1"]) {
+    // Stiker 100 gr sudah tercetak sebelum kemasan itu berhenti dijual (26 Nov 2026).
+    assert.ok(pages.get(`q/${kode}`)?.html, `/q/${kode} hilang; stiker yang sudah tercetak jadi 404`);
+  }
   for (const kode of ["peneli-mini1", "peneli-pack1"]) {
     const html = pages.get(`q/${kode}`)?.html;
     assert.ok(html, `/q/${kode} tidak dibangun`);

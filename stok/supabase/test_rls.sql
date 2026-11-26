@@ -153,7 +153,8 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 set local role authenticated;
 do $$ begin
   if (select count(*) from public.belanja) + (select count(*) from public.setoran)
-   + (select count(*) from public.pengembalian) + (select count(*) from public.pemodal) + (select count(*) from public.po) <> 0 then
+   + (select count(*) from public.pengembalian) + (select count(*) from public.pemodal) + (select count(*) from public.po)
+   + (select count(*) from public.po_item) <> 0 then
     raise exception 'GAGAL: sales melihat data kas';
   end if;
   begin
@@ -167,6 +168,9 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 set local role authenticated;
 do $$ begin
   insert into public.pemodal (nama) values ('Pemodal Uji');
+  insert into public.po (batch, kg, status) values ('Uji', null, 'Dalam proses');
+  insert into public.po_item (batch, beans, qty, satuan) values ('Uji', 'Beans Uji', 2, 'pcs');
+  if (select count(*) from public.po_item where batch = 'Uji') <> 1 then raise exception 'GAGAL: owner tidak bisa mencatat beans PO'; end if;
   insert into public.setoran (nama, jumlah) values ('Pemodal Uji', 500000);
   insert into public.belanja (item, kategori, qty, harga, dibayar_oleh) values ('Uji', 'Kopi', 3, 110000, 'Pemodal Uji');
   if (select jumlah from public.belanja where item = 'Uji') <> 330000 then raise exception 'GAGAL: jumlah belanja bukan qty x harga'; end if;

@@ -184,7 +184,7 @@ export function layarLabel(ctx) {
           area.innerHTML = varian
             .flatMap((v) =>
               Array.from({ length: salinan.get(v.kode) }, () =>
-                `<div class="sticker">${svg.get(v.kode)}<div><div class="blend ${blendClass(v.jenis)}">${esc(v.jenis)}</div><div class="s">Houseblend · ${esc(v.ukuran)}</div></div></div>`,
+                `<div class="sticker">${svg.get(v.kode)}<div><div class="blend ${blendClass(v.jenis)}">${esc(v.jenis)}</div><div class="s">${/^(BOLD|BRIGHT|FULL ROBUSTA)$/.test(v.jenis) ? "Houseblend" : "Single Origin"} · ${esc(v.ukuran)}</div></div></div>`,
               ),
             )
             .join("");
