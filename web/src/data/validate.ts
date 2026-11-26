@@ -306,10 +306,11 @@ export function assertCatalogValid(products: Product[]): void {
     if (product.category === "single-origin") {
       const packs = product.variants.filter((v) => v.unit === "pack");
       const bundles = product.variants.filter((v) => v.unit === "paket");
-      if (packs.length !== 1 || bundles.length !== 1) {
+      // Paket 3 pack opsional sejak 26 Nov 2026 (owner: single origin hanya 200 gr).
+      if (packs.length !== 1 || bundles.length > 1) {
         report(
           slug,
-          `single origin wajib punya tepat satu varian "pack" dan satu varian "paket"; ditemukan ${packs.length} pack dan ${bundles.length} paket (BR-08, BR-11, D-01).`,
+          `single origin wajib punya tepat satu varian "pack" dan paling banyak satu varian "paket"; ditemukan ${packs.length} pack dan ${bundles.length} paket (BR-08, BR-11, D-01).`,
           "V-10",
         );
       }

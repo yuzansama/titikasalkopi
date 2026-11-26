@@ -52,11 +52,43 @@ const dariKatalog: QrEntry[] = products.flatMap((product) =>
 const diLuarKatalog: QrEntry[] = [
   { code: "peneli-mini1", name: "Peneli", label: "1 pack (100 gr)", tastingNotes: null, href: null },
   { code: "peneli-pack1", name: "Peneli", label: "1 pack (200 gr)", tastingNotes: null, href: null },
+  // Single origin baru di aplikasi stok (owner, 26 Nov 2026), belum ada di katalog situs.
+  ...(
+    [
+      ["gn-tiom", "Gn. Tiom"],
+      ["solok-honey-wash", "Solok Honey dan Wash"],
+      ["kersamanah-anaerob", "Kersamanah Anaerob"],
+      ["yellow-bourbon", "Yellow Bourbon"],
+      ["manglayang-honey", "Manglayang Honey"],
+      ["blueberry-infused", "Blueberry Infused"],
+    ] as const
+  ).map(([slug, name]) => ({
+    code: `${slug}-pack1`,
+    name,
+    label: "1 pack (200 gr)",
+    tastingNotes: null,
+    href: null,
+  })),
 ];
+
+/**
+ * Kemasan 100 gr single origin berhenti dijual 26 Nov 2026 dan hilang dari
+ * katalog, tetapi stikernya sudah tercetak. Halaman /q-nya tetap ada.
+ */
+const SUDAH_TERCETAK_100G = ["oelbiteno", "abmisibil", "sabin", "pyramid", "palimping", "kerinci", "pondok-baru"];
+const mini100gLama: QrEntry[] = products
+  .filter((product) => SUDAH_TERCETAK_100G.includes(product.slug))
+  .map((product) => ({
+    code: `${product.slug}-mini1`,
+    name: product.name,
+    label: "1 pack (100 gr)",
+    tastingNotes: product.tastingNotes,
+    href: `/produk/${product.slug}`,
+  }));
 
 export const qrEntries: QrEntry[] = [
   ...dariKatalog,
-  ...diLuarKatalog.filter((e) => !dariKatalog.some((k) => k.code === e.code)),
+  ...[...mini100gLama, ...diLuarKatalog].filter((e) => !dariKatalog.some((k) => k.code === e.code)),
 ];
 
 const qrIndex = new Map(qrEntries.map((entry) => [entry.code, entry]));

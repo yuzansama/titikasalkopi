@@ -153,8 +153,20 @@ create table if not exists public.pengembalian (
 
 create table if not exists public.po (
   batch   text primary key check (char_length(batch) between 1 and 20),
-  kg      numeric(8, 2) not null check (kg > 0),
+  -- Boleh kosong sejak 26 Nov 2026: PO bisa diisi per beans per pcs (po_item).
+  kg      numeric(8, 2) check (kg > 0),
   status  text not null check (status in ('Dalam proses', 'Berjalan', 'Habis terjual')),
+  urutan  integer not null default 0
+);
+alter table public.po alter column kg drop not null;
+
+-- Rincian PO: beans apa dan berapa (pcs atau kg) per batch.
+create table if not exists public.po_item (
+  id      bigint generated always as identity primary key,
+  batch   text not null references public.po (batch) on update cascade on delete cascade,
+  beans   text not null check (char_length(beans) between 1 and 60),
+  qty     numeric(8, 2) not null check (qty > 0),
+  satuan  text not null default 'pcs' check (satuan in ('pcs', 'kg')),
   urutan  integer not null default 0
 );
 
@@ -228,8 +240,9 @@ alter table public.belanja      enable row level security;
 alter table public.setoran      enable row level security;
 alter table public.pengembalian enable row level security;
 alter table public.po           enable row level security;
+alter table public.po_item      enable row level security;
 do $$ declare t text; begin
-  foreach t in array array['pemodal', 'belanja', 'setoran', 'pengembalian', 'po'] loop
+  foreach t in array array['pemodal', 'belanja', 'setoran', 'pengembalian', 'po', 'po_item'] loop
     execute format('drop policy if exists %I on public.%I', t || '_owner', t);
     execute format(
       'create policy %I on public.%I for all to authenticated using (public.peran_saya() = ''owner'') with check (public.peran_saya() = ''owner'')',
@@ -383,22 +396,29 @@ insert into public.varian (kode, jenis, ukuran, harga, batas_min, urutan) values
   ('bright-100g', 'BRIGHT', '100 gr', 55000, 10, 30),
   ('bright-200g', 'BRIGHT', '200 gr', 95000, 10, 40),
   ('abmisibil-mini1',   'ABMISIBIL',   '100 gr',  85000, 5, 110),
-  ('abmisibil-pack1',   'ABMISIBIL',   '200 gr', 140000, 5, 111),
+  ('abmisibil-pack1',   'ABMISIBIL',   '200 gr', 150000, 5, 111),
   ('sabin-mini1',       'SABIN',       '100 gr',  85000, 5, 120),
-  ('sabin-pack1',       'SABIN',       '200 gr', 140000, 5, 121),
+  ('sabin-pack1',       'SABIN',       '200 gr', 150000, 5, 121),
   ('pyramid-mini1',     'PYRAMID',     '100 gr',  85000, 5, 130),
-  ('pyramid-pack1',     'PYRAMID',     '200 gr', 140000, 5, 131),
+  ('pyramid-pack1',     'PYRAMID',     '200 gr', 150000, 5, 131),
   ('oelbiteno-mini1',   'OELBITENO',   '100 gr',  85000, 5, 140),
-  ('oelbiteno-pack1',   'OELBITENO',   '200 gr', 140000, 5, 141),
+  ('oelbiteno-pack1',   'OELBITENO',   '200 gr', 150000, 5, 141),
   ('pondok-baru-mini1', 'PONDOK BARU', '100 gr',  70000, 5, 150),
-  ('pondok-baru-pack1', 'PONDOK BARU', '200 gr', 125000, 5, 151),
+  ('pondok-baru-pack1', 'PONDOK BARU', '200 gr', 150000, 5, 151),
   ('kerinci-mini1',     'KERINCI',     '100 gr',  70000, 5, 160),
-  ('kerinci-pack1',     'KERINCI',     '200 gr', 125000, 5, 161),
+  ('kerinci-pack1',     'KERINCI',     '200 gr', 150000, 5, 161),
   ('palimping-mini1',   'PALIMPING',   '100 gr',  70000, 5, 170),
-  ('palimping-pack1',   'PALIMPING',   '200 gr', 125000, 5, 171),
-  ('sindoro-pack1',     'SINDORO',     '200 gr', 125000, 5, 181),
+  ('palimping-pack1',   'PALIMPING',   '200 gr', 150000, 5, 171),
+  ('sindoro-pack1',     'SINDORO',     '200 gr', 150000, 5, 181),
   -- Peneli tidak ada di katalog web; halaman /q-nya ada di web/src/data/qr.ts
   -- (diLuarKatalog). Harga sementara mengikuti Pondok Baru (harga beli sama).
   ('peneli-mini1',      'PENELI',      '100 gr',  70000, 5, 190),
-  ('peneli-pack1',      'PENELI',      '200 gr', 125000, 5, 191)
+  ('peneli-pack1',      'PENELI',      '200 gr', 150000, 5, 191),
+  -- Single origin baru (owner, 26 Nov 2026); halaman /q-nya di web/src/data/qr.ts.
+  ('gn-tiom-pack1',            'GN. TIOM',           '200 gr', 150000, 5, 200),
+  ('solok-honey-wash-pack1',   'SOLOK HONEY & WASH', '200 gr', 150000, 5, 210),
+  ('kersamanah-anaerob-pack1', 'KERSAMANAH ANAEROB', '200 gr', 150000, 5, 220),
+  ('yellow-bourbon-pack1',     'YELLOW BOURBON',     '200 gr', 150000, 5, 230),
+  ('manglayang-honey-pack1',   'MANGLAYANG HONEY',   '200 gr', 150000, 5, 240),
+  ('blueberry-infused-pack1',  'BLUEBERRY INFUSED',  '200 gr', 150000, 5, 250)
 on conflict (kode) do nothing;
