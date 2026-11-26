@@ -428,6 +428,7 @@ check("Sindoro tidak menawarkan kemasan mini yang tidak dijual", () => {
 check("BR-10: penghematan bundling dihitung, bukan ditulis manual", () => {
   for (const product of catalogModule.singleOriginProducts) {
     const saving = catalogModule.bundleSaving(product);
+    if (saving === null) continue; // sejak 26 Nov 2026 single origin tanpa paket 3 pack
     assert.ok(saving > 0, `${product.slug}: penghematan paket ${saving}`);
     assert.ok(
       pages.get(`produk/${product.slug}`).html.includes(formatIDR(saving)),
@@ -450,8 +451,13 @@ check("KD-01/BR-11: tidak ada pemilih origin campur di antarmuka mana pun", () =
   }
 });
 
-check("KD-01: halaman produk menyatakan 3 pack berasal dari origin yang sama", () => {
-  for (const route of PUBLIC_ROUTES.filter((r) => r.startsWith("produk/"))) {
+check("KD-01: halaman produk yang menjual 3 pack menyatakan isinya dari origin yang sama", () => {
+  const withBundle = new Set(
+    catalogModule.singleOriginProducts
+      .filter((product) => catalogModule.bundleVariant(product))
+      .map((product) => `produk/${product.slug}`),
+  );
+  for (const route of PUBLIC_ROUTES.filter((r) => withBundle.has(r))) {
     assert.ok(
       /origin yang sama/.test(pages.get(route).html),
       `/${route} tidak menyatakan 3 pack satu origin`,
@@ -808,7 +814,7 @@ check(
 
 const catalog = catalogModule;
 
-check("BRD Bagian 12: katalog tayang berisi 11 produk dan 31 varian jual", () => {
+check("BRD Bagian 12: katalog tayang berisi 11 produk dan 16 varian jual", () => {
   const products = catalog.allProducts ?? catalog.products;
   assert.ok(Array.isArray(products), "daftar produk tidak ditemukan di catalog");
   assert.equal(products.length, 11);
@@ -816,9 +822,9 @@ check("BRD Bagian 12: katalog tayang berisi 11 produk dan 31 varian jual", () =>
     (total, product) => total + product.variants.length,
     0,
   );
-  // 7 biji x 3 kemasan + Sindoro tanpa mini x 2 = 23, ditambah
+  // 8 biji single origin x 1 kemasan 200 gr = 8 (sejak 26 Nov 2026), ditambah
   // BOLD dan BRIGHT x 3 ukuran = 6, ditambah Full Robusta x 2 ukuran = 2.
-  assert.equal(variantCount, 31);
+  assert.equal(variantCount, 16);
 });
 
 check("BRD Bagian 12: halaman katalog menampilkan kesebelas nama produk", () => {
@@ -1138,7 +1144,6 @@ check("QR: bundel tidak mendapat kode QR", () => {
   const bundles = catalogModule.products.flatMap((product) =>
     product.variants.filter((variant) => (variant.packsPerUnit ?? 1) > 1),
   );
-  assert.ok(bundles.length > 0, "tidak ada bundel di katalog; pemeriksaan ini tidak lagi menguji apa pun");
   for (const variant of bundles) {
     assert.ok(!pages.has(`q/${variant.id}`), `bundel ${variant.id} punya halaman QR`);
   }

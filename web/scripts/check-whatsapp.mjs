@@ -120,7 +120,7 @@ function buildFrom(items, note = "") {
 
 const twoLine = buildFrom(
   [
-    { slug: "abmisibil", variantId: "abmisibil-pack3", qty: 1 },
+    { slug: "abmisibil", variantId: "abmisibil-pack1", qty: 1 },
     { slug: "bold", variantId: "bold-1kg", qty: 5 },
   ],
   "tolong digiling untuk V60, kirim ke Bandung.",
@@ -208,7 +208,7 @@ check("aritmetika pesan utuh untuk SETIAP jenis kemasan yang dijual", () => {
       items.push({ slug: entry.slug, variantId: variant.id, qty: 3 });
     }
   }
-  assert.equal(seen.size, 5, "belum semua jenis kemasan terwakili");
+  assert.equal(seen.size, 4, "belum semua jenis kemasan terwakili");
   const rows = readArithmetic(buildFrom(items).text);
   assert.equal(rows.length, items.length);
   for (const row of rows) {

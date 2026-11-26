@@ -146,32 +146,21 @@ check("harga per gram setiap varian berada di pita wajar jenis kemasannya", () =
   }
 });
 
-check("BR-10: paket 3 pack selalu lebih murah daripada 3 x harga satuan", () => {
+check("BR-10: paket 3 pack, bila dijual, selalu lebih murah daripada 3 x harga satuan", () => {
   for (const product of catalog.singleOriginProducts) {
     const saving = catalog.bundleSaving(product);
-    assert.ok(saving !== null, `${product.slug} tidak punya paket 3 pack`);
+    if (saving === null) continue; // sejak 26 Nov 2026 single origin tanpa paket 3 pack
     assert.ok(saving > 0, `${product.slug}: penghematan paket ${saving}`);
   }
 });
 
-check("kemasan mini 100 gr: tujuh biji punya, Sindoro tidak", () => {
-  const withMini = catalog.singleOriginProducts.filter((product) =>
-    product.variants.some((variant) => variant.unit === "gram-100"),
-  );
-  assert.equal(withMini.length, 7);
-  assert.equal(
-    catalog
-      .findSingleOriginBySlug("sindoro")
-      .variants.some((variant) => variant.unit === "gram-100"),
-    false,
-  );
-  // Kemasan kecil lebih mahal per gram, tetapi lebih murah per kemasan (BR-09
-  // tetap berlaku: harga ditentukan tier, bukan biji).
-  for (const product of withMini) {
-    const mini = product.variants.find((v) => v.unit === "gram-100");
-    const pack = product.variants.find((v) => v.unit === "pack");
-    assert.ok(mini.unitPrice < pack.unitPrice, `${product.slug}: mini >= 200 gr`);
-    assert.ok(mini.unitPrice * 2 > pack.unitPrice, `${product.slug}: mini terlalu murah`);
+check("single origin hanya dijual 200 gr (owner, 26 Nov 2026)", () => {
+  for (const product of catalog.singleOriginProducts) {
+    assert.deepEqual(
+      product.variants.map((variant) => variant.unit),
+      ["pack"],
+      `${product.slug} masih menawarkan kemasan selain 200 gr`,
+    );
   }
 });
 
@@ -242,7 +231,9 @@ check("kemasan mini 100 gr hanya pada biji yang punya barisnya di lembar Product
     .filter((p) => p.variants.some((v) => v.unit === "gram-100"))
     .map((p) => p.name)
     .sort();
-  assert.deepEqual(punyaMini, [...LEMBAR_PRODUCT.denganKemasanMini].sort());
+  // Lembar Product masih punya baris 100 gr (LEMBAR_PRODUCT.denganKemasanMini),
+  // tetapi sejak 26 Nov 2026 kemasan itu disembunyikan dari situs.
+  assert.deepEqual(punyaMini, []);
 });
 
 /* ---------------------------------------------------------------- */
@@ -560,7 +551,7 @@ check("ADR-04: slug tidak dikenal dibuang tanpa melempar", () => {
   assert.doesNotThrow(() => {
     resolved = resolveCart(
       [
-        { slug: "abmisibil", variantId: "abmisibil-pack3", qty: 1 },
+        { slug: "abmisibil", variantId: "abmisibil-pack1", qty: 1 },
         { slug: "kopi-yang-tidak-ada", variantId: "apa-saja", qty: 3 },
       ],
       "",
@@ -612,7 +603,7 @@ check("qty x harga satuan == subtotal baris, dan jumlah baris == subtotal pesana
       oneOfEachUnit.push({ slug: entry.slug, variantId: variant.id, qty: 3 });
     }
   }
-  assert.equal(seenUnits.size, 5, "belum semua jenis kemasan terwakili");
+  assert.equal(seenUnits.size, 4, "belum semua jenis kemasan terwakili");
 
   const resolved = resolveCart(oneOfEachUnit, "", index);
   assert.equal(resolved.lines.length, oneOfEachUnit.length);
@@ -655,7 +646,7 @@ check("tidak ada baris keranjang yang membawa harga kedua", () => {
  * dihitung dari data yang sedang diuji, katalog yang menyusut diam-diam akan
  * tetap lulus.
  *
- *   7 biji x 3 kemasan + Sindoro tanpa kemasan mini x 2 = 23,
+ *   8 biji single origin x 1 kemasan 200 gr = 8 (sejak 26 Nov 2026; sebelumnya 23),
  * + BOLD dan BRIGHT x 3 ukuran (100 gr, 200 gr, 1 kg) = 6,
  * + Full Robusta x 2 ukuran (1 kg, 0,5 kg) = 2.
  *
@@ -663,7 +654,7 @@ check("tidak ada baris keranjang yang membawa harga kedua", () => {
  * dari `assets/brand/Kopi from heart.xlsx`; lini "Katalog Kopi 100 gram" dari
  * poster dihapus seluruhnya.
  */
-const EXPECTED_VARIANT_COUNT = 31;
+const EXPECTED_VARIANT_COUNT = 16;
 
 check("seluruh subtotal baris bilangan bulat untuk setiap varian katalog", () => {
   const items = Object.values(index).flatMap((entry) =>
