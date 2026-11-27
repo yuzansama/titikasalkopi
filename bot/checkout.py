@@ -83,11 +83,16 @@ def unique():
     return secrets.choice(free) if free else secrets.randbelow(99) + 1
 
 
+PICKUP = "Ambil sendiri / janjian"
+
+
 def new_order(code, chat, user, lines, c, ship_cost, uniq, now=None):
-    subtotal = sum(ln[4] for ln in lines)
+    """`c` holds phone, note and, unless c["mode"] is "pickup" (paid and collected in person), addr and dest."""
+    subtotal, pickup = sum(ln[4] for ln in lines), c.get("mode") == "pickup"
     o = {"code": code, "chat": chat, "user": user, "created": now or time.time(), "status": "unpaid",
-         "lines": [list(ln) for ln in lines], "subtotal": subtotal, "ship": ship_cost, "unique": uniq,
-         "total": subtotal + ship_cost + uniq, "phone": c["phone"], "addr": c["addr"], "area": c["dest"][1],
+         "lines": [list(ln) for ln in lines], "subtotal": subtotal, "ship": 0 if pickup else ship_cost,
+         "unique": uniq, "total": subtotal + (0 if pickup else ship_cost) + uniq, "phone": c["phone"],
+         "addr": PICKUP if pickup else c["addr"], "area": "" if pickup else c["dest"][1], "pickup": pickup,
          "note": c.get("note", ""), "proofs": 0, "ask": [], "resi": ""}
     _orders[code] = o
     return o
@@ -106,15 +111,19 @@ def by_ask(message_id):
 
 def book_items(o):
     """The order book's items line: products, shipping and the amount to pay; nothing personal."""
-    return f"{order.record_items(o['lines'])}; ongkir JNE {order.idr(o['ship'])}; bayar {order.idr(o['total'])}"[:200]
+    how = "ambil sendiri" if o.get("pickup") else f"ongkir JNE {order.idr(o['ship'])}"
+    return f"{order.record_items(o['lines'])}; {how}; bayar {order.idr(o['total'])}"[:200]
 
 
 def summary(o, with_contact=False):
     body = "\n".join(f"• {p} {lab.replace('Kemasan ', '')}: {qty} = {order.idr(t)}" for p, lab, qty, _, t in o["lines"])
     head = f"Kode order {o['code']}" if o.get("code") else "Ringkasan pesanan"
-    text = (f"{head}\n{body}\nOngkir JNE Reguler: {order.idr(o['ship'])}\n"
+    how = f"{PICKUP} (tanpa ongkir)" if o.get("pickup") else f"Ongkir JNE Reguler: {order.idr(o['ship'])}"
+    text = (f"{head}\n{body}\n{how}\n"
             f"Kode unik: {order.idr(o['unique'])}\nTotal bayar: {order.idr(o['total'])}")
-    if with_contact:
+    if with_contact and o.get("pickup"):
+        text += f"\n\n{PICKUP}\nHP: {o['phone']}"
+    elif with_contact:
         text += f"\n\nKirim ke: {o['addr']}\n{ship.short(o['area'])}\nHP: {o['phone']}"
         text += f"\nCatatan: {o['note']}" if o["note"] else ""
     return text
@@ -198,6 +207,10 @@ def _check():
     assert o["total"] == 170037 and open_order(7) is o and open_order(8) is None
     assert "081234567890" not in book_items(o) and "Tebet" not in book_items(o) and book_items(o).endswith("bayar Rp170.037")
     assert "HP: 081234567890" in summary(o, True) and "HP" not in summary(o)
+    p = new_order("TAK-261126-BBBB", 7, 9, lines, {**c, "mode": "pickup"}, 10000, 5, now=1000)
+    assert p["total"] == 160005 and p["ship"] == 0 and p["pickup"] and "Tebet" not in summary(p, True)
+    assert "ambil sendiri; bayar Rp160.005" in book_items(p) and "tanpa ongkir" in summary(p)
+    del _orders["TAK-261126-BBBB"]
     assert all(1 <= unique() <= 99 and unique() != 37 for _ in range(200))   # 37 is held by the unpaid order
     prune(now=1000 + KEEP_UNPAID + 1)
     assert not _orders

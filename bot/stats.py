@@ -47,6 +47,9 @@ LABELS = {   # event: what it means, in the order the summary prints them
     "resi_sent": "resi dikirim ke pembeli",
     "wa_entry": "admin: pesanan WhatsApp di-paste",
     "wa_qr": "admin: QRIS pesanan WhatsApp dibuat",
+    "checkout_pickup": "checkout ambil sendiri / janjian dipilih",
+    "pickup_done": "pesanan ambil sendiri diserahkan",
+    "manual_qr": "admin: QR bayar manual dibuat",
 }
 
 

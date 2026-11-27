@@ -311,14 +311,14 @@ def in_bot(user):
 
 
 def snapshot(c, items):
-    """What the shipping quote depends on; a change after the quote means quoting again."""
-    return [c["dest"][0], sorted(items.items())]
+    """What the quote depends on; a change after the quote means quoting again."""
+    return ["pickup" if c.get("mode") == "pickup" else c["dest"][0], sorted(items.items())]
 
 
 def ask_phone(chat):
     cart(chat)["await"] = "phone"
     stats.count("checkout_start")
-    say(chat, "Biar pesanan bisa dikirim, tekan tombol Bagikan nomor HP di bawah, atau ketik nomor WhatsApp kamu. "
+    say(chat, "Biar admin bisa hubungi kamu, tekan tombol Bagikan nomor HP di bawah, atau ketik nomor WhatsApp kamu. "
               "Ketik /batal kalau nggak jadi.", PHONE_KB)
 
 
@@ -352,30 +352,34 @@ def quote(chat):
     items = {v: q for v, q in c["items"].items() if cat and v in order.on_sale(cat)}
     if not items:
         return cart_view(chat)
+    pickup = c.get("mode") == "pickup"
     try:
-        rate = ship.cost(c["dest"][0], checkout.grams(items))
+        rate = (0, "") if pickup else ship.cost(c["dest"][0], checkout.grams(items))
     except (OSError, ValueError) as e:
         print("ship cost failed:", type(e).__name__, flush=True)
         rate = None
     if not rate:
         return ship_down(chat)
-    stats.count("ship_quote")
+    stats.count("checkout_pickup" if pickup else "ship_quote")
     c["ship"], c["unique"], c["quoted"] = rate[0], checkout.unique(), snapshot(c, items)
     lines = order.lines_of(items, cat)
-    o = {"lines": lines, "ship": rate[0], "unique": c["unique"], "addr": c["addr"], "area": c["dest"][1],
-         "phone": c["phone"], "note": c["note"], "total": sum(ln[4] for ln in lines) + rate[0] + c["unique"]}
-    say(chat, f"{checkout.summary(o, True)}\nEstimasi sampai: {rate[1] or '-'}\n\n"
-              "Kode unik bikin pembayaranmu gampang dicocokkan admin.",
+    o = {"lines": lines, "ship": rate[0], "unique": c["unique"], "addr": c.get("addr", ""), "pickup": pickup,
+         "area": "" if pickup else c["dest"][1], "phone": c["phone"], "note": c["note"],
+         "total": sum(ln[4] for ln in lines) + rate[0] + c["unique"]}
+    after = ("Habis bayar, admin hubungi kamu lewat WhatsApp buat atur waktu dan tempat ambil." if pickup else
+             f"Estimasi sampai: {rate[1] or '-'}")
+    say(chat, f"{checkout.summary(o, True)}\n{after}\n\nKode unik bikin pembayaranmu gampang dicocokkan admin.",
         {"inline_keyboard": [[{"text": "💳 Bayar pakai QRIS", "callback_data": "q"}],
-                             [{"text": "✏️ Ubah alamat", "callback_data": "ka"},
-                              {"text": "⬅️ Keranjang", "callback_data": "c"}]]})
+                             ([] if pickup else [{"text": "✏️ Ubah alamat", "callback_data": "ka"}]) +
+                             [{"text": "⬅️ Keranjang", "callback_data": "c"}]]})
 
 
 def pay(chat, user):
     """A new order code, the fixed-amount QRIS to the buyer, one record to the order book, a heads-up to the admins."""
     c, cat = cart(chat), order.catalog()
     items = {v: q for v, q in c["items"].items() if cat and v in order.on_sale(cat)}
-    if not items or not all(k in c for k in ("phone", "dest", "addr", "ship")):
+    need = ("phone", "ship") if c.get("mode") == "pickup" else ("phone", "dest", "addr", "ship")
+    if not items or not all(k in c for k in need):
         return cart_view(chat)
     if c.get("quoted") != snapshot(c, items):   # cart or area changed after the summary: never the old shipping
         return quote(chat)
@@ -460,6 +464,35 @@ def tell(o, text, note, kb=None):
 # --- Orders taken on WhatsApp: the admin pastes the filled template into @mas_bas_bot, the bot prices it, makes the
 # QRIS and records it, like an order placed in the bot. Houseblend only. ---
 _drafts = {}   # admin id -> the order being typed in (not saved: a restart drops it, the admin pastes again)
+_amount_wait = set()   # admins asked for the amount of a payment QR
+ADMIN_KB = {"keyboard": [[{"text": "📝 Pesanan WhatsApp"}, {"text": "💳 Buat QR bayar"}],
+                         [{"text": "📋 Pesanan belum selesai"}]], "resize_keyboard": True, "is_persistent": True}
+HELP = ("Bot admin Titik Asal Kopi. Pesanan baru dan bukti bayar muncul di sini.\n"
+        "📝 Pesanan WhatsApp: template buat pembeli; paste balasannya ke sini\n"
+        "💳 Buat QR bayar: QRIS dengan nominal bebas, misal buat yang datang langsung\n"
+        "📋 Pesanan belum selesai: yang belum dibayar, dikirim atau diambil")
+
+
+def rupiah(text):
+    """'85000', 'Rp85.000', '85rb', '85k', '1,5jt' -> 85000 / 1500000; None if it isn't an amount."""
+    t = text.lower().replace("rp", "").replace(" ", "")
+    m = re.fullmatch(r"(\d+(?:[.,]\d+)?)(rb|k|ribu|jt|juta)?", t)
+    if not m:
+        return None
+    if m.group(2):
+        n = float(m.group(1).replace(",", ".")) * (1_000_000 if m.group(2) in ("jt", "juta") else 1000)
+    else:
+        n = float(re.sub(r"[.,]", "", m.group(1)))
+    return int(n) if n == int(n) and 1 <= n <= 10_000_000 else None
+
+
+def manual_qr(who, amount, note):
+    """A QRIS for any amount, e.g. someone buying at the door. Not an order: nothing is kept or recorded."""
+    payload = qris.with_amount(checkout.QRIS_FILE.read_text(encoding="utf-8").strip(), amount)
+    send_photo(_api["admin"], who, qris.png(payload),
+               f"QRIS {checkout.MERCHANT} · {order.idr(amount)}\nTunjukkan ke pembeli atau teruskan. Cek uangnya "
+               "masuk di QRIS Interactive.")
+    stats.count("manual_qr")
 
 
 def wa_entry(who, text, note):
@@ -578,13 +611,29 @@ def on_admin(u):
         o = checkout._orders.get(code)
         if not o:
             return note(f"{code}: pesanannya nggak ada (belum dibayar lebih dari 3 hari, jadi sudah dihapus).")
-        if cmd == "pay" and o["status"] == "unpaid":
+        if cmd == "pay" and o["status"] == "unpaid" and o.get("pickup"):
+            o["status"], o["paid_at"] = "paid", time.time()
+            stats.count("admin_paid")
+            to_admins(f"✅ {o['code']} lunas, ambil sendiri / janjian. Hubungi pembeli di WhatsApp {o['phone']} buat "
+                      f"atur waktu dan tempat. Tekan Sudah diambil setelah kopinya diserahkan.\n\n"
+                      f"{checkout.summary(o, True)}",
+                      {"inline_keyboard": [[{"text": "🤝 Sudah diambil", "callback_data": f"done:{o['code']}"}]]})
+            checkout.save()
+            tell(o, f"Pembayaran {o['code']} diterima. Admin bakal hubungi kamu lewat WhatsApp buat atur waktu dan "
+                    "tempat ambil ya.", note)
+        elif cmd == "pay" and o["status"] == "unpaid":
             o["status"], o["paid_at"] = "paid", time.time()
             stats.count("admin_paid")
             o["ask"] += to_admins(f"✅ {o['code']} lunas, siap dikemas.\nBalas (reply) pesan ini dengan nomor resi JNE "
                                   f"setelah paket dikirim.\n\n{checkout.summary(o, True)}")
             checkout.save()
             tell(o, f"Pembayaran {o['code']} diterima. Pesanan lagi dikemas, nomor resi JNE dikirim di sini.", note)
+        elif cmd == "done" and o["status"] == "paid" and o.get("pickup"):
+            o.update(status="shipped", shipped_at=time.time())
+            stats.count("pickup_done")
+            checkout.save()
+            if tell(o, f"Pesanan {o['code']} sudah diserahkan. Makasih ya, selamat ngopi!", note):
+                note(f"{o['code']} selesai.")
         elif cmd == "nopay" and o["status"] == "unpaid":
             stats.count("admin_unpaid")
             if tell(o, f"Pembayaran {o['code']} belum kami terima. Kalau sudah bayar, kirim ulang screenshot-nya "
@@ -606,18 +655,29 @@ def on_admin(u):
                 {"inline_keyboard": [[{"text": "🚚 Lacak di JNE", "url": JNE_TRACK}]]}):
             note(f"Resi {resi} terkirim ke pembeli {o['code']}. Jangan lupa isi status dan resi di buku order.")
         return
+    if text.startswith("/batal") and (who in _amount_wait or who in _drafts):
+        _amount_wait.discard(who)
+        _drafts.pop(who, None)
+        return note("Oke, dibatalin.")
+    if who in _amount_wait and not text.startswith("/") and not text.startswith(("📝", "📋", "💳")):
+        if not (amount := rupiah(text)):
+            return note("Nominalnya nggak kebaca. Ketik angka, misal 85000 atau 85rb. /batal kalau nggak jadi.")
+        _amount_wait.discard(who)
+        return manual_qr(who, amount, note)
+    _amount_wait.discard(who)
+    if text.startswith("💳") or text.startswith("/qr"):
+        _amount_wait.add(who)
+        return note("Nominalnya berapa? Ketik angka, misal 85000 atau 85rb. /batal kalau nggak jadi.")
     if "pesanan:" in text.lower():   # a filled WhatsApp template, with or without /baru in front
         return wa_entry(who, text, note)
-    if text.startswith("/baru"):
+    if text.startswith("📝") or text.startswith("/baru"):
         note(checkout.TEMPLATE)
         return note("Copy template di atas ke pembeli di WhatsApp. Habis diisi, paste balasannya ke sini.")
-    if text.startswith("/pesanan"):
-        rows = [f"{x['code']} · {x['status']} · {order.idr(x['total'])}" for x in checkout._orders.values()
-                if x["status"] != "shipped"]
+    if text.startswith("📋") or text.startswith("/pesanan"):
+        rows = [f"{x['code']} · {x['status']} · {order.idr(x['total'])}" + (" · ambil sendiri" if x.get("pickup") else "")
+                + (" · WhatsApp" if x["chat"] is None else "") for x in checkout._orders.values() if x["status"] != "shipped"]
         return note("\n".join(rows) or "Nggak ada pesanan yang belum dikirim.")
-    note("Bot admin Titik Asal Kopi. Pesanan baru dan bukti bayar muncul di sini.\n"
-         "/baru = template pesanan buat pembeli WhatsApp (paste balasannya ke sini)\n"
-         "/pesanan = daftar pesanan yang belum dikirim.")
+    tg_admin("sendMessage", {"chat_id": who, "text": HELP, "reply_markup": ADMIN_KB})
 
 
 def on_callback(q):
@@ -656,7 +716,16 @@ def on_callback(q):
         say(chat, "Tulis catatan buat pesanan ini (misal: giling untuk V60, kirim ke Bandung), maks 200 karakter. "
                   "Ketik /batal kalau nggak jadi.")
     elif cmd == "k" and c["items"] and in_bot(user):
-        ask_area(chat) if c.get("phone") else ask_phone(chat)
+        say(chat, "Mau gimana?", {"inline_keyboard": [
+            [{"text": "🤝 Bayar langsung (ambil sendiri / janjian)", "callback_data": "kp"}],
+            [{"text": "🚚 Kirim dan bayar (JNE)", "callback_data": "ks"}],
+            [{"text": "⬅️ Keranjang", "callback_data": "c"}]]}, mid)
+    elif cmd in ("kp", "ks") and c["items"] and in_bot(user):
+        c["mode"] = "pickup" if cmd == "kp" else "ship"
+        if not c.get("phone"):
+            ask_phone(chat)
+        else:
+            quote(chat) if cmd == "kp" else ask_area(chat)
     elif cmd == "ka" and c["items"]:
         ask_area(chat)
     elif cmd == "d" and arg.isdigit() and int(arg) in c.get("areas", {}):
@@ -702,6 +771,9 @@ def on_message(m, sessions):
             return say(chat, "Nomornya kurang pas. Tekan tombol Bagikan nomor HP, atau ketik misal 081234567890.",
                        PHONE_KB)
         c["phone"] = p
+        if c.get("mode") == "pickup":
+            say(chat, "Nomor tersimpan.", NO_KB)
+            return quote(chat)
         return ask_area(chat, first=True)
     if waiting and c["await"] == "area":
         return got_area(chat, text)
@@ -914,7 +986,7 @@ def _checkout_flow_check():
         def last():
             return [b for mth, b in sent if mth != "answerCallbackQuery"][-1]
 
-        tap("a:bold-200g"); tap("a:bold-200g"); tap("k")
+        tap("a:bold-200g"); tap("a:bold-200g"); tap("k"); tap("ks")
         assert last()["reply_markup"] == PHONE_KB
         msg("12345")
         assert last()["text"].startswith("Nomornya kurang pas")
@@ -1000,6 +1072,47 @@ def _checkout_flow_check():
         assert wa["status"] == "paid" and len(sent) == n and "Kirim ke pembeli (HP 081322224455)" in admin[-1]["text"]
         admin_says("TEST12345678", reply_to=wa["ask"][0])
         assert wa["status"] == "shipped" and "TEST12345678" in admin[-1]["text"] and len(sent) == n
+        # pay in person: no address, no shipping, handed over instead of a resi
+        pick = {"id": 8, "type": "private"}
+
+        def buyer(t=None, **extra):
+            on_message({"chat": pick, "from": {"id": 8}, **({"text": t} if t else {}), **extra}, {})
+
+        def buyer_taps(data):
+            on_callback({"id": "q", "data": data, "from": {"id": 8}, "message": {"chat": pick, "message_id": 1}})
+
+        buyer_taps("a:bright-100g"); buyer_taps("k")
+        assert [r[0]["callback_data"] for r in last()["reply_markup"]["inline_keyboard"]] == ["kp", "ks", "c"]
+        buyer_taps("kp")
+        assert last()["reply_markup"] == PHONE_KB
+        buyer(contact={"phone_number": "0857 1111 2222"})
+        t = last()["text"]
+        assert "Ambil sendiri / janjian" in t and "Ongkir" not in t and "Kirim ke" not in t, t
+        assert [b["callback_data"] for b in last()["reply_markup"]["inline_keyboard"][1]] == ["c"]
+        buyer_taps("q")
+        (pk,) = [x for x in checkout._orders.values() if x["chat"] == 8]
+        assert pk["pickup"] and pk["chat"] == 8 and pk["total"] == 55000 + pk["unique"] and pk["ship"] == 0
+        assert "ambil sendiri" in recorded[-1][2] and recorded[-1][1] == "2222"
+        admin_taps(f"pay:{pk['code']}")
+        assert pk["status"] == "paid" and not pk["ask"] and "atur waktu dan tempat ambil" in last()["text"]
+        assert admin[-1]["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == f"done:{pk['code']}"
+        admin_taps(f"done:{pk['code']}")
+        assert pk["status"] == "shipped" and "diserahkan" in last()["text"]
+        # the admin keyboard and a payment QR for any amount
+        admin_says("hai")
+        assert admin[-1]["reply_markup"] == ADMIN_KB
+        n = len(photos)
+        admin_says("💳 Buat QR bayar"); admin_says("dua puluh")
+        assert "nggak kebaca" in admin[-1]["text"] and len(photos) == n
+        admin_says("85rb")
+        assert photos[-1][:2] == ("ADMIN", 1) and qris.tags(photos[-1][2].decode())["54"] == "85000"
+        admin_says("85000")   # no longer waiting for an amount: just the help
+        assert len(photos) == n + 1 and admin[-1]["text"] == HELP
+        assert [rupiah(x) for x in ("Rp85.000", "85.000", "1,5jt", "85k", "0", "abc")] == [85000, 85000, 1500000, 85000,
+                                                                                            None, None]
+        tap(f"pay:{pk['code']}", who=5, fn=on_admin)   # a non-admin still gets nothing
+        on_admin({"message": {"chat": {"id": 5, "type": "private"}, "from": {"id": 5}, "text": "💳 Buat QR bayar"}})
+        assert 5 not in _amount_wait and all(b.get("chat_id") != 5 or "Id Telegram" in b.get("text", "") for b in admin)
         kept = stats.FILE.read_text(encoding="utf-8")
         assert not re.search(r"Tebet|0812|7890|Rina", kept) and '"resi_sent"' in kept, "stats must hold counts only"
     finally:
@@ -1009,6 +1122,7 @@ def _checkout_flow_check():
         stats.FILE, CHECKOUT_FOR_ALL = None, False
         _api.update(url=None, admin=None)
         _carts.clear(); _orders.clear(); _orders_day.clear(); checkout._orders.clear(); _drafts.clear()
+        _amount_wait.clear()
 
 
 if __name__ == "__main__":
