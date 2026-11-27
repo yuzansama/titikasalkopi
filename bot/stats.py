@@ -15,7 +15,9 @@ from pathlib import Path
 
 WIB = timezone(timedelta(hours=7))   # the VM runs in UTC; "today" means the WIB day
 FILE = None
+_today = {"day": None, "users": set()}   # in memory only: ids never reach the file
 LABELS = {   # event: what it means, in the order the summary prints them
+    "user": "orang yang chat (unik per hari)",
     "msg": "pesan teks masuk (chat pribadi)",
     "tap": "tombol ditekan",
     "start": "/start",
@@ -32,6 +34,22 @@ LABELS = {   # event: what it means, in the order the summary prints them
     "orderbook_rejected": "ditolak buku order",
     "orderbook_failed": "gagal kirim ke buku order",
     "update_failed": "update error di bot",
+    "checkout_start": "checkout lengkap dimulai (minta nomor HP)",
+    "ship_quote": "ongkir JNE dihitung",
+    "ship_failed": "ongkir gagal dihitung (dialihkan ke WhatsApp)",
+    "qr_sent": "QRIS dikirim",
+    "photo": "foto masuk",
+    "proof_ok": "bukti bayar terbaca cocok",
+    "proof_mismatch": "bukti bayar terbaca tidak cocok",
+    "proof_unread": "bukti bayar gagal dibaca",
+    "admin_paid": "admin: pembayaran masuk",
+    "admin_unpaid": "admin: pembayaran belum masuk",
+    "resi_sent": "resi dikirim ke pembeli",
+    "wa_entry": "admin: pesanan WhatsApp di-paste",
+    "wa_qr": "admin: QRIS pesanan WhatsApp dibuat",
+    "checkout_pickup": "checkout ambil sendiri / janjian dipilih",
+    "pickup_done": "pesanan ambil sendiri diserahkan",
+    "manual_qr": "admin: QR bayar manual dibuat",
 }
 
 
@@ -45,6 +63,17 @@ def count(event):
             f.write(line)
     except OSError:
         pass
+
+
+def seen(user):
+    """Count "user" the first time `user` shows up in a WIB day. The id itself is only held in memory.
+    ponytail: a restart forgets today's set, so someone already counted today is counted again after it."""
+    day = datetime.now(WIB).date()
+    if _today["day"] != day:
+        _today.update(day=day, users=set())
+    if user not in _today["users"]:
+        _today["users"].add(user)
+        count("user")
 
 
 def per_day(path):
@@ -72,7 +101,8 @@ def summary(path, n_days=7, today=None):
            f"Sejak mulai dihitung ({min(days) if days else '-'}): " + ", ".join(
                f"{e} {n}" for e, n in sum(days.values(), Counter()).most_common()),
            "Per hari:"]
-    out += [f"  {d}  pesan {days[d]['msg']:>4}  vertex {days[d]['vertex']:>4}  salam {days[d]['greet']:>3}  "
+    out[1] = out[1].replace("orang yang chat (unik per hari)", "orang yang chat (dijumlah dari tiap hari)")
+    out += [f"  {d}  orang {days[d]['user']:>3}  pesan {days[d]['msg']:>4}  vertex {days[d]['vertex']:>4}  salam {days[d]['greet']:>3}  "
             f"menu {days[d]['menu']:>3}  checkout {days[d]['checkout']:>3}" for d in last if d in days]
     return "\n".join(out)
 
