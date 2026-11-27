@@ -45,6 +45,8 @@ LABELS = {   # event: what it means, in the order the summary prints them
     "admin_paid": "admin: pembayaran masuk",
     "admin_unpaid": "admin: pembayaran belum masuk",
     "resi_sent": "resi dikirim ke pembeli",
+    "wa_entry": "admin: pesanan WhatsApp di-paste",
+    "wa_qr": "admin: QRIS pesanan WhatsApp dibuat",
 }
 
 

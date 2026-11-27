@@ -442,7 +442,12 @@ def on_photo(m, chat):
 
 
 def tell(o, text, note, kb=None):
-    """Message the buyer of `o`; if Telegram refuses (bot blocked, network), tell the admin instead. True if sent."""
+    """Message the buyer of `o`; if Telegram refuses (bot blocked, network), tell the admin instead. True if sent.
+    An order typed in from WhatsApp has no chat: the admin gets the text to send there."""
+    if o["chat"] is None:
+        note(f"Pesanan WhatsApp {o['code']}. Kirim ke pembeli (HP {o['phone']}):\n\n{text}"
+             + (f"\nLacak di {JNE_TRACK}" if kb else ""))
+        return False
     try:
         say(o["chat"], text, kb)
         return True
@@ -450,6 +455,95 @@ def tell(o, text, note, kb=None):
         print("buyer notice failed:", type(e).__name__, flush=True)
         note(f"Pesan ke pembeli {o['code']} gagal terkirim (HP {o['phone']}). Kabari lewat WhatsApp ya.")
         return False
+
+
+# --- Orders taken on WhatsApp: the admin pastes the filled template into @mas_bas_bot, the bot prices it, makes the
+# QRIS and records it, like an order placed in the bot. Houseblend only. ---
+_drafts = {}   # admin id -> the order being typed in (not saved: a restart drops it, the admin pastes again)
+
+
+def wa_entry(who, text, note):
+    f = checkout.parse_template(text)
+    missing = [label for k, label in (("name", "Nama"), ("phone", "No HP"), ("addr", "Alamat lengkap"),
+                                      ("area", "Kecamatan / kode pos"), ("items", "Pesanan")) if k not in f]
+    if missing:
+        return note("Belum lengkap: " + ", ".join(missing) + ". Lengkapi lalu paste ulang.")
+    if not (p := checkout.phone(f["phone"])):
+        return note(f"No HP \"{f['phone']}\" nggak kebaca sebagai nomor HP Indonesia. Benerin lalu paste ulang.")
+    items, bad = checkout.parse_items(f["items"])
+    if bad or not items:
+        return note("Pesanan yang nggak kebaca: " + ("; ".join(bad) or f["items"]) + "\nTulis kayak: BOLD 200gr x2, "
+                    "BRIGHT 100gr x1 (houseblend aja, ukuran 100gr/200gr/1kg, maks 20).")
+    cat = order.catalog()
+    if not cat:
+        return note("Daftar harga lagi nggak bisa dibuka. Coba lagi sebentar.")
+    if sold := [v for v in items if v not in order.on_sale(cat)]:
+        return note("Stok habis: " + ", ".join(sold))
+    postal = re.search(r"\b\d{5}\b", f["area"])
+    try:
+        found = ship.search(postal.group() if postal else f["area"])
+    except (OSError, ValueError) as e:
+        print("ship search failed:", type(e).__name__, flush=True)
+        return note("Cek ongkir lagi gangguan. Coba lagi sebentar.")
+    if not found:
+        return note(f"Kecamatan / kode pos \"{f['area']}\" nggak ketemu. Benerin lalu paste ulang.")
+    stats.count("wa_entry")
+    _drafts[who] = {"phone": p, "addr": order.sanitize_note(f"{f['name']}, {f['addr']}"),
+                    "note": order.sanitize_note(f.get("note", "")), "items": items, "areas": dict(found)}
+    if len(found) == 1:
+        return wa_quote(who, found[0][0], note)
+    tg_admin("sendMessage", {"chat_id": who, "text": "Pilih tujuan:", "reply_markup": {"inline_keyboard": [
+        [{"text": ship.short(lab), "callback_data": f"ad:{i}"}] for i, lab in found]}})
+
+
+def wa_quote(who, dest, note):
+    d, cat = _drafts.get(who), order.catalog()
+    if not d or dest not in d["areas"] or not cat:
+        return note("Draftnya udah nggak ada. Paste ulang template-nya.")
+    d["dest"] = (dest, d["areas"][dest])
+    try:
+        rate = ship.cost(dest, checkout.grams(d["items"]))
+    except (OSError, ValueError) as e:
+        print("ship cost failed:", type(e).__name__, flush=True)
+        rate = None
+    if not rate:
+        return note("Ongkir JNE ke situ nggak bisa dihitung sekarang. Coba lagi sebentar.")
+    d["ship"], d["unique"] = rate[0], checkout.unique()
+    lines = order.lines_of(d["items"], cat)
+    o = {"lines": lines, "ship": rate[0], "unique": d["unique"], "addr": d["addr"], "area": d["dest"][1],
+         "phone": d["phone"], "note": d["note"], "total": sum(ln[4] for ln in lines) + rate[0] + d["unique"]}
+    tg_admin("sendMessage", {"chat_id": who, "text": f"{checkout.summary(o, True)}\nEstimasi sampai: {rate[1] or '-'}\n\n"
+                             "Kalau ada yang salah, paste ulang template yang udah dibenerin.",
+                             "reply_markup": {"inline_keyboard": [[{"text": "💳 Buat QRIS", "callback_data": "aq"},
+                                                                   {"text": "Batal", "callback_data": "ax"}]]}})
+
+
+def wa_make(who, note):
+    d, cat = _drafts.pop(who, None), order.catalog()
+    if not d or "ship" not in d or not cat:
+        return note("Draftnya udah nggak ada. Paste ulang template-nya.")
+    if sold := [v for v in d["items"] if v not in order.on_sale(cat)]:
+        return note("Stok habis: " + ", ".join(sold))
+    if any(o["status"] == "unpaid" and o["unique"] == d["unique"] for o in checkout._orders.values()):
+        d["unique"] = checkout.unique()   # taken meanwhile by another unpaid order
+    o = checkout.new_order(order.new_code(), None, who, order.lines_of(d["items"], cat), d, d["ship"], d["unique"])
+    kb = {"inline_keyboard": [[{"text": "✅ Sudah masuk", "callback_data": f"pay:{o['code']}"},
+                               {"text": "❌ Belum masuk", "callback_data": f"nopay:{o['code']}"}]]}
+    try:   # the QR first: if it never arrives, nothing is kept and the draft stays
+        payload = qris.with_amount(checkout.QRIS_FILE.read_text(encoding="utf-8").strip(), o["total"])
+        send_photo(_api["admin"], who, qris.png(payload), f"{checkout.summary(o, True)}\n\nTeruskan QR ini ke pembeli. "
+                   "Kalau uangnya sudah masuk di QRIS Interactive, tekan Sudah masuk.", kb)
+    except (OSError, ValueError) as e:
+        del checkout._orders[o["code"]]
+        _drafts[who] = d
+        print("qr send failed (admin):", type(e).__name__, flush=True)
+        return note("QR gagal dikirim. Tekan Buat QRIS sekali lagi.")
+    checkout.save()
+    stats.count("wa_qr")
+    order.record(o["code"], o["phone"][-4:], checkout.book_items(o))
+    note(f"Teks buat pembeli:\n\nTotal pesanan {o['code']}: {order.idr(o['total'])} (sudah termasuk ongkir JNE "
+         f"{order.idr(o['ship'])}). Silakan scan QR ini, nominalnya sudah terisi. Status pesanan bisa dilacak di "
+         f"{order.LACAK} pakai kode {o['code']} dan 4 digit terakhir nomor HP kakak.")
 
 
 def on_admin(u):
@@ -474,6 +568,13 @@ def on_admin(u):
         except OSError:
             pass
         cmd, _, code = (q.get("data") or "").partition(":")
+        if cmd == "ad":
+            return wa_quote(who, int(code) if code.isdigit() else None, note)
+        if cmd == "aq":
+            return wa_make(who, note)
+        if cmd == "ax":
+            _drafts.pop(who, None)
+            return note("Oke, draftnya dibatalin.")
         o = checkout._orders.get(code)
         if not o:
             return note(f"{code}: pesanannya nggak ada (belum dibayar lebih dari 3 hari, jadi sudah dihapus).")
@@ -505,11 +606,17 @@ def on_admin(u):
                 {"inline_keyboard": [[{"text": "🚚 Lacak di JNE", "url": JNE_TRACK}]]}):
             note(f"Resi {resi} terkirim ke pembeli {o['code']}. Jangan lupa isi status dan resi di buku order.")
         return
+    if "pesanan:" in text.lower():   # a filled WhatsApp template, with or without /baru in front
+        return wa_entry(who, text, note)
+    if text.startswith("/baru"):
+        note(checkout.TEMPLATE)
+        return note("Copy template di atas ke pembeli di WhatsApp. Habis diisi, paste balasannya ke sini.")
     if text.startswith("/pesanan"):
         rows = [f"{x['code']} · {x['status']} · {order.idr(x['total'])}" for x in checkout._orders.values()
                 if x["status"] != "shipped"]
         return note("\n".join(rows) or "Nggak ada pesanan yang belum dikirim.")
     note("Bot admin Titik Asal Kopi. Pesanan baru dan bukti bayar muncul di sini.\n"
+         "/baru = template pesanan buat pembeli WhatsApp (paste balasannya ke sini)\n"
          "/pesanan = daftar pesanan yang belum dikirim.")
 
 
@@ -786,7 +893,8 @@ def _checkout_flow_check():
         "result": {"message_id": 2000 + len(photos)}}
     fetch_photo, token = (lambda m: b"jpg"), (lambda: "t")
     order.catalog, order.record = (lambda: cat), (lambda *a: recorded.append(a))
-    ship.search, ship.cost = (lambda t: [tebet] if "tebet" in t.lower() else []), (lambda dest, grams: (10000, "1 hari"))
+    ship.search = lambda t: [tebet] if "tebet" in t.lower() or "12810" in t else []
+    ship.cost = lambda dest, grams: (10000, "1 hari")
     checkout.ready, checkout.admins = (lambda: True), (lambda: {1})
     checkout.ORDERS_FILE, checkout.QRIS_FILE, qris.png = d / "orders.json", d / "qris", (lambda p: p.encode())
     _api.update(url="SHOP", admin="ADMIN")
@@ -860,6 +968,38 @@ def _checkout_flow_check():
         assert len(sent) == n and not _seen
         msg(photo=[{"file_id": "f", "file_size": 1000}])   # no unpaid order any more: ignored
         assert "012345678901" in last()["text"]
+        def admin_says(t, reply_to=None):
+            on_admin({"message": {"chat": {"id": 1, "type": "private"}, "from": {"id": 1}, "text": t,
+                                  **({"reply_to_message": {"message_id": reply_to}} if reply_to else {})}})
+
+        def admin_taps(data):
+            tap(data, who=1, where={"id": 1, "type": "private"}, fn=on_admin)
+
+        admin_says("/baru")
+        assert admin[-2]["text"] == checkout.TEMPLATE
+        filled = (checkout.TEMPLATE.replace("Nama:", "Nama: Dita").replace("No HP:", "No HP: 0813 2222 4455")
+                  .replace("Alamat lengkap:", "Alamat lengkap: Jl. Riau 21").replace("Catatan:", "Catatan: giling V60")
+                  .replace("Kecamatan / kode pos:", "Kecamatan / kode pos: Tebet 12810")
+                  .replace("Pesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1)", "Pesanan: BOLD 200gr x2, sabin 1"))
+        admin_says(filled)
+        assert "nggak kebaca: sabin 1" in admin[-1]["text"] and 1 not in _drafts
+        admin_says(filled.replace("Nama: Dita", "Nama:"))
+        assert admin[-1]["text"].startswith("Belum lengkap: Nama")
+        admin_says(filled.replace(", sabin 1", ""))   # one destination found: priced straight away
+        assert "Ongkir JNE Reguler: Rp10.000" in admin[-1]["text"] and "Dita, Jl. Riau 21" in admin[-1]["text"]
+        admin_taps("aq")
+        wa = max(checkout._orders.values(), key=lambda x: x["created"])
+        assert wa["chat"] is None and wa["total"] == 160000 + 10000 + wa["unique"] and wa["note"] == "giling V60"
+        assert photos[-1][:2] == ("ADMIN", 1) and qris.tags(photos[-1][2].decode())["54"] == str(wa["total"])
+        assert recorded[-1][0] == wa["code"] and recorded[-1][1] == "4455" and "Riau" not in recorded[-1][2]
+        assert wa["code"] in admin[-1]["text"] and "Teks buat pembeli" in admin[-1]["text"] and 1 not in _drafts
+        admin_taps("aq")   # a second tap mints nothing
+        assert "Draftnya udah nggak ada" in admin[-1]["text"]
+        n = len(sent)
+        admin_taps(f"pay:{wa['code']}")
+        assert wa["status"] == "paid" and len(sent) == n and "Kirim ke pembeli (HP 081322224455)" in admin[-1]["text"]
+        admin_says("TEST12345678", reply_to=wa["ask"][0])
+        assert wa["status"] == "shipped" and "TEST12345678" in admin[-1]["text"] and len(sent) == n
         kept = stats.FILE.read_text(encoding="utf-8")
         assert not re.search(r"Tebet|0812|7890|Rina", kept) and '"resi_sent"' in kept, "stats must hold counts only"
     finally:
@@ -868,7 +1008,7 @@ def _checkout_flow_check():
          checkout.ORDERS_FILE, checkout.QRIS_FILE, qris.png) = real_mod
         stats.FILE, CHECKOUT_FOR_ALL = None, False
         _api.update(url=None, admin=None)
-        _carts.clear(); _orders.clear(); _orders_day.clear(); checkout._orders.clear()
+        _carts.clear(); _orders.clear(); _orders_day.clear(); checkout._orders.clear(); _drafts.clear()
 
 
 if __name__ == "__main__":

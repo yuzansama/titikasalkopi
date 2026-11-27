@@ -135,6 +135,47 @@ def check_proof(text, total):
     return total in amounts(text), MERCHANT in flat
 
 
+# --- Orders taken on WhatsApp and typed into @mas_bas_bot by an admin (houseblend only, like the bot). ---
+TEMPLATE = ("Halo kak, biar pesanannya cepat diproses, isi template ini ya:\n\nNama:\nNo HP:\nAlamat lengkap:\n"
+            "Kecamatan / kode pos:\nPesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1)\nCatatan:")
+FIELDS = {"nama": "name", "no hp": "phone", "hp": "phone", "nomor hp": "phone", "no wa": "phone", "alamat lengkap": "addr",
+          "alamat": "addr", "kecamatan / kode pos": "area", "kecamatan/kode pos": "area", "kecamatan": "area",
+          "kode pos": "area", "pesanan": "items", "catatan": "note"}
+SIZES = ((r"1\s*kg|1000\s*gr?", "1kg"), (r"200\s*(?:gr?|gram)?", "200g"), (r"100\s*(?:gr?|gram)?", "100g"))
+
+
+def parse_items(text):
+    """'BOLD 200gr x2, bright 1kg 1' -> ({variant id: qty}, [chunks not understood])."""
+    items, bad = {}, []
+    for chunk in filter(None, (c.strip() for c in re.split(r"[,;\n]+|\s+dan\s+", text or ""))):
+        low = chunk.lower()
+        line = next((x for x in ("bold", "bright") if x in low), None)
+        size = next(((pat, s) for pat, s in SIZES if re.search(pat, low)), None)
+        if not line or not size:
+            bad.append(chunk)
+            continue
+        rest = re.sub(size[0], " ", low, count=1)
+        qty = re.search(r"(\d+)", rest)
+        n = int(qty.group(1)) if qty else 1
+        if not 1 <= n <= 20:
+            bad.append(chunk)
+            continue
+        vid = f"{line}-{size[1]}"
+        items[vid] = items.get(vid, 0) + n
+    return items, bad
+
+
+def parse_template(text):
+    """The filled WhatsApp template -> {name, phone, addr, area, items, note}; missing fields are absent."""
+    out = {}
+    for ln in (text or "").splitlines():
+        key, sep, val = ln.partition(":")
+        k = FIELDS.get(" ".join(key.lower().replace("*", "").split()))
+        if sep and k and val.strip():
+            out[k] = val.strip()
+    return out
+
+
 def vision_text(image, token, project):
     body = {"requests": [{"image": {"content": base64.b64encode(image).decode()}, "features": [{"type": "TEXT_DETECTION"}]}]}
     req = urllib.request.Request(VISION, data=json.dumps(body).encode(), headers={
@@ -160,6 +201,14 @@ def _check():
     assert all(1 <= unique() <= 99 and unique() != 37 for _ in range(200))   # 37 is held by the unpaid order
     prune(now=1000 + KEEP_UNPAID + 1)
     assert not _orders
+    assert parse_items("BOLD 200gr x2, bright 100 gr 1; Bold 1kg") == ({"bold-200g": 2, "bright-100g": 1, "bold-1kg": 1}, [])
+    assert parse_items("2x bold 200 gram dan BRIGHT 1 kg x3") == ({"bold-200g": 2, "bright-1kg": 3}, [])
+    assert parse_items("bold 200gr x2\nbold 200gr") == ({"bold-200g": 3}, [])
+    assert parse_items("Sabin 200gr x1, bold x2, bright 100gr x50") == ({}, ["Sabin 200gr x1", "bold x2", "bright 100gr x50"])
+    t = parse_template(TEMPLATE.replace("Nama:", "Nama: Dita").replace("No HP:", "*No HP*: 0813 2222 4455")
+                       .replace("Pesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1)", "Pesanan: BOLD 200gr x2")
+                       .replace("Kecamatan / kode pos:", "Kecamatan / kode pos: 40115"))
+    assert t == {"name": "Dita", "phone": "0813 2222 4455", "area": "40115", "items": "BOLD 200gr x2"}, t
 
 
 if __name__ == "__main__":
