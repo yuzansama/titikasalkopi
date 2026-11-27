@@ -1,4 +1,4 @@
-"""Telegram bot "mas_bas_bot": answers questions about Titik Asal Kopi with Vertex AI Search (app "tanya-kopi" in
+"""Telegram bot @titikasalkopi_bot (until 25 Nov @mas_bas_bot, now the internal admin bot): answers questions about Titik Asal Kopi with Vertex AI Search (app "tanya-kopi" in
 project titikasalkopi-bot, documents from bot/vertex_docs/, set up by bot/vertex_setup.py). Vertex AI Search is the
 service the GenAI App Builder trial credit covers.
 
@@ -8,14 +8,19 @@ service the GenAI App Builder trial credit covers.
 Auth: TG_TOKEN_FILE (default supreme-eureka/.masbas_env, token from @BotFather, never committed) and the gcloud login
 (`gcloud auth print-access-token`), or on the GCE VM (bot/bot-kopi.service) the VM's service account.
 Ordering: the "Pesan kopi" button, /pesan, or a message with pesan/beli/order opens a button menu (order.py, contract
-docs/15-kontrak-pesanan-untuk-bot-telegram.md). Checkout gives an order code and a WhatsApp button with the order text;
-payment and shipping stay on WhatsApp.
+docs/15-kontrak-pesanan-untuk-bot-telegram.md). Where checkout.ready() (the VM), checkout runs in the bot: phone,
+address, JNE rate, fixed-amount QRIS, payment screenshot, then an admin confirms in @mas_bas_bot and replies with the
+tracking number (checkout.py). Elsewhere checkout gives an order code and a WhatsApp button with the order text.
 """
+import contextlib
+import io
 import json
 import re
 import os
+import secrets
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -24,7 +29,10 @@ from collections import defaultdict, deque
 from datetime import datetime
 from pathlib import Path
 
+import checkout
 import order
+import qris
+import ship
 import stats
 
 PROJECT, ENGINE = "titikasalkopi-bot", "tanya-kopi"
@@ -136,11 +144,15 @@ NO_CATALOG = f"Maaf, daftar harga lagi nggak bisa dibuka. Pesan langsung lewat {
 _carts = {}                    # chat -> {"items": {variant id: qty}, "note": str, "await": None | "note" | "last4"}
 _orders = defaultdict(deque)   # user -> checkout timestamps (last 24 h)
 _orders_day = deque()
-_api = {"url": None}
+_api = {"url": None, "admin": None, "file": None}
 
 
 def tg(method, body):
     return post(f"{_api['url']}/{method}", body, timeout=30)
+
+
+def tg_admin(method, body):
+    return post(f"{_api['admin']}/{method}", body, timeout=30)
 
 
 def say(chat, text, kb=None, edit=None):
@@ -215,7 +227,8 @@ def cart_view(chat, edit=None, info=""):
                      for p, lab, qty, u, t in lines)
     text = ((f"{info}\n\n" if info else "") + f"🧺 Keranjang\n\n{body}\n\n"
             f"Subtotal: {order.idr(sum(ln[4] for ln in lines))}\n"
-            "(Belum termasuk ongkir. Total akhir dikonfirmasi admin di WhatsApp.)"
+            + ("(Belum termasuk ongkir; dihitung waktu checkout.)" if in_bot(chat) else
+               "(Belum termasuk ongkir. Total akhir dikonfirmasi admin di WhatsApp.)")
             + (f"\nCatatan: {c['note']}" if c["note"] else ""))
     rows = [[{"text": "➖", "callback_data": f"m:{v}"},
              {"text": f"{order.VARIANTS[v][0].split()[-1]} {order.VARIANTS[v][2].replace('Kemasan ', '')} ×{q}",
@@ -249,6 +262,257 @@ def finish(chat, user, last4):
         {"inline_keyboard": [[{"text": "📲 Kirim pesanan ke WhatsApp", "url": order.wa_url(text)}]]})
 
 
+# --- Checkout inside the bot (checkout.py): phone, address, JNE rate, QRIS, screenshot, admin in @mas_bas_bot. ---
+PHONE_KB = {"keyboard": [[{"text": "📱 Bagikan nomor HP", "request_contact": True}]], "one_time_keyboard": True,
+            "resize_keyboard": True}
+NO_KB = {"remove_keyboard": True}
+JNE_TRACK = "https://www.jne.co.id/tracking-package"
+CHECKING = "Lagi dicek admin ya, biasanya kurang dari 1 jam di jam kerja."
+CHECKOUT_FOR_ALL = False   # False: only admins get the in-bot checkout (test phase); buyers keep the WhatsApp one
+# ponytail: one lock for both bots' handlers; a slow OCR call holds up the other bot for a second or two.
+LOCK = threading.Lock()
+
+
+def send_photo(api, chat, image, caption, kb=None):
+    """sendPhoto with an uploaded image (multipart by hand: urllib has no form encoder)."""
+    b = "kopi" + secrets.token_hex(12)
+    fields = {"chat_id": str(chat), "caption": caption[:1000], **({"reply_markup": json.dumps(kb)} if kb else {})}
+    data = b"".join(f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
+                    for k, v in fields.items())
+    data += (f'--{b}\r\nContent-Disposition: form-data; name="photo"; filename="foto.png"\r\n'
+             "Content-Type: application/octet-stream\r\n\r\n").encode() + image + f"\r\n--{b}--\r\n".encode()
+    req = urllib.request.Request(f"{api}/sendPhoto", data=data,
+                                 headers={"Content-Type": f"multipart/form-data; boundary={b}"})
+    return json.load(urllib.request.urlopen(req, timeout=60))
+
+
+def fetch_photo(m):
+    """Bytes of the largest size of a photo message under 4 MB (Cloud Vision's inline limit is 10 MB)."""
+    best = max((p for p in m["photo"] if p.get("file_size", 0) <= 4_000_000), key=lambda p: p.get("file_size", 0))
+    path = tg("getFile", {"file_id": best["file_id"]})["result"]["file_path"]
+    return urllib.request.urlopen(f"{_api['file']}/{path}", timeout=30).read()
+
+
+def to_admins(text, kb=None, image=None):
+    """Send to every admin through @mas_bas_bot; returns the message ids (for 'reply with the tracking number')."""
+    ids = []
+    for a in checkout.admins():
+        try:
+            r = (send_photo(_api["admin"], a, image, text, kb) if image else
+                 tg_admin("sendMessage", {"chat_id": a, "text": text[:4000], **({"reply_markup": kb} if kb else {})}))
+            ids.append(r["result"]["message_id"])
+        except OSError as e:
+            print("admin send failed:", type(e).__name__, flush=True)
+    return ids
+
+
+def in_bot(user):
+    return checkout.ready() and (CHECKOUT_FOR_ALL or user in checkout.admins())
+
+
+def snapshot(c, items):
+    """What the shipping quote depends on; a change after the quote means quoting again."""
+    return [c["dest"][0], sorted(items.items())]
+
+
+def ask_phone(chat):
+    cart(chat)["await"] = "phone"
+    stats.count("checkout_start")
+    say(chat, "Biar pesanan bisa dikirim, tekan tombol Bagikan nomor HP di bawah, atau ketik nomor WhatsApp kamu. "
+              "Ketik /batal kalau nggak jadi.", PHONE_KB)
+
+
+def ask_area(chat, first=False):
+    cart(chat)["await"] = "area"
+    say(chat, "Ketik kecamatan, kelurahan atau kode pos tujuan, misal: Tebet atau 12810.", NO_KB if first else None)
+
+
+def got_area(chat, text):
+    try:
+        found = ship.search(text)
+    except (OSError, ValueError) as e:
+        print("ship search failed:", type(e).__name__, flush=True)
+        return ship_down(chat)
+    if not found:
+        return say(chat, "Nggak ketemu. Coba ketik nama kecamatan lain atau kode posnya.")
+    cart(chat)["areas"] = dict(found)
+    say(chat, "Pilih yang cocok (atau ketik lagi kalau nggak ada):",
+        {"inline_keyboard": [[{"text": ship.short(lab), "callback_data": f"d:{i}"}] for i, lab in found]})
+
+
+def ship_down(chat):
+    stats.count("ship_failed")
+    say(chat, "Maaf, ongkir lagi nggak bisa dihitung. Lanjut lewat WhatsApp aja ya, admin yang hitung ongkirnya.",
+        {"inline_keyboard": [[{"text": "Lanjut lewat WhatsApp", "callback_data": "kk"}]]})
+
+
+def quote(chat):
+    """The JNE rate for the cart and the summary with the pay button."""
+    c, cat = cart(chat), order.catalog()
+    items = {v: q for v, q in c["items"].items() if cat and v in order.on_sale(cat)}
+    if not items:
+        return cart_view(chat)
+    try:
+        rate = ship.cost(c["dest"][0], checkout.grams(items))
+    except (OSError, ValueError) as e:
+        print("ship cost failed:", type(e).__name__, flush=True)
+        rate = None
+    if not rate:
+        return ship_down(chat)
+    stats.count("ship_quote")
+    c["ship"], c["unique"], c["quoted"] = rate[0], checkout.unique(), snapshot(c, items)
+    lines = order.lines_of(items, cat)
+    o = {"lines": lines, "ship": rate[0], "unique": c["unique"], "addr": c["addr"], "area": c["dest"][1],
+         "phone": c["phone"], "note": c["note"], "total": sum(ln[4] for ln in lines) + rate[0] + c["unique"]}
+    say(chat, f"{checkout.summary(o, True)}\nEstimasi sampai: {rate[1] or '-'}\n\n"
+              "Kode unik bikin pembayaranmu gampang dicocokkan admin.",
+        {"inline_keyboard": [[{"text": "💳 Bayar pakai QRIS", "callback_data": "q"}],
+                             [{"text": "✏️ Ubah alamat", "callback_data": "ka"},
+                              {"text": "⬅️ Keranjang", "callback_data": "c"}]]})
+
+
+def pay(chat, user):
+    """A new order code, the fixed-amount QRIS to the buyer, one record to the order book, a heads-up to the admins."""
+    c, cat = cart(chat), order.catalog()
+    items = {v: q for v, q in c["items"].items() if cat and v in order.on_sale(cat)}
+    if not items or not all(k in c for k in ("phone", "dest", "addr", "ship")):
+        return cart_view(chat)
+    if c.get("quoted") != snapshot(c, items):   # cart or area changed after the summary: never the old shipping
+        return quote(chat)
+    if not may_order(user, time.time()):
+        stats.count("checkout_capped")
+        return say(chat, f"Pesanan lewat bot hari ini udah banyak. Lanjut pesan langsung lewat {WA} ya.",
+                   {"inline_keyboard": [[WA_BTN]]})
+    checkout.prune()
+    if any(o["status"] == "unpaid" and o["unique"] == c["unique"] for o in checkout._orders.values()):
+        c["unique"] = checkout.unique()   # taken meanwhile by another unpaid order
+    o = checkout.new_order(order.new_code(), chat, user, order.lines_of(items, cat), c, c["ship"], c["unique"])
+    try:   # the QR first: if it never reaches the buyer, nothing is kept and the cart stays
+        payload = qris.with_amount(checkout.QRIS_FILE.read_text(encoding="utf-8").strip(), o["total"])
+        send_photo(_api["url"], chat, qris.png(payload),
+                   f"{checkout.summary(o)}\n\nScan QR ini pakai e-wallet atau m-banking. Nominal "
+                   f"{order.idr(o['total'])} sudah terisi, atas nama {checkout.MERCHANT}.")
+    except (OSError, ValueError) as e:
+        del checkout._orders[o["code"]]
+        print("qr send failed:", type(e).__name__, flush=True)
+        return say(chat, "Maaf, QR pembayarannya gagal dikirim. Tekan Bayar pakai QRIS sekali lagi ya.")
+    checkout.save()
+    _carts.pop(chat, None)   # a second tap can't mint a second code
+    stats.count("checkout")
+    stats.count("qr_sent")
+    order.record(o["code"], o["phone"][-4:], checkout.book_items(o))
+    say(chat, f"Sudah bayar? Kirim screenshot bukti bayarnya di sini ya. Status pesanan bisa dilacak di {order.LACAK} "
+              f"pakai kode {o['code']} dan 4 digit terakhir nomor HP kamu.")
+    to_admins(f"🆕 Pesanan baru, belum dibayar\n\n{checkout.summary(o, True)}")
+
+
+def on_photo(m, chat):
+    """A payment screenshot for this chat's unpaid order: read it, tell the buyer, send it to the admins to confirm."""
+    o = checkout.open_order(chat)
+    if not o:
+        return   # a photo outside a payment is ignored, like any other non-text message
+    if o["proofs"] >= checkout.MAX_PROOFS:
+        return say(chat, f"Bukti bayarnya udah kami terima. {CHECKING}")
+    o["proofs"] += 1
+    checkout.save()
+    image = text = None
+    try:
+        image = fetch_photo(m)
+        text = checkout.vision_text(image, token(), PROJECT)
+    except (OSError, KeyError, ValueError, subprocess.CalledProcessError) as e:
+        print("proof read failed:", type(e).__name__, flush=True)
+    amount_ok, merchant_ok = checkout.check_proof(text, o["total"])
+    if text is None:
+        stats.count("proof_unread")
+        hint = "Foto gagal dibaca otomatis, cek manual."
+        say(chat, f"Fotonya udah kami terima. {CHECKING}")
+    elif amount_ok and merchant_ok:
+        stats.count("proof_ok")
+        hint = "Terbaca cocok: nominal dan nama merchant ada di foto."
+        say(chat, f"Terbaca: {order.idr(o['total'])} ke {checkout.MERCHANT}. Cocok. {CHECKING}")
+    else:
+        stats.count("proof_mismatch")
+        hint = (f"Terbaca TIDAK cocok: nominal {'ada' if amount_ok else 'tidak ada'}, "
+                f"nama merchant {'ada' if merchant_ok else 'tidak ada'}.")
+        say(chat, f"Di foto ini belum kebaca {order.idr(o['total'])} ke {checkout.MERCHANT}. Kalau sudah bayar, "
+                  f"tunggu admin cek ya, atau kirim screenshot yang lebih jelas.")
+    kb = {"inline_keyboard": [[{"text": "✅ Sudah masuk", "callback_data": f"pay:{o['code']}"},
+                               {"text": "❌ Belum masuk", "callback_data": f"nopay:{o['code']}"}]]}
+    to_admins(f"Bayar masuk? Cek di QRIS Interactive.\n{hint}\n\n{checkout.summary(o, True)}", kb, image)
+
+
+def tell(o, text, note, kb=None):
+    """Message the buyer of `o`; if Telegram refuses (bot blocked, network), tell the admin instead. True if sent."""
+    try:
+        say(o["chat"], text, kb)
+        return True
+    except OSError as e:
+        print("buyer notice failed:", type(e).__name__, flush=True)
+        note(f"Pesan ke pembeli {o['code']} gagal terkirim (HP {o['phone']}). Kabari lewat WhatsApp ya.")
+        return False
+
+
+def on_admin(u):
+    """@mas_bas_bot: only admins (~/.tg_admins). Buttons confirm payment; a reply to 'lunas' carries the resi."""
+    q = u.get("callback_query")
+    m = (q or {}).get("message") or u.get("message") or {}
+    who = ((q or m).get("from") or {}).get("id")
+    if (m.get("chat") or {}).get("type") != "private":
+        return
+    if who not in checkout.admins():
+        if not q and (m.get("text") or "").startswith("/start"):   # how a new admin gets added: id to the owner
+            tg_admin("sendMessage", {"chat_id": who, "text": f"Bot internal Titik Asal Kopi. Id Telegram kamu: {who}\n"
+                                     "Kirim id ini ke pemilik toko buat didaftarkan jadi admin."})
+        return
+
+    def note(text):
+        tg_admin("sendMessage", {"chat_id": who, "text": text})
+
+    if q:
+        try:
+            tg_admin("answerCallbackQuery", {"callback_query_id": q["id"]})
+        except OSError:
+            pass
+        cmd, _, code = (q.get("data") or "").partition(":")
+        o = checkout._orders.get(code)
+        if not o:
+            return note(f"{code}: pesanannya nggak ada (belum dibayar lebih dari 3 hari, jadi sudah dihapus).")
+        if cmd == "pay" and o["status"] == "unpaid":
+            o["status"], o["paid_at"] = "paid", time.time()
+            stats.count("admin_paid")
+            o["ask"] += to_admins(f"✅ {o['code']} lunas, siap dikemas.\nBalas (reply) pesan ini dengan nomor resi JNE "
+                                  f"setelah paket dikirim.\n\n{checkout.summary(o, True)}")
+            checkout.save()
+            tell(o, f"Pembayaran {o['code']} diterima. Pesanan lagi dikemas, nomor resi JNE dikirim di sini.", note)
+        elif cmd == "nopay" and o["status"] == "unpaid":
+            stats.count("admin_unpaid")
+            if tell(o, f"Pembayaran {o['code']} belum kami terima. Kalau sudah bayar, kirim ulang screenshot-nya "
+                       f"atau chat {WA} ya.", note):
+                note(f"Oke, pembeli {o['code']} dikabari pembayarannya belum masuk.")
+        else:
+            note(f"{o['code']} statusnya sudah {o['status']}.")
+        return checkout.save()
+    text = (m.get("text") or "").strip()
+    o = checkout.by_ask((m.get("reply_to_message") or {}).get("message_id"))
+    if o:
+        resi = re.sub(r"[\s-]", "", text).upper()
+        if not re.fullmatch(r"[A-Z0-9]{8,20}", resi):
+            return note("Nomor resinya kayaknya salah (8-20 huruf/angka). Balas lagi pesan tadi.")
+        o.update(status="shipped", resi=resi, shipped_at=time.time())
+        checkout.save()
+        stats.count("resi_sent")
+        if tell(o, f"Pesanan {o['code']} sudah dikirim pakai JNE Reguler. Nomor resi: {resi}", note,
+                {"inline_keyboard": [[{"text": "🚚 Lacak di JNE", "url": JNE_TRACK}]]}):
+            note(f"Resi {resi} terkirim ke pembeli {o['code']}. Jangan lupa isi status dan resi di buku order.")
+        return
+    if text.startswith("/pesanan"):
+        rows = [f"{x['code']} · {x['status']} · {order.idr(x['total'])}" for x in checkout._orders.values()
+                if x["status"] != "shipped"]
+        return note("\n".join(rows) or "Nggak ada pesanan yang belum dikirim.")
+    note("Bot admin Titik Asal Kopi. Pesanan baru dan bukti bayar muncul di sini.\n"
+         "/pesanan = daftar pesanan yang belum dikirim.")
+
+
 def on_callback(q):
     m = q.get("message") or {}
     chat = (m.get("chat") or {}).get("id")
@@ -261,6 +525,7 @@ def on_callback(q):
     user, mid = (q.get("from") or {}).get("id", chat), m.get("message_id")
     cmd, _, arg = (q.get("data") or "").partition(":")
     stats.count("tap")
+    stats.seen(user)
     if q.get("data") == "o":
         stats.count("menu")
     c = cart(chat)
@@ -283,6 +548,15 @@ def on_callback(q):
         c["await"] = "note"
         say(chat, "Tulis catatan buat pesanan ini (misal: giling untuk V60, kirim ke Bandung), maks 200 karakter. "
                   "Ketik /batal kalau nggak jadi.")
+    elif cmd == "k" and c["items"] and in_bot(user):
+        ask_area(chat) if c.get("phone") else ask_phone(chat)
+    elif cmd == "ka" and c["items"]:
+        ask_area(chat)
+    elif cmd == "d" and arg.isdigit() and int(arg) in c.get("areas", {}):
+        c["dest"], c["await"] = (int(arg), c["areas"][int(arg)]), "addr"
+        say(chat, "Tulis nama penerima dan alamat lengkap (jalan, nomor rumah, RT/RW, patokan), maks 200 huruf.")
+    elif cmd == "q":
+        pay(chat, user)
     elif cmd == "k":
         if not c["items"]:
             return cart_view(chat, mid)
@@ -291,20 +565,45 @@ def on_callback(q):
             {"inline_keyboard": [[{"text": "Lewati", "callback_data": "kk"}],
                                  [{"text": "⬅️ Kembali ke keranjang", "callback_data": "c"}]]})
     elif cmd == "kk":
-        finish(chat, user, "")
+        finish(chat, user, c.get("phone", "")[-4:])
 
 
 def on_message(m, sessions):
     text, chat = m.get("text"), (m.get("chat") or {}).get("id")
-    if not text or chat is None or m["chat"].get("type") != "private":
+    if chat is None or m["chat"].get("type") != "private":
         return   # private chats only: in groups the bot stays silent
+    stats.seen((m.get("from") or {}).get("id", chat))
+    if m.get("photo"):
+        stats.count("photo")
+        return on_photo(m, chat)
+    if m.get("contact"):   # the "Bagikan nomor HP" button; anywhere else a contact is ignored (never sent to Vertex)
+        c = _carts.get(chat)
+        text = (m["contact"].get("phone_number") or "") if c and c["await"] == "phone" else ""
+    if not text:
+        return
     stats.count("msg")
     user, c = (m.get("from") or {}).get("id", chat), _carts.get(chat)
     waiting = c and c["await"] and not text.startswith("/")
     if text.startswith("/batal"):
+        if c and c["await"] == "phone":
+            say(chat, "Oke.", NO_KB)
         if c:
             c["await"] = None
         return cart_view(chat, info="Oke, dibatalin.")
+    if waiting and c["await"] == "phone":
+        if not (p := checkout.phone(text)):
+            return say(chat, "Nomornya kurang pas. Tekan tombol Bagikan nomor HP, atau ketik misal 081234567890.",
+                       PHONE_KB)
+        c["phone"] = p
+        return ask_area(chat, first=True)
+    if waiting and c["await"] == "area":
+        return got_area(chat, text)
+    if waiting and c["await"] == "addr":
+        c["addr"] = order.sanitize_note(text)
+        if len(c["addr"]) < 10:
+            return say(chat, "Alamatnya kependekan. Tulis nama penerima, jalan, nomor rumah dan patokan ya.")
+        c["await"] = None
+        return quote(chat)
     if waiting and c["await"] == "note":
         c["note"], c["await"] = order.sanitize_note(text), None
         return cart_view(chat, info="Catatan disimpan.")
@@ -336,34 +635,48 @@ def on_message(m, sessions):
 
 def run():
     stats.FILE = Path.home() / "bot_stats.jsonl"   # only the live bot counts; _check() and --test never write
-    _api["url"] = f"https://api.telegram.org/bot{TG_TOKEN_FILE.read_text(encoding='utf-8').strip()}"
+    token_ = TG_TOKEN_FILE.read_text(encoding="utf-8").strip()
+    _api["url"], _api["file"] = f"https://api.telegram.org/bot{token_}", f"https://api.telegram.org/file/bot{token_}"
     me = json.load(urllib.request.urlopen(f"{_api['url']}/getMe", timeout=30))["result"]["username"]
     print(f"running as @{me} (Vertex AI Search)", flush=True)
-    sessions, offset = {}, 0
+    if checkout.ready():
+        checkout.load()
+        _api["admin"] = f"https://api.telegram.org/bot{checkout.ADMIN_TOKEN_FILE.read_text(encoding='utf-8').strip()}"
+        threading.Thread(target=poll, args=(_api["admin"], on_admin, "admin"), daemon=True).start()
+        print(f"checkout in bot: on, {len(checkout.admins())} admin(s), {len(checkout._orders)} open order(s)", flush=True)
+    sessions = {}
+
+    def on_update(u):
+        m = u.get("message") or {}
+        if m.get("date") and time.time() - m["date"] > 5:
+            print(f"late: message {time.time() - m['date']:.0f} s old", flush=True)
+        if "callback_query" in u:
+            on_callback(u["callback_query"])
+        elif m:
+            on_message(m, sessions)
+    poll(_api["url"], on_update, "shop")
+
+
+def poll(url, handle, name):
+    offset = 0
     while True:
         try:
             # Short long-poll: on this network an idle connection dies silently, and a 50 s poll then held new
             # messages for up to ~80 s (24 Nov). 10 s keeps the worst case near 15 s; ~6 cheap requests a minute.
-            ups = json.load(urllib.request.urlopen(f"{_api['url']}/getUpdates?timeout=10&offset={offset}",
-                                                   timeout=15))["result"]
+            ups = json.load(urllib.request.urlopen(f"{url}/getUpdates?timeout=10&offset={offset}", timeout=15))["result"]
         except urllib.error.HTTPError as e:
-            if e.code == 409:   # another program polls this bot (old OpenClaw?) -> revoke the token in @BotFather
+            if e.code == 409 and name == "shop":   # another program polls this bot -> revoke the token in @BotFather
                 sys.exit("409 Conflict: another process is reading this bot. Revoke the token in @BotFather.")
-            print("telegram error:", e.code); time.sleep(10); continue
+            print(f"telegram error ({name}):", e.code, flush=True); time.sleep(10 if e.code != 409 else 60); continue
         except OSError as e:   # URLError, TimeoutError, ConnectionResetError: a wifi drop must not kill the bot
-            print("network:", type(e).__name__, e, flush=True); time.sleep(2); continue
+            print(f"network ({name}):", type(e).__name__, e, flush=True); time.sleep(2); continue
         for u in ups:
             offset = u["update_id"] + 1
-            m = u.get("message") or {}
-            if m.get("date") and time.time() - m["date"] > 5:
-                print(f"late: message {time.time() - m['date']:.0f} s old", flush=True)
             try:   # one bad update (a stale button, a send that fails) must not stop the bot
-                if "callback_query" in u:
-                    on_callback(u["callback_query"])
-                elif m:
-                    on_message(m, sessions)
+                with LOCK:
+                    handle(u)
             except Exception as e:
-                print("update failed:", type(e).__name__, str(e)[:200], flush=True)
+                print(f"update failed ({name}):", type(e).__name__, str(e)[:200], flush=True)
                 stats.count("update_failed")
 
 
@@ -382,7 +695,11 @@ def _check():
     _seen.clear(); _day.clear()
     assert ORDER_WORDS.search("mau pesan dong") and ORDER_WORDS.search("Beli BOLD") and not ORDER_WORDS.search("pesanan")
     order._check()
+    ship._check()
+    checkout._check()
+    qris._check()
     _order_flow_check()
+    _checkout_flow_check()
 
 
 def _order_flow_check():
@@ -390,6 +707,7 @@ def _order_flow_check():
     global tg
     sent, recorded, real = [], [], (tg, order.catalog, order.record)
     tmp = Path(tempfile.mkdtemp()) / "stats.jsonl"
+    ready, checkout.ready = checkout.ready, lambda: False   # the WhatsApp checkout, also on the VM
     stats.FILE = tmp
     cat = order.parse_managed('"houseblend.bold.mini1": 45_000,\n"houseblend.bold.pack1": 80_000,\n'
                               '"houseblend.bold.kg": 320_000,\n"houseblend.bold.kg.promo": 300_000,\n'
@@ -437,12 +755,120 @@ def _order_flow_check():
         tap("o"); tap("o:b"); msg("Halo")
         c = stats.per_day(tmp)[str(datetime.now(stats.WIB).date())]
         assert c["checkout"] == len(recorded) and c["checkout_capped"] == 1, c
-        assert c["menu"] == 2 and c["msg"] == 5 and c["greet"] == 1 and c["tap"] > 10 and "vertex" not in c, c
+        assert c["user"] == 1 and c["menu"] == 2 and c["msg"] == 5 and c["greet"] == 1 and c["tap"] > 10 and "vertex" not in c, c
         assert not re.search(r"9567|giling|[79]", tmp.read_text()), "stats must hold counts only"
     finally:
-        stats.FILE = None
+        stats.FILE, checkout.ready = None, ready
         tg, (order.catalog, order.record) = real[0], real[1:]
         _carts.clear(); _orders.clear(); _orders_day.clear()
+
+
+def _checkout_flow_check():
+    """A whole in-bot checkout through fakes: phone, area, address, JNE rate, QRIS, screenshot, admin, resi."""
+    global tg, tg_admin, send_photo, fetch_photo, token
+    g = globals()
+    names = ("tg", "tg_admin", "send_photo", "fetch_photo", "token")
+    real = {n: g[n] for n in names}
+    real_mod = (order.catalog, order.record, ship.search, ship.cost, checkout.ready, checkout.admins,
+                checkout.vision_text, checkout.ORDERS_FILE, checkout.QRIS_FILE, qris.png)
+    sent, photos, admin, recorded = [], [], [], []
+    d = Path(tempfile.mkdtemp())
+    body = "000201010211" + "2612" + "00ID.EXAMPLE" + "52045812530336058" + "02ID5904TEST6007JAKARTA" + "6304"
+    (d / "qris").write_text(body + qris.crc(body), encoding="utf-8")
+    stats.FILE = d / "stats.jsonl"
+    cat = order.parse_managed("".join(f'"houseblend.{k}": {v},' + chr(10) for k, v in (
+        ("bold.mini1", 45000), ("bold.pack1", 80000), ("bold.kg", 320000), ("bold.kg.promo", 300000),
+        ("bright.mini1", 55000), ("bright.pack1", 95000), ("bright.kg", 400000), ("bright.kg.promo", 380000))))
+    tebet = (17588, "TEBET BARAT, TEBET, JAKARTA SELATAN, DKI JAKARTA, 12810")
+    tg = lambda method, b: sent.append((method, b)) or {"result": {"message_id": len(sent)}}
+    tg_admin = lambda method, b: admin.append(b) or {"result": {"message_id": 1000 + len(admin)}}
+    send_photo = lambda api, chat, image, caption, kb=None: photos.append((api, chat, image, caption, kb)) or {
+        "result": {"message_id": 2000 + len(photos)}}
+    fetch_photo, token = (lambda m: b"jpg"), (lambda: "t")
+    order.catalog, order.record = (lambda: cat), (lambda *a: recorded.append(a))
+    ship.search, ship.cost = (lambda t: [tebet] if "tebet" in t.lower() else []), (lambda dest, grams: (10000, "1 hari"))
+    checkout.ready, checkout.admins = (lambda: True), (lambda: {1})
+    checkout.ORDERS_FILE, checkout.QRIS_FILE, qris.png = d / "orders.json", d / "qris", (lambda p: p.encode())
+    _api.update(url="SHOP", admin="ADMIN")
+    global CHECKOUT_FOR_ALL
+    assert not in_bot(9) or CHECKOUT_FOR_ALL   # test phase: a buyer who is not an admin keeps the WhatsApp checkout
+    CHECKOUT_FOR_ALL = True
+    try:
+        chat = {"id": 7, "type": "private"}
+
+        def msg(t=None, **extra):
+            on_message({"chat": chat, "from": {"id": 9}, **({"text": t} if t else {}), **extra}, {})
+
+        def tap(data, who=9, where=chat, fn=None):
+            q = {"id": "q", "data": data, "from": {"id": who}, "message": {"chat": where, "message_id": 1}}
+            (fn or on_callback)(q) if not fn else fn({"callback_query": q})
+
+        def last():
+            return [b for mth, b in sent if mth != "answerCallbackQuery"][-1]
+
+        tap("a:bold-200g"); tap("a:bold-200g"); tap("k")
+        assert last()["reply_markup"] == PHONE_KB
+        msg("12345")
+        assert last()["text"].startswith("Nomornya kurang pas")
+        msg(contact={"phone_number": "+62 812-3456-7890", "user_id": 9})
+        assert last()["reply_markup"] == NO_KB and "kecamatan" in last()["text"]
+        msg("bogor"); assert last()["text"].startswith("Nggak ketemu")
+        msg("tebet"); assert last()["reply_markup"]["inline_keyboard"][0][0]["callback_data"] == "d:17588"
+        tap("d:99"); tap("d:17588")
+        assert "alamat lengkap" in last()["text"]
+        msg("Rina, Jl. Tebet Raya No. 12, pagar hijau")
+        t = last()["text"]
+        assert "Ongkir JNE Reguler: Rp10.000" in t and "HP: 081234567890" in t and "Ringkasan pesanan" in t, t
+        tap("a:bold-1kg"); tap("q")   # cart changed after the summary: quoted again, no order
+        assert not checkout._orders and "Ringkasan pesanan" in last()["text"]
+        good, send_photo = send_photo, lambda *a, **k: (_ for _ in ()).throw(OSError("reset"))
+        with contextlib.redirect_stdout(io.StringIO()):   # keep the simulated failure out of the journal at startup
+            tap("q")
+        assert not checkout._orders and "gagal dikirim" in last()["text"] and _carts[7]["items"] and not recorded
+        send_photo = good
+        tap("m:bold-1kg"); tap("q"); tap("q")   # quoted again for the smaller cart, then paid
+        (o,) = checkout._orders.values()
+        assert o["total"] == 160000 + 10000 + o["unique"] and 1 <= o["unique"] <= 99
+        qr = qris.tags(photos[-1][2].decode())
+        assert photos[-1][:2] == ("SHOP", 7) and qr["54"] == str(o["total"]) and qr["01"] == "11"
+        code, last4, items = recorded[0]
+        assert code == o["code"] and last4 == "7890" and "Tebet" not in items and "0812" not in items
+        assert admin[-1]["chat_id"] == 1 and "Pesanan baru" in admin[-1]["text"] and "Jl. Tebet Raya" in admin[-1]["text"]
+        assert 7 not in _carts and json.loads(checkout.ORDERS_FILE.read_text(encoding="utf-8"))[code]["status"] == "unpaid"
+        tap("q"); assert len(checkout._orders) == 1   # a second tap mints nothing
+        checkout.vision_text = lambda img, tok, proj: "Berhasil | TITIK ASAL KOPI | Rp " + order.idr(o["total"])[2:]
+        msg(photo=[{"file_id": "f", "file_size": 1000}])
+        assert "Cocok" in last()["text"] and photos[-1][0] == "ADMIN" and photos[-1][4]["inline_keyboard"][0][0][
+            "callback_data"] == f"pay:{code}" and "cocok" in photos[-1][3]
+        tap(f"pay:{code}", who=5, fn=on_admin)   # not an admin: nothing happens
+        assert o["status"] == "unpaid"
+        on_admin({"message": {"chat": {"id": 5, "type": "private"}, "from": {"id": 5}, "text": "/start"}})
+        assert admin[-1] == {"chat_id": 5, "text": admin[-1]["text"]} and "Id Telegram kamu: 5" in admin[-1]["text"]
+        on_admin({"message": {"chat": {"id": 5, "type": "private"}, "from": {"id": 5}, "text": "/pesanan"}})
+        assert admin[-1]["chat_id"] == 5 and "/pesanan" not in admin[-1]["text"]   # nothing else for a non-admin
+        tap(f"pay:{code}", who=1, where={"id": 1, "type": "private"}, fn=on_admin)
+        assert o["status"] == "paid" and "diterima" in last()["text"] and o["ask"]
+        on_admin({"message": {"chat": {"id": 1, "type": "private"}, "from": {"id": 1}, "text": "abc",
+                              "reply_to_message": {"message_id": o["ask"][0]}}})
+        assert o["status"] == "paid" and "salah" in admin[-1]["text"]
+        on_admin({"message": {"chat": {"id": 1, "type": "private"}, "from": {"id": 1}, "text": "0123 4567 8901",
+                              "reply_to_message": {"message_id": o["ask"][0]}}})
+        assert o["status"] == "shipped" and o["resi"] == "012345678901" and "012345678901" in last()["text"]
+        assert last()["reply_markup"]["inline_keyboard"][0][0]["url"] == JNE_TRACK
+        n = len(sent)
+        msg(contact={"phone_number": "+62 812-3456-7890", "user_id": 9})   # outside the phone step: ignored
+        assert len(sent) == n and not _seen
+        msg(photo=[{"file_id": "f", "file_size": 1000}])   # no unpaid order any more: ignored
+        assert "012345678901" in last()["text"]
+        kept = stats.FILE.read_text(encoding="utf-8")
+        assert not re.search(r"Tebet|0812|7890|Rina", kept) and '"resi_sent"' in kept, "stats must hold counts only"
+    finally:
+        g.update(real)
+        (order.catalog, order.record, ship.search, ship.cost, checkout.ready, checkout.admins, checkout.vision_text,
+         checkout.ORDERS_FILE, checkout.QRIS_FILE, qris.png) = real_mod
+        stats.FILE, CHECKOUT_FOR_ALL = None, False
+        _api.update(url=None, admin=None)
+        _carts.clear(); _orders.clear(); _orders_day.clear(); checkout._orders.clear()
 
 
 if __name__ == "__main__":
