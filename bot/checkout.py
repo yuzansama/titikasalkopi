@@ -144,9 +144,16 @@ def check_proof(text, total):
     return total in amounts(text), MERCHANT in flat
 
 
-# --- Orders taken on WhatsApp and typed into @mas_bas_bot by an admin (houseblend only, like the bot). ---
+# --- Orders taken on WhatsApp and typed into @mas_bas_bot by an admin (what the bot sells: houseblend, and single
+# origin 200 gr on pre-order). ---
 TEMPLATE = ("Halo kak, biar pesanannya cepat diproses, isi template ini ya:\n\nNama:\nNo HP:\nAlamat lengkap:\n"
-            "Kecamatan / kode pos:\nPesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1)\nCatatan:")
+            "Kecamatan / kode pos:\nPesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1, Solok 200gr x1)\nCatatan:")
+# A word that names each line in a typed order; single origin by its most distinctive word.
+LINE_WORDS = {"bold": "bold", "bright": "bright", "oelbiteno": "oelbiteno", "abmisibil": "abmisibil", "sabin": "sabin",
+              "pyramid": "pyramid", "peneli": "peneli", "tiom": "gn-tiom", "palimping": "palimping",
+              "kersamanah": "kersamanah-anaerob", "yellow": "yellow-bourbon", "manglayang": "manglayang-honey",
+              "sindoro": "sindoro", "blueberry": "blueberry-infused", "kerinci": "kerinci", "solok": "solok-honey-wash",
+              "pondok": "pondok-baru"}
 FIELDS = {"nama": "name", "no hp": "phone", "hp": "phone", "nomor hp": "phone", "no wa": "phone", "alamat lengkap": "addr",
           "alamat": "addr", "kecamatan / kode pos": "area", "kecamatan/kode pos": "area", "kecamatan": "area",
           "kode pos": "area", "pesanan": "items", "catatan": "note"}
@@ -158,9 +165,11 @@ def parse_items(text):
     items, bad = {}, []
     for chunk in filter(None, (c.strip() for c in re.split(r"[,;\n]+|\s+dan\s+", text or ""))):
         low = chunk.lower()
-        line = next((x for x in ("bold", "bright") if x in low), None)
+        line = next((s for w, s in LINE_WORDS.items() if w in low), None)
         size = next(((pat, s) for pat, s in SIZES if re.search(pat, low)), None)
-        if not line or not size:
+        if line in order.BEANS and not size:
+            size = ("$^", "200g")   # single origin comes in 200 gr only
+        if not line or not size or f"{line}-{size[1]}" not in order.VARIANTS:
             bad.append(chunk)
             continue
         rest = re.sub(size[0], " ", low, count=1)
@@ -217,9 +226,13 @@ def _check():
     assert parse_items("BOLD 200gr x2, bright 100 gr 1; Bold 1kg") == ({"bold-200g": 2, "bright-100g": 1, "bold-1kg": 1}, [])
     assert parse_items("2x bold 200 gram dan BRIGHT 1 kg x3") == ({"bold-200g": 2, "bright-1kg": 3}, [])
     assert parse_items("bold 200gr x2\nbold 200gr") == ({"bold-200g": 3}, [])
-    assert parse_items("Sabin 200gr x1, bold x2, bright 100gr x50") == ({}, ["Sabin 200gr x1", "bold x2", "bright 100gr x50"])
+    assert parse_items("Sabin 200gr x1, bold x2, bright 100gr x50, Sindoro 100gr") == (
+        {"sabin-200g": 1}, ["bold x2", "bright 100gr x50", "Sindoro 100gr"])
+    assert parse_items("Gn. Tiom x2, solok honey & wash; kersamanah anaerob 200 gr 3, Pondok Baru 2") == (
+        {"gn-tiom-200g": 2, "solok-honey-wash-200g": 1, "kersamanah-anaerob-200g": 3, "pondok-baru-200g": 2}, [])
+    assert grams({"solok-honey-wash-200g": 2}) == 600
     t = parse_template(TEMPLATE.replace("Nama:", "Nama: Dita").replace("No HP:", "*No HP*: 0813 2222 4455")
-                       .replace("Pesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1)", "Pesanan: BOLD 200gr x2")
+                       .replace("Pesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1, Solok 200gr x1)", "Pesanan: BOLD 200gr x2")
                        .replace("Kecamatan / kode pos:", "Kecamatan / kode pos: 40115"))
     assert t == {"name": "Dita", "phone": "0813 2222 4455", "area": "40115", "items": "BOLD 200gr x2"}, t
 
