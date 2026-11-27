@@ -49,9 +49,10 @@ PREAMBLE = ("Kamu asisten chat Titik Asal Kopi. Jawab dalam bahasa Indonesia san
             "kalau datanya tidak ada, bilang jujur belum ada infonya dan sarankan tanya lewat WhatsApp. "
             "Tasting notes adalah catatan rasa, bukan jaminan. Tanpa klaim kesehatan atau medis. "
             "Jangan membuat harga, promo, ongkir atau janji stok sendiri. Sebut harga hanya untuk produk dan "
-            "ukuran yang ditanya, jangan menyalin daftar harga lengkap. Kalau pelanggan mau pesan houseblend, minta "
-            "tekan tombol Pesan kopi di bawah pesan ini atau ketik /pesan. Single origin, rasio khusus dan "
-            "pertanyaan stok diarahkan ke WhatsApp 0851-2155-9488 (https://wa.me/6285121559488).")
+            "ukuran yang ditanya, jangan menyalin daftar harga lengkap. Kalau pelanggan mau pesan houseblend atau "
+            "single origin (single origin sistemnya pre-order), minta tekan tombol Pesan kopi di bawah pesan ini atau "
+            "ketik /pesan. Rasio khusus dan pertanyaan stok diarahkan ke WhatsApp 0851-2155-9488 "
+            "(https://wa.me/6285121559488).")
 # A message made only of greeting words gets a canned friendly reply: no Vertex call, so it costs no credit.
 GREET_WORDS = {"halo", "helo", "hello", "hai", "hay", "hi", "hey", "hei", "pagi", "siang", "sore", "malam", "selamat",
                "met", "permisi", "asalamualaikum", "asalamu", "alaikum", "asalamualaikom", "salam", "min", "kak", "ka",
@@ -137,7 +138,11 @@ def answer(text, session=None):
 ORDER_WORDS = re.compile(r"\b(pesan|pesen|order|beli|checkout)\b", re.I)   # "pesanan" does not match
 ORDERS_PER_USER, ORDERS_PER_DAY = 3, 20   # checkouts; the order book allows 50 rows a day shared with the web
 MAX_QTY = 20
-NOTES = {"bold": "choco, almond, caramel", "bright": "raisin, orange, lemon zest"}
+# Tasting notes only where products.ts has them (never made up); beans without notes show none.
+NOTES = {"bold": "choco, almond, caramel", "bright": "raisin, orange, lemon zest",
+         "abmisibil": "beri hitam, anggur merah, cokelat hitam", "sabin": "gula aren, jeruk manis, floral",
+         "pondok-baru": "buah kering, cokelat, rempah manis"}
+PO_NOTE = "stoknya disiapin setelah pesanan masuk, admin kabarin kapan kopinya siap dikirim."
 ORDER_BTN = {"inline_keyboard": [[{"text": "🛒 Pesan kopi", "callback_data": "o"}]]}
 WA_BTN = {"text": "💬 Chat admin WhatsApp", "url": order.WA_LINK}
 NO_CATALOG = f"Maaf, daftar harga lagi nggak bisa dibuka. Pesan langsung lewat {WA} ya."
@@ -189,11 +194,14 @@ def menu(chat, edit=None):
     lines = {}
     for vid in order.on_sale(cat):
         lines.setdefault(order.VARIANTS[vid][1], order.VARIANTS[vid][0])
-    rows = [[{"text": name, "callback_data": f"p:{slug}"}] for slug, name in lines.items()]
+    rows = [[{"text": name, "callback_data": f"p:{slug}"}] for slug, name in lines.items() if slug not in order.BEANS]
+    po = [{"text": f"{name} (PO)", "callback_data": f"p:{slug}"} for slug, name in lines.items() if slug in order.BEANS]
+    rows += [po[i:i + 2] for i in range(0, len(po), 2)]
     if cart(chat)["items"]:
         rows.append([{"text": "🧺 Lihat keranjang", "callback_data": "c"}])
-    rows.append([{"text": "💬 Single origin / rasio khusus: chat admin", "url": order.WA_LINK}])
-    text = "Mau pesan kopi apa? Yang ready sekarang:" if lines else "Lagi belum ada yang bisa dipesan lewat bot."
+    rows.append([{"text": "💬 Rasio khusus / tanya dulu: chat admin", "url": order.WA_LINK}])
+    text = ("Mau pesan kopi apa?" + (f"\n(PO) = pre-order: {PO_NOTE}" if po else "")
+            if lines else "Lagi belum ada yang bisa dipesan lewat bot.")
     say(chat, text, {"inline_keyboard": rows}, edit)
 
 
@@ -208,11 +216,18 @@ def sizes(chat, slug, edit=None):
             name, price = product, order.idr(cat["harga"][key])
             if strike and cat["harga"][strike] > cat["harga"][key]:
                 price += f" (promo, normal {order.idr(cat['harga'][strike])})"
-            rows.append([{"text": f"{label.replace('Kemasan ', '')} · {price}", "callback_data": f"a:{vid}"}])
+            rows.append([{"text": f"{label.replace('Kemasan ', '').replace(order.PO, '')} · {price}",
+                          "callback_data": f"a:{vid}"}])
     if not rows:
         return menu(chat, edit)
     rows.append([{"text": "⬅️ Kembali", "callback_data": "o:b"}])
-    say(chat, f"{name}\nCatatan rasa: {NOTES.get(slug, '-')}\n\nPilih ukuran:", {"inline_keyboard": rows}, edit)
+    if slug in order.BEANS:
+        head = f"{name} · single origin {order.BEANS[slug][2]}\nPre-order: {PO_NOTE}"
+    else:
+        head = name
+    if slug in NOTES:
+        head += f"\nCatatan rasa: {NOTES[slug]}"
+    say(chat, f"{head}\n\nPilih ukuran:", {"inline_keyboard": rows}, edit)
 
 
 def cart_view(chat, edit=None, info=""):
@@ -231,7 +246,8 @@ def cart_view(chat, edit=None, info=""):
                "(Belum termasuk ongkir. Total akhir dikonfirmasi admin di WhatsApp.)")
             + (f"\nCatatan: {c['note']}" if c["note"] else ""))
     rows = [[{"text": "➖", "callback_data": f"m:{v}"},
-             {"text": f"{order.VARIANTS[v][0].split()[-1]} {order.VARIANTS[v][2].replace('Kemasan ', '')} ×{q}",
+             {"text": f"{order.VARIANTS[v][0].replace('Houseblend ', '')} "
+                      f"{order.VARIANTS[v][2].replace('Kemasan ', '').replace(order.PO, ' PO')} ×{q}",
               "callback_data": "c"},
              {"text": "➕", "callback_data": f"a:{v}"}] for v, q in c["items"].items()]
     rows += [[{"text": "➕ Tambah kopi lain", "callback_data": "o:b"}, {"text": "📝 Catatan", "callback_data": "n"}],
@@ -506,7 +522,7 @@ def wa_entry(who, text, note):
     items, bad = checkout.parse_items(f["items"])
     if bad or not items:
         return note("Pesanan yang nggak kebaca: " + ("; ".join(bad) or f["items"]) + "\nTulis kayak: BOLD 200gr x2, "
-                    "BRIGHT 100gr x1 (houseblend aja, ukuran 100gr/200gr/1kg, maks 20).")
+                    "BRIGHT 100gr x1, Solok x1 (houseblend 100gr/200gr/1kg; single origin 200gr pre-order; maks 20).")
     cat = order.catalog()
     if not cat:
         return note("Daftar harga lagi nggak bisa dibuka. Coba lagi sebentar.")
@@ -892,7 +908,8 @@ def _order_flow_check():
                               '"houseblend.bold.kg": 320_000,\n"houseblend.bold.kg.promo": 300_000,\n'
                               '"houseblend.bright.mini1": 55_000,\n"houseblend.bright.pack1": 95_000,\n'
                               '"houseblend.bright.kg": 400_000,\n"houseblend.bright.kg.promo": 380_000,\n'
-                              'bold: "available",\nbright: "available",\n')
+                              '"single.signature.pack1": 150_000,\n"single.reguler.pack1": 150_000,\n'
+                              'bold: "available",\nbright: "available",\nsabin: "out-of-stock",\n')
     tg = lambda method, body: sent.append((method, body))
     order.catalog, order.record = (lambda: cat), (lambda *a: recorded.append(a))
     try:
@@ -935,7 +952,15 @@ def _order_flow_check():
         c = stats.per_day(tmp)[str(datetime.now(stats.WIB).date())]
         assert c["checkout"] == len(recorded) and c["checkout_capped"] == 1, c
         assert c["user"] == 1 and c["menu"] == 2 and c["msg"] == 5 and c["greet"] == 1 and c["tap"] > 10 and "vertex" not in c, c
-        assert not re.search(r"9567|giling|[79]", tmp.read_text()), "stats must hold counts only"
+        assert not re.search(r"9567|giling|\b[79]\b", tmp.read_text()), "stats must hold counts only"
+        tap("o")   # single origin: on pre-order even when the sheet says out-of-stock, 200 gr only
+        kb = [b for r in last()["reply_markup"]["inline_keyboard"] for b in r]
+        assert {"text": "Sabin (PO)", "callback_data": "p:sabin"} in kb and "pre-order" in last()["text"]
+        tap("p:sabin")
+        assert "Pre-order" in last()["text"] and "gula aren" in last()["text"]
+        assert [b["text"] for r in last()["reply_markup"]["inline_keyboard"] for b in r][0] == "200 gr · Rp150.000"
+        tap("a:sabin-200g")
+        assert "Sabin 200 gr (pre-order): 1 pack x Rp150.000" in last()["text"], last()["text"]
     finally:
         stats.FILE, checkout.ready = None, ready
         tg, (order.catalog, order.record) = real[0], real[1:]
@@ -957,7 +982,8 @@ def _checkout_flow_check():
     stats.FILE = d / "stats.jsonl"
     cat = order.parse_managed("".join(f'"houseblend.{k}": {v},' + chr(10) for k, v in (
         ("bold.mini1", 45000), ("bold.pack1", 80000), ("bold.kg", 320000), ("bold.kg.promo", 300000),
-        ("bright.mini1", 55000), ("bright.pack1", 95000), ("bright.kg", 400000), ("bright.kg.promo", 380000))))
+        ("bright.mini1", 55000), ("bright.pack1", 95000), ("bright.kg", 400000), ("bright.kg.promo", 380000)))
+        + '"single.signature.pack1": 150_000,\n"single.reguler.pack1": 150_000,\n')
     tebet = (17588, "TEBET BARAT, TEBET, JAKARTA SELATAN, DKI JAKARTA, 12810")
     tg = lambda method, b: sent.append((method, b)) or {"result": {"message_id": len(sent)}}
     tg_admin = lambda method, b: admin.append(b) or {"result": {"message_id": 1000 + len(admin)}}
@@ -1052,12 +1078,12 @@ def _checkout_flow_check():
         filled = (checkout.TEMPLATE.replace("Nama:", "Nama: Dita").replace("No HP:", "No HP: 0813 2222 4455")
                   .replace("Alamat lengkap:", "Alamat lengkap: Jl. Riau 21").replace("Catatan:", "Catatan: giling V60")
                   .replace("Kecamatan / kode pos:", "Kecamatan / kode pos: Tebet 12810")
-                  .replace("Pesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1)", "Pesanan: BOLD 200gr x2, sabin 1"))
+                  .replace("Pesanan: (contoh: BOLD 200gr x2, BRIGHT 100gr x1, Solok 200gr x1)", "Pesanan: BOLD 200gr x2, gayo 1"))
         admin_says(filled)
-        assert "nggak kebaca: sabin 1" in admin[-1]["text"] and 1 not in _drafts
+        assert "nggak kebaca: gayo 1" in admin[-1]["text"] and 1 not in _drafts
         admin_says(filled.replace("Nama: Dita", "Nama:"))
         assert admin[-1]["text"].startswith("Belum lengkap: Nama")
-        admin_says(filled.replace(", sabin 1", ""))   # one destination found: priced straight away
+        admin_says(filled.replace(", gayo 1", ""))   # one destination found: priced straight away
         assert "Ongkir JNE Reguler: Rp10.000" in admin[-1]["text"] and "Dita, Jl. Riau 21" in admin[-1]["text"]
         admin_taps("aq")
         wa = max(checkout._orders.values(), key=lambda x: x["created"])

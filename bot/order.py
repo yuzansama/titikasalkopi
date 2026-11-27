@@ -45,6 +45,32 @@ VARIANTS = {
     "bright-1kg": ("Houseblend BRIGHT", "bright", "Kemasan 1 kg", "kg", "houseblend.bright.kg.promo",
                    "houseblend.bright.kg"),
 }
+# Single origin, all on pre-order (owner, 27 Nov 2026): offered whatever the sheet's stock says, and marked PO on
+# every line. Only 200 gr at the tier's pack1 price (owner 26 Nov: every single origin Rp150.000 / 200 gr; no 100 gr,
+# no 3-pack). The list is the stock app's (stok/supabase/2026-11-26-po-beans-varian.sql); beans not on the web
+# catalog yet take the tier of their region (BR-09: Papua/NTT signature, Sumatera/Jawa reguler).
+# slug: (name, tier, region)
+BEANS = {
+    "oelbiteno": ("Oelbiteno", "signature", "Kupang, NTT"),
+    "abmisibil": ("Abmisibil", "signature", "Pegunungan Bintang, Papua"),
+    "sabin": ("Sabin", "signature", "Pegunungan Bintang, Papua"),
+    "pyramid": ("Pyramid", "signature", "Jayawijaya, Papua"),
+    "peneli": ("Peneli", "signature", "Papua"),
+    "gn-tiom": ("Gn. Tiom", "signature", "Papua"),
+    "palimping": ("Palimping", "reguler", "Garut, Jawa Barat"),
+    "kersamanah-anaerob": ("Kersamanah Anaerob", "reguler", "Jawa Barat"),
+    "yellow-bourbon": ("Yellow Bourbon", "reguler", "Jawa Barat"),
+    "manglayang-honey": ("Manglayang Honey", "reguler", "Jawa Barat"),
+    "sindoro": ("Sindoro", "reguler", "Gunung Sindoro, Jawa Tengah"),
+    "blueberry-infused": ("Blueberry Infused", "reguler", "Jawa Tengah"),
+    "kerinci": ("Kerinci", "reguler", "Pegunungan Kerinci, Jambi"),
+    "solok-honey-wash": ("Solok Honey & Wash", "reguler", "Solok, Sumatera Barat"),
+    "pondok-baru": ("Pondok Baru", "reguler", "Bener Meriah, Aceh"),
+}
+PO = " (pre-order)"
+for _slug, (_name, _tier, _) in BEANS.items():
+    VARIANTS[f"{_slug}-200g"] = (_name, _slug, "Kemasan 200 gr" + PO, "pack", f"single.{_tier}.pack1", None)
+PAREN = {name: f"Single Origin, {tier.title()}" for name, tier, _ in BEANS.values()}   # web message.ts label
 UNITS = {"gram-100": "{} x 100 gr", "pack": "{} pack", "kg": "{} kemasan 1 kg"}
 _catalog = {"value": None, "at": 0.0}
 
@@ -94,8 +120,10 @@ def catalog():
 
 
 def on_sale(cat):
-    """Variant ids the buttons may offer: only lines whose stock is "available" (missing slug = available, as on web)."""
-    return [v for v, (_, slug, *_) in VARIANTS.items() if cat["stok"].get(slug, "available") == "available"]
+    """Variant ids the buttons may offer: pre-order beans always, other lines only when their stock is "available"
+    (missing slug = available, as on web)."""
+    return [v for v, (_, slug, *_) in VARIANTS.items()
+            if slug in BEANS or cat["stok"].get(slug, "available") == "available"]
 
 
 def new_code(now=None):
@@ -126,7 +154,7 @@ def message(code, lines, note):
     subtotal = sum(ln[4] for ln in lines)
 
     def full(i, ln):
-        return (f"{i}. {ln[0]} ({ln[0]})\n   Varian: {ln[1]}\n   Jumlah: {ln[2]} x {idr(ln[3])}\n"
+        return (f"{i}. {ln[0]} ({PAREN.get(ln[0], ln[0])})\n   Varian: {ln[1]}\n   Jumlah: {ln[2]} x {idr(ln[3])}\n"
                 f"   Subtotal: {idr(ln[4])}")
 
     def compact(i, ln):
@@ -186,13 +214,20 @@ def _check():
     ts = ('  harga: {\n    "houseblend.bold.mini1": 45_000,\n    "houseblend.bold.pack1": 80_000,\n'
           '    "houseblend.bold.kg": 320_000,\n    "houseblend.bold.kg.promo": 300_000,\n'
           '    "houseblend.bright.mini1": 55_000,\n    "houseblend.bright.pack1": 95_000,\n'
-          '    "houseblend.bright.kg": 400_000,\n    "houseblend.bright.kg.promo": 380_000,\n  },\n'
+          '    "houseblend.bright.kg": 400_000,\n    "houseblend.bright.kg.promo": 380_000,\n'
+          '    "single.signature.pack1": 150_000,\n    "single.reguler.pack1": 150_000,\n  },\n'
           '  stok: {\n    sabin: "out-of-stock",\n    "pondok-baru": "out-of-stock",\n    bold: "available",\n'
           '    bright: "available",\n  },\n')
     cat = parse_managed(ts)
     assert cat["harga"]["houseblend.bold.kg.promo"] == 300_000 and cat["stok"]["pondok-baru"] == "out-of-stock"
     assert on_sale(cat) == list(VARIANTS)
-    assert on_sale({"harga": cat["harga"], "stok": {"bold": "out-of-stock"}}) == [v for v in VARIANTS if "bright" in v]
+    assert on_sale({"harga": cat["harga"], "stok": {"bold": "out-of-stock"}}) == [v for v in VARIANTS if "bold" not in v]
+    assert "sabin-200g" in on_sale(cat) and cat["stok"]["sabin"] == "out-of-stock"   # pre-order ignores stock
+    assert len(BEANS) == 15 and all(VARIANTS[f"{b}-200g"][4].endswith(".pack1") for b in BEANS)
+    so = message("TAK-261124-K7Q2", lines_of({"solok-honey-wash-200g": 2}, cat), "")
+    assert "1. Solok Honey & Wash (Single Origin, Reguler)\n   Varian: Kemasan 200 gr (pre-order)\n" in so
+    assert "Jumlah: 2 pack x Rp150.000\n   Subtotal: Rp300.000" in so
+    assert "Gn. Tiom (Single Origin, Signature)" in message("TAK-261124-K7Q2", lines_of({"gn-tiom-200g": 1}, cat), "")
     assert parse_managed(ts.replace("300_000", "330_000")) is None           # promo above normal price
     assert parse_managed(ts.replace("    bold: \"available\",\n", "")) is not None
     assert valid_catalog(None, {}) is None and valid_catalog({**cat["harga"], "houseblend.bold.pack1": 0}, {}) is None
