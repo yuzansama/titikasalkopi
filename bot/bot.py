@@ -284,7 +284,7 @@ PHONE_KB = {"keyboard": [[{"text": "📱 Bagikan nomor HP", "request_contact": T
 NO_KB = {"remove_keyboard": True}
 JNE_TRACK = "https://www.jne.co.id/tracking-package"
 CHECKING = "Lagi dicek admin ya, biasanya kurang dari 1 jam di jam kerja."
-CHECKOUT_FOR_ALL = False   # False: only admins get the in-bot checkout (test phase); buyers keep the WhatsApp one
+CHECKOUT_FOR_ALL = True   # open to every buyer since 28 Nov 2026 11:00 WIB; False = only admins (test phase)
 # ponytail: one lock for both bots' handlers; a slow OCR call holds up the other bot for a second or two.
 LOCK = threading.Lock()
 
@@ -838,7 +838,8 @@ def run():
         checkout.load()
         _api["admin"] = f"https://api.telegram.org/bot{checkout.ADMIN_TOKEN_FILE.read_text(encoding='utf-8').strip()}"
         threading.Thread(target=poll, args=(_api["admin"], on_admin, "admin"), daemon=True).start()
-        print(f"checkout in bot: on, {len(checkout.admins())} admin(s), {len(checkout._orders)} open order(s)", flush=True)
+        print(f"checkout in bot: on for {'all buyers' if CHECKOUT_FOR_ALL else 'admins only'}, "
+              f"{len(checkout.admins())} admin(s), {len(checkout._orders)} open order(s)", flush=True)
     sessions = {}
 
     def on_update(u):
@@ -998,7 +999,7 @@ def _checkout_flow_check():
     _api.update(url="SHOP", admin="ADMIN")
     global CHECKOUT_FOR_ALL
     assert not in_bot(9) or CHECKOUT_FOR_ALL   # test phase: a buyer who is not an admin keeps the WhatsApp checkout
-    CHECKOUT_FOR_ALL = True
+    for_all, CHECKOUT_FOR_ALL = CHECKOUT_FOR_ALL, True   # restored below: _check() runs at every start
     try:
         chat = {"id": 7, "type": "private"}
 
@@ -1145,7 +1146,7 @@ def _checkout_flow_check():
         g.update(real)
         (order.catalog, order.record, ship.search, ship.cost, checkout.ready, checkout.admins, checkout.vision_text,
          checkout.ORDERS_FILE, checkout.QRIS_FILE, qris.png) = real_mod
-        stats.FILE, CHECKOUT_FOR_ALL = None, False
+        stats.FILE, CHECKOUT_FOR_ALL = None, for_all
         _api.update(url=None, admin=None)
         _carts.clear(); _orders.clear(); _orders_day.clear(); checkout._orders.clear(); _drafts.clear()
         _amount_wait.clear()
